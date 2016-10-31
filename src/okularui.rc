@@ -1,0 +1,40 @@
+<!DOCTYPE kpartgui SYSTEM 'kpartgui.dtd'>
+<kpartgui version="100" name="okularplugin_okularui">
+ <MenuBar noMerge="1">
+  <!-- 
+    Note: To ignore settings from ui_standards.rc the version number 
+          of this file must be higher than that in ui_standards.rc 
+  -->
+  <!-- we don't want a menubar -->
+ </MenuBar>
+ <ToolBar noMerge="1" name="okularToolBar">
+  <text>Main Toolbar</text>
+  <!--Action name="file_save_copy"/-->
+  <!--Separator name="separator_0"/>
+  <Action name="go_previous"/>
+  <Action name="go_next"/-->
+  <Separator name="separator_1"/>
+  <Action name="view_zoom_out"/>
+  <Action name="view_zoom_in"/>
+  <Action name="view_fit_to_page"/>
+  <Action name="view_fit_to_width"/>
+  <Action name="zoom_to"/>
+  <!--Separator name="separator_2"/>
+  <Action name="go_document_back"/>
+  <Action name="go_document_forward"/-->
+  <Separator name="separator_3"/>
+  <Action name="view_render_mode"/>
+  <Action name="view_continuous"/>
+  <Separator name="separator_4"/>
+  <Action name="mouse_drag"/>
+  <Action name="mouse_selecttools"/>
+  <!--Separator name="separator_5"/>
+  <Action name="view_orientation_rotate_cw"/>
+  <Action name="view_orientation_rotate_ccw"/-->
+  <!--Separator name="separator_6"/>
+  <Action name="edit_find"/-->
+  <!--Separator name="separator_7"/>
+  <Action name="show_leftpanel"/>
+  <Action name="options_configure"/-->
+ </ToolBar>
+</kpartgui>

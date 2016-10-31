@@ -1,0 +1,8 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Exec=performer
+Icon=audio-card
+Type=Application
+Categories=Qt;KDE;Multimedia
+
+Name=Performer
