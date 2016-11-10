@@ -47,24 +47,40 @@
 
 #include "setlistmetadata.h"
 #include "carlapatchbackend.h"
+#include <qbrush.h>
 
 SetlistModel::SetlistModel(QObject *parent)
 : QAbstractListModel(parent)
 , m_activebackend(nullptr)
-, m_nextbackend(nullptr)
 , m_previousbackend(nullptr)
+, m_nextbackend(nullptr)
 {
     movedindex = -1;
     activeindex = -1;
     previousindex = -1;
     nextindex = -1;
+    
+    CarlaPatchBackend::jackClient();
 }
 
 SetlistModel::~SetlistModel()
 {
-    if(m_activebackend) m_activebackend->kill();
-    if(m_previousbackend) m_previousbackend->kill();
-    if(m_nextbackend) m_nextbackend->kill();
+    if(m_activebackend)
+    {
+        m_nextbackend->disconnect(this);
+        m_activebackend->kill();
+    }
+    if(m_previousbackend)
+    {
+        m_nextbackend->disconnect(this);
+        m_previousbackend->kill();
+    }
+    if(m_nextbackend)
+    {
+        m_nextbackend->disconnect(this);
+        m_nextbackend->kill();
+    }
+    CarlaPatchBackend::freeJackClient();
 }
 
 int SetlistModel::rowCount(const QModelIndex &parent) const
@@ -81,11 +97,11 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
     
     const SetlistMetadata metadata = m_setlist[index.row()];
     
-    QString devicename;
     switch(role) {
         case Qt::DisplayRole:
+            //return metadata.name() + (metadata.progress()?(" ("+QString::number(metadata.progress())+"%)"):"");
             return metadata.name();
-        case Qt::DecorationRole:
+        /*case Qt::DecorationRole:
             if(fileExists(metadata.patch().toLocalFile()))
             {
                 QIcon ico;
@@ -101,8 +117,35 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
             {
                 QIcon ico = QIcon::fromTheme("action-unavailable-symbolic");
                 return ico;
+            }*/
+            
+        case Qt::BackgroundRole:
+        {
+            
+            double stop = (metadata.progress())?((metadata.progress())/100.):1;
+            
+            QLinearGradient gradient(0, 1, 1, 1);
+            gradient.setCoordinateMode(QGradient::StretchToDeviceMode);
+    
+            gradient.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0));
+            if(stop+.01 <= 1)
+                gradient.setColorAt(stop+.01, QColor::fromRgbF(0, 0, 0, 0));
+            
+            if(fileExists(metadata.patch().toLocalFile()) && metadata.progress() >= 0)
+            {
+                if(index.row()==activeindex)
+                    gradient.setColorAt(stop, QColor::fromRgbF(.18, .80, .44, 1));
+                else if(index.row()==previousindex || index.row()==nextindex)
+                    gradient.setColorAt(stop, QColor::fromRgbF(.95, .61, .07, 1));
+                else
+                    gradient.setColorAt(stop, QColor::fromRgbF(0, 0, 0, 0));
             }
-        
+            else
+            {
+                gradient.setColorAt(stop, QColor::fromRgbF(.75, .22, .17, 1));
+            }
+            return QBrush(gradient);
+        }
         case SetlistModel::NameRole:
             return metadata.name();
         case SetlistModel::PatchRole:
@@ -115,15 +158,40 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
             return metadata.name();
         case SetlistModel::ActiveRole:
             return (index.row()==activeindex);
+        case SetlistModel::ProgressRole:
+            return metadata.progress();
     }
     
     return QVariant();
 }
 
-void SetlistModel::populate()
+void SetlistModel::reset()
 {
-    QStringList setlist;
+    beginInsertRows(QModelIndex(), 0, m_setlist.count()-1);
+    
     m_setlist.clear();
+    
+    endInsertRows();
+    
+    if(m_activebackend) 
+    {
+        m_activebackend->disconnect(this);
+        m_activebackend->kill();
+    }
+    if(m_previousbackend) 
+    {
+        m_previousbackend->disconnect(this);
+        m_previousbackend->kill();   
+    }
+    if(m_nextbackend)
+    {
+        m_nextbackend->disconnect(this);
+        m_nextbackend->kill();
+    }
+    
+    m_activebackend = nullptr;
+    m_previousbackend = nullptr;
+    m_nextbackend = nullptr;
 }
 
 void SetlistModel::update()
@@ -149,8 +217,6 @@ int SetlistModel::add(const QString &name, const QVariantMap &conf)
 bool SetlistModel::dropMimeData(const QMimeData */*data*/, Qt::DropAction /*action*/, int row, int /*column*/, const QModelIndex &/*parent*/)
 {
     movedindex = row;
-    
-    emit changed(true);
     
     return true;
 }
@@ -208,24 +274,135 @@ bool SetlistModel::removeRows(int row, int /*count*/, const QModelIndex& /*paren
     return true;
 }
 
-void SetlistModel::playNow(const QModelIndex& index)
+void SetlistModel::playNow(const QModelIndex& ind)
 {
-    if(!index.isValid() || index.row()>=m_setlist.size() || index.row()<0)
+    if(!ind.isValid() || ind.row()>=m_setlist.size() || ind.row()<0)
         return;
-    activeindex = index.row();
+    activeindex = ind.row();
     previousindex = activeindex-1;
     nextindex = (m_setlist.size()>activeindex+1)?activeindex+1:-1;
     
-    if(m_activebackend) m_activebackend->kill();
-    if(m_previousbackend) m_previousbackend->kill();
-    if(m_nextbackend) m_nextbackend->kill();
+    if(m_activebackend) 
+    {
+        m_nextbackend->disconnect(this);
+        m_activebackend->kill();
+    }
+    if(m_previousbackend)
+    {
+        m_nextbackend->disconnect(this);
+        m_previousbackend->kill();
+    }
+    if(m_nextbackend)
+    {
+        m_nextbackend->disconnect(this);
+        m_nextbackend->kill();
+    }
     
     if(fileExists(m_setlist[activeindex].patch().toLocalFile()))
+    {
         m_activebackend = new CarlaPatchBackend(m_setlist[activeindex].patch().toLocalFile());
-    if(previousindex > 0 && fileExists(m_setlist[previousindex].patch().toLocalFile()))
+        connect(m_activebackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
+    }
+    else
+        m_activebackend = nullptr;
+    if(previousindex >= 0 && fileExists(m_setlist[previousindex].patch().toLocalFile()))
+    {
         m_previousbackend = new CarlaPatchBackend(m_setlist[previousindex].patch().toLocalFile());
-    if(nextindex > 0 && fileExists(m_setlist[nextindex].patch().toLocalFile()))
+        connect(m_previousbackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
+    }
+    else
+        m_previousbackend = nullptr;
+    if(nextindex >= 0 && fileExists(m_setlist[nextindex].patch().toLocalFile()))
+    {
         m_nextbackend = new CarlaPatchBackend(m_setlist[nextindex].patch().toLocalFile());
+        connect(m_nextbackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
+    }
+    else
+        m_nextbackend = nullptr;
+    
+    if(m_activebackend)
+        m_activebackend->activate();
+    if(m_previousbackend)
+        m_previousbackend->preload();
+    if(m_nextbackend)
+        m_nextbackend->preload();
+}
+
+void SetlistModel::playPrevious()
+{
+    if(activeindex <= 0)
+        return;
+    
+    if(m_nextbackend)
+    {
+        m_nextbackend->disconnect(this);
+        m_nextbackend->kill();
+    }
+    
+    if(m_activebackend)
+        m_activebackend->deactivate();
+    
+    --previousindex;
+    --activeindex;
+    --nextindex;
+    
+    m_nextbackend = m_activebackend;
+    m_activebackend = m_previousbackend;
+    if(previousindex >= 0 && previousindex <=  m_setlist.size()-1 && fileExists(m_setlist[previousindex].patch().toLocalFile()))
+    {
+        m_previousbackend = new CarlaPatchBackend(m_setlist[previousindex].patch().toLocalFile());
+        connect(m_previousbackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
+    }
+    else
+        m_previousbackend = nullptr;
+    
+    if(m_activebackend)
+        m_activebackend->activate();
+    if(m_previousbackend)
+        m_previousbackend->preload();
+    if(m_nextbackend)
+        m_nextbackend->preload();
+    
+    emit dataChanged(index(0,0), index(m_setlist.count()-1,0));
+}
+
+void SetlistModel::playNext()
+{
+    if(activeindex < 0 || activeindex >= m_setlist.size()-1)
+        return;
+    
+    if(m_previousbackend)
+    {
+        m_previousbackend->disconnect(this);
+        m_previousbackend->kill();
+    }
+    
+    if(m_activebackend)
+        m_activebackend->deactivate();
+    
+    ++previousindex;
+    ++activeindex;
+    ++nextindex;
+    
+    m_previousbackend = m_activebackend;
+    m_activebackend = m_nextbackend;
+    if(nextindex >= 0 && nextindex <= m_setlist.size()-1 && fileExists(m_setlist[nextindex].patch().toLocalFile()))
+    {
+        m_nextbackend = new CarlaPatchBackend(m_setlist[nextindex].patch().toLocalFile());
+        connect(m_nextbackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
+    }
+    else
+        m_nextbackend = nullptr;
+    
+    if(m_activebackend)
+        m_activebackend->activate();
+    if(m_previousbackend)
+        m_previousbackend->preload();
+    if(m_nextbackend)
+        m_nextbackend->preload();
+    
+    
+    emit dataChanged(index(0,0), index(m_setlist.count()-1,0));
 }
 
 bool SetlistModel::fileExists(const QString& file) const
@@ -234,3 +411,27 @@ bool SetlistModel::fileExists(const QString& file) const
     return (check_file.exists() && check_file.isFile());
 }
 
+QModelIndex SetlistModel::activeIndex() const
+{
+    return index(activeindex,0);
+}
+
+void SetlistModel::updateProgress(int p)
+{
+    QVariantMap m; 
+    m.insert("progress", p);
+    int ind;
+    if(QObject::sender() == m_activebackend)
+        ind = activeindex;
+    else if(QObject::sender() == m_previousbackend)
+        ind = previousindex;
+    else if(QObject::sender() == m_nextbackend)
+        ind = nextindex;
+    else
+        return;
+    if(ind >= 0 && ind < m_setlist.size())
+    {
+        m_setlist[ind].update(m);
+        emit dataChanged(index(ind,0), index(ind,0));
+    }
+}

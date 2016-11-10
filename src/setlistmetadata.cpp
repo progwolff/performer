@@ -36,11 +36,13 @@ public:
         patch = QUrl();
         notes = QUrl();
         preload = true;
+        progress = 0;
     }
     QString name;
     QUrl patch;
     QUrl notes;
     bool preload;
+    int progress;
 };
 
 SetlistMetadata::SetlistMetadata(const QString &name, const QVariantMap &conf)
@@ -74,6 +76,7 @@ void SetlistMetadata::update(const QVariantMap &conf)
     if(conf.value("notes").canConvert<QUrl>()) d->notes = conf.value("notes").toUrl();
     if(!conf.value("preload").isNull()) d->preload = conf.value("preload").toBool();
     if(conf.value("name").canConvert<QString>()) d->name = conf.value("name").toString();
+    if(!conf.value("progress").isNull()) d->progress = conf.value("progress").toInt();
 }
 
 QString SetlistMetadata::name() const
@@ -96,7 +99,13 @@ bool SetlistMetadata::preload() const
     return d->preload;
 }
 
+int SetlistMetadata::progress() const
+{
+    return d->progress;
+}
+
 QString SetlistMetadata::dump() const 
 {
     return d->name;
 }
+

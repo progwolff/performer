@@ -29,13 +29,13 @@ int main (int argc, char *argv[])
                          i18n("(c) 2016"),
                          // Optional text shown in the About box.
                          // Can contain any information desired. (otherText)
-                         i18n(""),
+                         i18n(" "),
                          // The program homepage string. (homePageAddress = QString())
                          QStringLiteral("http://github.com/progwolff/performer"),
                          // The bug report email address
                          // (bugsEmailAddress = QLatin1String("submit@bugs.kde.org")
                          QStringLiteral("wolff@julianwolff.de"));
-    aboutData.addAuthor(i18n("Julian Wolff"), i18n(""), QStringLiteral("wolff@julianwolff.de"),
+    aboutData.addAuthor(i18n("Julian Wolff"), i18n(" "), QStringLiteral("wolff@julianwolff.de"),
                          QStringLiteral("http://github.com/progwolff"), QStringLiteral(""));
     KAboutData::setApplicationData(aboutData);
  

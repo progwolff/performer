@@ -37,18 +37,23 @@ public:
     ~Performer();
 
 public slots:
-    void save();
-    void load();
+    void saveConfig();
+    void loadConfig();
     void defaults();
     
 private slots:
     void showContextMenu(QPoint);
+    void midiContextMenuRequested(const QPoint& pos);
     void addSong();
     void songSelected(const QModelIndex&);
     void updateSelected();
     void prefer();
     void defer();
     void remove();
+    void saveFile(const QString& path=QString());
+    void saveFileAs();
+    void loadFile(const QString& path);
+    void loadFile();
     
 private:
     void prepareUi();
@@ -57,8 +62,9 @@ private:
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
     
-    QStyledItemDelegate *delegate;
     SetlistModel *model;
+    
+    QString m_path;
 };
 
 #endif // PERFORMER_H

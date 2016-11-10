@@ -2,6 +2,8 @@
 #define ABSTRACTPATCHBACKEND_H
 
 #include <QObject>
+#include <jack/jack.h>
+
 /**
  * Base class of backends used for loading patches
  */
@@ -18,6 +20,7 @@ public:
         :patchfile(patchfile)
     {};
     
+    static jack_client_t *jackClient();
     
 signals:
     /**

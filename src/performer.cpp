@@ -35,10 +35,15 @@
 #include <kdeclarative.h>
 #include <KToolBar>
 #include <QStyledItemDelegate>
+#include <KSharedConfig>
+#include <KConfig>
+#include <KConfigGroup>
+#include <KUrlRequesterDialog>
 
 #include <QMenu>
 
 #include "setlistmodel.h"
+#include "setlistview.h"
 
 Performer::Performer(QWidget *parent) :
     KParts::MainWindow(parent),
@@ -47,29 +52,36 @@ Performer::Performer(QWidget *parent) :
    
     KLocalizedString::setApplicationDomain("performer");
    
+    model = new SetlistModel(this);
+    
     prepareUi();
     
-    model = new SetlistModel(this);
     m_setlist->setListView->setModel(model);
-    
-    delegate = new QStyledItemDelegate(m_setlist->setListView);
-    m_setlist->setListView->setItemDelegate(delegate);
+
+    m_setlist->setListView->setItemDelegate(new RemoveSelectionDelegate);
     
     m_setlist->setListView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_setlist->setListView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showContextMenu(QPoint)));
     
     m_setlist->addButton->setEnabled(true);
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
-    m_setlist->preferButton->setEnabled(false);
-    connect(m_setlist->preferButton, SIGNAL(clicked()), SLOT(prefer()));
-    m_setlist->deferButton->setEnabled(false);
-    connect(m_setlist->deferButton, SIGNAL(clicked()), SLOT(defer()));
+    //m_setlist->preferButton->setEnabled(false);
+    //connect(m_setlist->preferButton, SIGNAL(clicked()), SLOT(prefer()));
+    //m_setlist->deferButton->setEnabled(false);
+    //connect(m_setlist->deferButton, SIGNAL(clicked()), SLOT(defer()));
+    connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){model->playPrevious(); songSelected(QModelIndex());});
+    connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){model->playNext(); songSelected(QModelIndex());});
+    m_setlist->previousButton->setEnabled(true);
+    m_setlist->nextButton->setEnabled(true);
+    
+    connect(m_setlist->previousButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+    connect(m_setlist->nextButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
     
     m_setlist->setupBox->setVisible(false);
     connect(m_setlist->patchrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
     connect(m_setlist->notesrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
-    connect(m_setlist->patchrequester, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
-    connect(m_setlist->notesrequester, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
+    //connect(m_setlist->patchrequester, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
+    //connect(m_setlist->notesrequester, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
     connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
     
@@ -81,7 +93,6 @@ Performer::Performer(QWidget *parent) :
 
 Performer::~Performer() 
 {
-    delete delegate;
     delete model;
     
     delete m_part;
@@ -99,12 +110,12 @@ void Performer::prefer()
     index = m_setlist->setListView->model()->index(index.row()-1, index.column());
     m_setlist->setListView->setCurrentIndex(index);
     
-    m_setlist->deferButton->setEnabled(false);
+    /*m_setlist->deferButton->setEnabled(false);
     m_setlist->preferButton->setEnabled(false);
     if(index.row() < m_setlist->setListView->model()->rowCount()-1)
         m_setlist->deferButton->setEnabled(true);
     if(index.row() > 0)
-        m_setlist->preferButton->setEnabled(true);
+        m_setlist->preferButton->setEnabled(true)*/;
 }
 
 void Performer::defer()
@@ -117,12 +128,14 @@ void Performer::defer()
     index = m_setlist->setListView->model()->index(index.row()+1, index.column());
     m_setlist->setListView->setCurrentIndex(index);
     
-    m_setlist->deferButton->setEnabled(false);
+    /*m_setlist->deferButton->setEnabled(false);
     m_setlist->preferButton->setEnabled(false);
     if(index.row() < m_setlist->setListView->model()->rowCount()-1)
         m_setlist->deferButton->setEnabled(true);
     if(index.row() > 0)
-        m_setlist->preferButton->setEnabled(true);
+        m_setlist->preferButton->setEnabled(true);*/
+    
+    saveFile("/home/wolff/test.pfm");
 }
 
 void Performer::remove()
@@ -154,7 +167,7 @@ void Performer::showContextMenu(QPoint pos)
         action = myMenu.addAction(QIcon::fromTheme("media-playback-start"), i18n("Play now"), this, [this,index](){model->playNow(index);});
         if(!model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
             action->setEnabled(false);
-        if(index.data(SetlistModel::ActiveRole).toBool())
+        if(index.data(SetlistModel::ActiveRole).toBool() && index.data(SetlistModel::ProgressRole).toInt() > 0)
             action->setEnabled(false);
         
         myMenu.addSeparator();
@@ -176,6 +189,23 @@ void Performer::showContextMenu(QPoint pos)
     }
 }
 
+void Performer::midiContextMenuRequested(const QPoint& pos)
+{
+    QWidget *sender = (QWidget*)QObject::sender();
+    if(sender)
+    {
+        QPoint globalPos = sender->mapToGlobal(pos);
+        QMenu myMenu;
+        QAction *action;
+        
+        action = myMenu.addAction(QIcon::fromTheme("media-playback-start"), i18n("Learn MIDI CC"), this, [](){});
+        action = myMenu.addAction(QIcon::fromTheme("media-playback-start"), i18n("Clear MIDI CC"), this, [](){});
+        
+        // Show context menu at handling position
+        myMenu.exec(globalPos);
+    }
+}
+
 void Performer::updateSelected()
 {
     QVariantMap map;
@@ -189,11 +219,11 @@ void Performer::updateSelected()
 void Performer::addSong()
 {
     int index = model->add(i18n("New Song"), QVariantMap());
-    m_setlist->setListView->setCurrentIndex(m_setlist->setListView->indexAt({0,index}));
-    songSelected(m_setlist->setListView->indexAt({0,index}));
+    m_setlist->setListView->setCurrentIndex(model->index(index,0));
+    songSelected(model->index(index,0));
 }
 
-void Performer::load()
+void Performer::loadConfig()
 {
     //mDevicesConfig->reset();
 }
@@ -203,13 +233,78 @@ void Performer::defaults()
     //mDevicesConfig->reset();
 }
 
-void Performer::save()
+void Performer::loadFile()
+{
+    loadFile(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), i18n("Setlists (*.pfm)")));
+}
+
+
+void Performer::loadFile(const QString& path)
+{
+    if(path.isEmpty())
+        return;
+    
+    m_path = path;
+    
+    model->reset();
+    
+    KSharedConfigPtr set = KSharedConfig::openConfig(path);
+    
+    KConfigGroup setlist = set->group("setlist");
+    
+    for(const QString& song : setlist.groupList())
+    {
+        QVariantMap config;
+        config.insert("patch", QUrl::fromLocalFile(setlist.group(song).readEntry("patch",QString())));
+        config.insert("notes", QUrl::fromLocalFile(setlist.group(song).readEntry("notes",QString())));
+        config.insert("preload", setlist.group(song).readEntry("preload",true));
+        model->add(song, config);
+    }
+}
+
+void Performer::saveFileAs()
+{
+    QString filename = QFileDialog::getSaveFileName(Q_NULLPTR, i18n("Save File As..."));
+    if(!filename.isEmpty())
+        saveFile(filename);
+}
+
+void Performer::saveFile(const QString& path)
+{
+    QString filename = path;
+    if(path.isEmpty())
+        filename = m_path;
+    if(filename.isEmpty())
+    {
+        saveFileAs();
+        return;
+    }
+    
+    KSharedConfigPtr set = KSharedConfig::openConfig(filename);
+    for(const QString& group : set->groupList())
+        set->deleteGroup(group);
+    
+    KConfigGroup setlist = set->group("setlist");
+    
+    for(int i=0; i < m_setlist->setListView->model()->rowCount(); ++i)
+    {
+        QModelIndex index = model->index(i,0);
+        KConfigGroup song = setlist.group(index.data(SetlistModel::NameRole).toString());
+        song.writeEntry("patch",index.data(SetlistModel::PatchRole).toUrl().toLocalFile());
+        song.writeEntry("notes",index.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+        song.writeEntry("preload",index.data(SetlistModel::PreloadRole).toBool());
+    }
+    
+    set->sync();
+}
+
+void Performer::saveConfig()
 {
     QVariantMap args;
     
     
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    //KSharedConfigPtr jackConfig = KSharedConfig::openConfig(dir+"/performer.conf");
+    /*KSharedConfigPtr jackConfig = KSharedConfig::openConfig(dir+"/performer.conf");
     
     //args.unite(mBehaviorConfig->save());
     
@@ -253,27 +348,37 @@ void Performer::save()
     
     
     //jackConfig->sync();
-    load();
+    loadConfig();
 }
 
 void Performer::songSelected(const QModelIndex& index)
 {
+    QModelIndex ind = index;
+    if(!ind.isValid())
+        ind = model->activeIndex();
+    
+    if(!ind.isValid())
+        return;
+    
     m_setlist->setupBox->setVisible(true);
-    m_setlist->setupBox->setTitle(i18n("Set up %1", index.data(SetlistModel::NameRole).toString()));
-    m_setlist->nameEdit->setText(index.data(SetlistModel::NameRole).toString());
-    m_setlist->patchrequester->setUrl(index.data(SetlistModel::PatchRole).toUrl());
-    m_setlist->notesrequester->setUrl(index.data(SetlistModel::NotesRole).toUrl());
-    m_setlist->preloadBox->setChecked(index.data(SetlistModel::PreloadRole).toBool());
+    m_setlist->setupBox->setTitle(i18n("Set up %1", ind.data(SetlistModel::NameRole).toString()));
+    m_setlist->nameEdit->setText(ind.data(SetlistModel::NameRole).toString());
+    //m_setlist->patchrequester->clear();
+    m_setlist->patchrequester->setUrl(ind.data(SetlistModel::PatchRole).toUrl());
+    qDebug() << "patch: " << ind.data(SetlistModel::PatchRole).toUrl().toLocalFile();
+    //m_setlist->patchrequester->clear();
+    m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
+    m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
     
-    if(model->fileExists(index.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
-        m_part->openUrl(index.data(SetlistModel::NotesRole).toUrl());
+    if(model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+        m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
     
-    m_setlist->deferButton->setEnabled(false);
+    /*m_setlist->deferButton->setEnabled(false);
     m_setlist->preferButton->setEnabled(false);
     if(index.row() < m_setlist->setListView->model()->rowCount()-1)
         m_setlist->deferButton->setEnabled(true);
     if(index.row() > 0)
-        m_setlist->preferButton->setEnabled(true);
+        m_setlist->preferButton->setEnabled(true);*/
 }
 
 void Performer::prepareUi()
@@ -296,11 +401,14 @@ void Performer::prepareUi()
             QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/okularui.rc");
             
             m_part->replaceXMLFile(file, "performer/okularui.rc", false);
+            setWindowTitleHandling(false);
+
             
             // tell the KParts::MainWindow that this is indeed
             // the main widget
             setCentralWidget(m_part->widget());
-
+            
+            file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/Performerui.rc");
             setupGUI(ToolBar | Keys | StatusBar | Save);
 
             // and integrate the part's GUI with the shell's
@@ -326,6 +434,33 @@ void Performer::prepareUi()
         return;
     }
     
+    QMenu *filemenu = new QMenu(i18n("File"));
+    
+    QAction* action = new QAction(this);
+    action->setText(i18n("&New"));
+    action->setIcon(QIcon::fromTheme("document-new"));
+    connect(action, SIGNAL(triggered(bool)), model, SLOT(reset()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Open"));
+    action->setIcon(QIcon::fromTheme("document-open"));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Save"));
+    action->setIcon(QIcon::fromTheme("document-save"));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Save as"));
+    action->setIcon(QIcon::fromTheme("document-save"));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
+    filemenu->addAction(action);
+    
+    menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
 }
 
 #include "performer.moc"

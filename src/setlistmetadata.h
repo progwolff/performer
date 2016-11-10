@@ -38,6 +38,7 @@ public:
     QUrl patch() const;
     QUrl notes() const;
     bool preload() const;
+    int progress() const;
     
     void update(const QVariantMap &conf);
     

@@ -33,7 +33,8 @@ public:
         PatchRole,
         NotesRole,
         PreloadRole,
-        ActiveRole
+        ActiveRole,
+        ProgressRole
     };
                
     explicit SetlistModel(QObject *parent=0);
@@ -47,22 +48,24 @@ public:
     
     bool fileExists(const QString&) const;
     
+    QModelIndex activeIndex() const;
+    
 public slots:
-    void populate();
+    void reset();
     void update();
     void update(const QModelIndex& index, const QVariantMap& conf);
+    void updateProgress(int p);
     bool removeRows ( int row, int count, const QModelIndex & parent = QModelIndex() );
     bool dropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent);
     void playNow(const QModelIndex& index);
+    void playPrevious();
+    void playNext();
     
     int add(const QString &name, const QVariantMap &conf);
 
-signals:
-    void changed(bool);
-
 private:
     QList<SetlistMetadata> m_setlist;
-        
+    
     int movedindex;
     int activeindex,previousindex,nextindex;
     
