@@ -18,7 +18,7 @@ arch:
     - extra-cmake-modules
     - qt5-tools
     - python
-    - okular-frameworks-git
+    - okular-git
   script:
     - "git clone https://github.com/progwolff/performer.git"
     - "cd performer && makepkg -i && cd .."
