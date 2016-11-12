@@ -486,7 +486,7 @@ void Performer::songSelected(const QModelIndex& index)
     m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
     m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
     
-    if(model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+    if(m_part && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
         m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
     
     /*m_setlist->deferButton->setEnabled(false);
@@ -509,10 +509,10 @@ void Performer::prepareUi()
 
     if (service)
     {
-      m_part = service->createInstance<KParts::ReadOnlyPart>(this, QVariantList() << "Print/Preview");
+        m_part = service->createInstance<KParts::ReadOnlyPart>(this, QVariantList() << "Print/Preview");
 
-      if (m_part)
-      {
+        if (m_part)
+        {
             
             QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/okularui.rc");
             
@@ -524,30 +524,25 @@ void Performer::prepareUi()
             // the main widget
             setCentralWidget(m_part->widget());
             
-            file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/Performerui.rc");
             setupGUI(ToolBar | Keys | StatusBar | Save);
 
             // and integrate the part's GUI with the shell's
             createGUI(m_part);
+    
+        }
+        else
+        {
             
-            
-            //m_part->openUrl( QUrl::fromLocalFile("/home/wolff/Documents/Musik/Chords/99_Luftballons.pdf") );
-      }
-      else
-      {
-          KMessageBox::error(this, i18n("Okular KPart could not be created"));
-          return;//return 1; 
-      }
+            m_part = nullptr;
+        }
     }
-    else
+    if(!service || !m_part)
     {
-        // if we couldn't find our Part, we exit since the Shell by
-        // itself can't do anything useful
         KMessageBox::error(this, i18n("Okular KPart not found"));
-        qApp->quit();
-        // we return here, cause qApp->quit() only means "exit the
-        // next time we enter the event loop...
-        return;
+    
+        setupGUI(ToolBar | Keys | StatusBar | Save);
+        
+        KXmlGuiWindow::createGUI();
     }
     
     QMenu *filemenu = new QMenu(i18n("File"));
