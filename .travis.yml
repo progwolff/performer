@@ -21,8 +21,7 @@ arch:
     - okular-git
   script:
     - "git clone https://github.com/progwolff/performer.git"
-    - "cd performer && makepkg -i && cd .."
-    - "cd dist/arch/ && makepkg -i"
+    - "cd performer/dist/arch/ && makepkg -i"
 
 script:
   - "curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash"
