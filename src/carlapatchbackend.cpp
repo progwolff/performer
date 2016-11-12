@@ -1,9 +1,12 @@
 #include "carlapatchbackend.h"
+#include "midi.h"
 
 #include <QProcess>
 #include <QDebug>
 #include <QTimer>
 #include <QMessageBox>
+
+#include <jack/midiport.h>
 
 #define MAX_INSTANCES 3
 
@@ -18,7 +21,7 @@ CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile)
 , clientName("")
 , portlist{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"}
 {
-    emit progress(0);
+    emit progress(1);
     
     instanceCounter.acquire(1);
     
@@ -31,6 +34,7 @@ jack_client_t *CarlaPatchBackend::jackClient()
 {
     if(!m_client)
     {
+        qDebug() << "creating jack client";
         jack_status_t status;
         m_client = jack_client_open("Performer", JackNoStartServer, &status, NULL);
         if (m_client == NULL) {
@@ -50,8 +54,11 @@ jack_client_t *CarlaPatchBackend::jackClient()
             jack_port_register(m_client, "audio-out2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
             jack_port_register(m_client, "events-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
             jack_port_register(m_client, "events-out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
+            jack_port_register(m_client, "control_gui-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
             
             jack_set_port_connect_callback(m_client, &CarlaPatchBackend::connectionChanged, NULL);
+            
+            jack_set_process_callback(m_client, &CarlaPatchBackend::receiveMidiEvents, NULL);
             
             jack_activate(m_client);
         }
@@ -276,4 +283,28 @@ QByteArray CarlaPatchBackend::replace(const char* str, const char* a, const char
 QByteArray CarlaPatchBackend::replace(const char* str, const QString& a, const QString& b)
 {
     return QString::fromLatin1(str).replace(a, b).toLatin1();
+}
+
+int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
+{
+    jack_midi_event_t in_event;
+  
+    // get the port data
+    void* port_buf = jack_port_get_buffer(jack_port_by_name(m_client, "Performer:control_gui-in"), nframes);
+  
+    // input: get number of events, and process them.
+    jack_nframes_t event_count = jack_midi_get_event_count(port_buf);
+    if(event_count > 0)
+    {
+        for(int i=0; i<event_count; i++)
+        {
+            jack_midi_event_get(&in_event, port_buf, i);
+            if(activeBackend && IS_MIDICC(in_event.buffer[0]))
+            {
+                activeBackend->emit midiEvent(in_event.buffer[0], in_event.buffer[1], in_event.buffer[2]);
+            }
+        }
+    }
+  
+    return 0;
 }

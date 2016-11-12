@@ -24,21 +24,28 @@ public:
     
 signals:
     /**
-     * indicates the progress of loading of this patch
+     * Indicates the progress of loading of this patch
      * @param percent progress in percent (0 to 100) or a negative value on error
      */
     void progress(int percent);
+    /**
+     * A MIDI event was received. This event might be used to set gui controls.
+     * @param status MIDI status byte
+     * @param data1 First MIDI data byte
+     * @param data2 Second MIDI data byte
+     */
+    void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);
     
 public slots:
     
     /**
-     * kill this patch\n
+     * Kill this patch\n
      * Also deleteLater the object.
      */
     virtual void kill() = 0;
     
     /**
-     * preload this patch
+     * Preload this patch
      */
     virtual void preload() = 0;
     

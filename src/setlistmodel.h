@@ -60,11 +60,15 @@ public slots:
     void playNow(const QModelIndex& index);
     void playPrevious();
     void playNext();
-    
     int add(const QString &name, const QVariantMap &conf);
-
+    
+signals:
+    void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);
+    
 private:
     QList<SetlistMetadata> m_setlist;
+    void createBackend(AbstractPatchBackend*& backend, int index);
+    void removeBackend(AbstractPatchBackend*& backend);
     
     int movedindex;
     int activeindex,previousindex,nextindex;

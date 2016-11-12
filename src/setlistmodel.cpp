@@ -274,6 +274,28 @@ bool SetlistModel::removeRows(int row, int /*count*/, const QModelIndex& /*paren
     return true;
 }
 
+void SetlistModel::createBackend(AbstractPatchBackend*& backend, int index)
+{
+    if(fileExists(m_setlist[index].patch().toLocalFile()))
+    {
+        qDebug() << "creating backend for" << m_setlist[index].patch().toLocalFile();
+        backend = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile());
+        connect(backend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
+        connect(backend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
+    }
+    else
+        backend = nullptr;
+}
+
+void SetlistModel::removeBackend(AbstractPatchBackend*& backend)
+{
+    if(!backend)
+        return;
+    
+    backend->disconnect(this);
+    backend->kill();
+}
+
 void SetlistModel::playNow(const QModelIndex& ind)
 {
     if(!ind.isValid() || ind.row()>=m_setlist.size() || ind.row()<0)
@@ -282,50 +304,28 @@ void SetlistModel::playNow(const QModelIndex& ind)
     previousindex = activeindex-1;
     nextindex = (m_setlist.size()>activeindex+1)?activeindex+1:-1;
     
-    if(m_activebackend) 
-    {
-        m_nextbackend->disconnect(this);
-        m_activebackend->kill();
-    }
-    if(m_previousbackend)
-    {
-        m_nextbackend->disconnect(this);
-        m_previousbackend->kill();
-    }
-    if(m_nextbackend)
-    {
-        m_nextbackend->disconnect(this);
-        m_nextbackend->kill();
-    }
+    removeBackend(m_activebackend);
+    removeBackend(m_previousbackend);
+    removeBackend(m_nextbackend);
     
-    if(fileExists(m_setlist[activeindex].patch().toLocalFile()))
-    {
-        m_activebackend = new CarlaPatchBackend(m_setlist[activeindex].patch().toLocalFile());
-        connect(m_activebackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
-    }
-    else
-        m_activebackend = nullptr;
-    if(previousindex >= 0 && fileExists(m_setlist[previousindex].patch().toLocalFile()))
-    {
-        m_previousbackend = new CarlaPatchBackend(m_setlist[previousindex].patch().toLocalFile());
-        connect(m_previousbackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
-    }
-    else
-        m_previousbackend = nullptr;
-    if(nextindex >= 0 && fileExists(m_setlist[nextindex].patch().toLocalFile()))
-    {
-        m_nextbackend = new CarlaPatchBackend(m_setlist[nextindex].patch().toLocalFile());
-        connect(m_nextbackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
-    }
-    else
-        m_nextbackend = nullptr;
+    createBackend(m_activebackend, activeindex);
+    if(previousindex >= 0)
+        createBackend(m_previousbackend, previousindex);
+    if(nextindex >= 0)
+        createBackend(m_nextbackend, nextindex);
     
     if(m_activebackend)
         m_activebackend->activate();
+    else
+        qDebug() << "no active backend";
     if(m_previousbackend)
         m_previousbackend->preload();
+    else
+        qDebug() << "no previous backend";
     if(m_nextbackend)
         m_nextbackend->preload();
+    else
+        qDebug() << "no next backend";
 }
 
 void SetlistModel::playPrevious()
@@ -333,11 +333,7 @@ void SetlistModel::playPrevious()
     if(activeindex <= 0)
         return;
     
-    if(m_nextbackend)
-    {
-        m_nextbackend->disconnect(this);
-        m_nextbackend->kill();
-    }
+    removeBackend(m_nextbackend);
     
     if(m_activebackend)
         m_activebackend->deactivate();
@@ -348,13 +344,8 @@ void SetlistModel::playPrevious()
     
     m_nextbackend = m_activebackend;
     m_activebackend = m_previousbackend;
-    if(previousindex >= 0 && previousindex <=  m_setlist.size()-1 && fileExists(m_setlist[previousindex].patch().toLocalFile()))
-    {
-        m_previousbackend = new CarlaPatchBackend(m_setlist[previousindex].patch().toLocalFile());
-        connect(m_previousbackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
-    }
-    else
-        m_previousbackend = nullptr;
+    if(previousindex >= 0 && previousindex <=  m_setlist.size()-1)
+        createBackend(m_previousbackend, previousindex);
     
     if(m_activebackend)
         m_activebackend->activate();
@@ -371,11 +362,7 @@ void SetlistModel::playNext()
     if(activeindex < 0 || activeindex >= m_setlist.size()-1)
         return;
     
-    if(m_previousbackend)
-    {
-        m_previousbackend->disconnect(this);
-        m_previousbackend->kill();
-    }
+    removeBackend(m_previousbackend);
     
     if(m_activebackend)
         m_activebackend->deactivate();
@@ -386,13 +373,8 @@ void SetlistModel::playNext()
     
     m_previousbackend = m_activebackend;
     m_activebackend = m_nextbackend;
-    if(nextindex >= 0 && nextindex <= m_setlist.size()-1 && fileExists(m_setlist[nextindex].patch().toLocalFile()))
-    {
-        m_nextbackend = new CarlaPatchBackend(m_setlist[nextindex].patch().toLocalFile());
-        connect(m_nextbackend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
-    }
-    else
-        m_nextbackend = nullptr;
+    if(nextindex >= 0 && nextindex <= m_setlist.size()-1)
+        createBackend(m_nextbackend, nextindex);
     
     if(m_activebackend)
         m_activebackend->activate();

@@ -41,6 +41,8 @@ private:
     static QMutex clientInitMutex;
     static CarlaPatchBackend *activeBackend;
     
+    static int receiveMidiEvents(jack_nframes_t nframes, void* arg);
+    
     void connectClient();
     void disconnectClient();
     

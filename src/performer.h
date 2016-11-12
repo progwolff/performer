@@ -55,8 +55,14 @@ private slots:
     void loadFile(const QString& path);
     void loadFile();
     
+    void receiveMidiEvent(unsigned char status, unsigned char data1, unsigned char data2);
+    
+    void midiLearn(QAction* action);
+    void midiClear(QAction* action);
+    
 private:
     void prepareUi();
+    
     
     KParts::ReadOnlyPart *m_part;
     Ui::Setlist *m_setlist;
@@ -65,6 +71,10 @@ private:
     SetlistModel *model;
     
     QString m_path;
+    
+    QMap<unsigned char, QAction*> midi_cc_map;
+    QMap<unsigned char, unsigned char> midi_cc_value_map;
+    QAction* midi_learn_action;
 };
 
 #endif // PERFORMER_H

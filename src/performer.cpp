@@ -22,7 +22,7 @@
 
 #include "performer.h"
 #include "ui_setlist.h"
-
+#include "midi.h"
 
 #include <KAboutData>
 
@@ -46,8 +46,9 @@
 #include "setlistview.h"
 
 Performer::Performer(QWidget *parent) :
-    KParts::MainWindow(parent),
-    m_setlist(new Ui::Setlist)
+    KParts::MainWindow(parent)
+    ,m_setlist(new Ui::Setlist)
+    ,midi_learn_action(nullptr)
 {
    
     KLocalizedString::setApplicationDomain("performer");
@@ -69,10 +70,16 @@ Performer::Performer(QWidget *parent) :
     //connect(m_setlist->preferButton, SIGNAL(clicked()), SLOT(prefer()));
     //m_setlist->deferButton->setEnabled(false);
     //connect(m_setlist->deferButton, SIGNAL(clicked()), SLOT(defer()));
-    connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){model->playPrevious(); songSelected(QModelIndex());});
-    connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){model->playNext(); songSelected(QModelIndex());});
+    QAction *action = new QAction(i18n("Previous"), this);
+    connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});
+    m_setlist->previousButton->setDefaultAction(action);
     m_setlist->previousButton->setEnabled(true);
+    connect(m_setlist->previousButton, SIGNAL(clicked()), action, SLOT(trigger()));
+    action = new QAction(i18n("Next"), this);
+    connect(action, &QAction::triggered, this, [this](){model->playNext(); songSelected(QModelIndex());});
+    m_setlist->nextButton->setDefaultAction(action);
     m_setlist->nextButton->setEnabled(true);
+    connect(m_setlist->nextButton, SIGNAL(clicked()), action, SLOT(trigger()));
     
     connect(m_setlist->previousButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
     connect(m_setlist->nextButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
@@ -88,6 +95,7 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->setListView, SIGNAL(activated(QModelIndex)), SLOT(songSelected(QModelIndex)));
     connect(m_setlist->setListView, SIGNAL(clicked(QModelIndex)), SLOT(songSelected(QModelIndex)));
     //connect(model, SIGNAL(changed(bool)), this, SIGNAL(changed(bool)));
+    connect(model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), this, SLOT(receiveMidiEvent(unsigned char,unsigned char,unsigned char)));
 }
 
 
@@ -191,18 +199,89 @@ void Performer::showContextMenu(QPoint pos)
 
 void Performer::midiContextMenuRequested(const QPoint& pos)
 {
-    QWidget *sender = (QWidget*)QObject::sender();
+    QToolButton *sender = (QToolButton*)QObject::sender();
     if(sender)
     {
         QPoint globalPos = sender->mapToGlobal(pos);
         QMenu myMenu;
         QAction *action;
         
-        action = myMenu.addAction(QIcon::fromTheme("media-playback-start"), i18n("Learn MIDI CC"), this, [](){});
-        action = myMenu.addAction(QIcon::fromTheme("media-playback-start"), i18n("Clear MIDI CC"), this, [](){});
+        unsigned char cc = 128;
+        QMapIterator<unsigned char, QAction*> i(midi_cc_map);
+        while (i.hasNext()) {
+            i.next();
+            if(i.value() == sender->defaultAction())
+            {
+                cc = i.key();
+                break;
+            }
+        }
+        
+        if(cc <= 127)
+        {
+            action = myMenu.addAction(QIcon::fromTheme("tag-assigned"), i18n("CC %1 Assigned", cc), this, [](){});
+            action->setEnabled(false);
+            myMenu.addSeparator();
+        }
+        action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts"), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction()); midiLearn(sender->defaultAction());});
+        action = myMenu.addAction(QIcon::fromTheme("remove"), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction());});
+        if(cc > 127) 
+            action->setEnabled(false);
         
         // Show context menu at handling position
         myMenu.exec(globalPos);
+    }
+}
+
+void Performer::midiLearn(QAction* action)
+{
+    if(!action)
+        return;
+    
+    midi_learn_action = action;
+    statusBar()->showMessage(i18n("Learning MIDI CC for action %1", action->text()));
+}
+
+void Performer::midiClear(QAction* action)
+{
+    if(!action)
+        return;
+    
+    QMapIterator<unsigned char, QAction*> i(midi_cc_map);
+    while (i.hasNext()) {
+        i.next();
+        if(i.value() == action)
+            midi_cc_map[i.key()] = nullptr;
+    }
+    
+    statusBar()->showMessage(i18n("MIDI CC cleared for action %1", action->text()), 2000);
+}
+
+void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsigned char data2)
+{
+    
+    if(IS_MIDICC(status))
+    {
+        
+        //qDebug() << "received MIDI event" << QString::number(status) << QString::number(data1) << QString::number(data2);
+        if(midi_learn_action)
+        {
+            midi_cc_map[data1] = midi_learn_action;
+            statusBar()->showMessage(i18n("MIDI CC %1 assigned to action %2", QString::number(data1), midi_learn_action->text()), 2000);
+            midi_learn_action = nullptr;
+            midi_cc_value_map[data1] = data2;
+        }
+        else
+        {
+            QAction* action = midi_cc_map[data1];
+            unsigned char olddata2 = midi_cc_value_map[data1];
+            if(data2 < MIDI_BUTTON_THRESHOLD_LOWER || data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
+                midi_cc_value_map[data1] = data2;
+            if(action && olddata2 < MIDI_BUTTON_THRESHOLD_LOWER && data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
+            {
+                action->trigger();
+            }
+        }
     }
 }
 

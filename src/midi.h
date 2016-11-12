@@ -1,0 +1,12 @@
+#ifndef PERFORMER_MIDI_H
+#define PERFORMER_MIDI_H
+
+
+#define IS_MIDICC(a) ((0xB0 & (a)) == 0xB0)
+
+
+#define MIDI_BUTTON_THRESHOLD_UPPER (70)
+#define MIDI_BUTTON_THRESHOLD_LOWER (60)
+
+
+#endif //PERFORMER_MIDI_H
