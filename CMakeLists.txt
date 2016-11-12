@@ -13,11 +13,9 @@ include(FeatureSummary)
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Widgets Designer X11Extras Quick QuickWidgets)
 
 find_package(KF5 REQUIRED COMPONENTS
-    Plasma
     CoreAddons
     I18n
     XmlGui
-    Auth
     ConfigWidgets
     KIO
     I18n

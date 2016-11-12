@@ -35,9 +35,7 @@ target_link_libraries(performer
     Qt5::X11Extras
     Qt5::Quick
     Qt5::QuickWidgets
-    KF5::I18n
     KF5::ConfigWidgets
-    KF5::Auth
     KF5::KIOWidgets
     KF5::I18n
     KF5::XmlGui
