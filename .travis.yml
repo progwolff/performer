@@ -4,8 +4,7 @@ language: cpp
 
 
 compiler:
-  - g++
-  - clang
+  - gcc
 
 arch:
   packages:
