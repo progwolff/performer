@@ -6,5 +6,4 @@
 *enpo*
 dist/arch/src*
 dist/arch/pkg*
-dist/arch/jackman*
-dist/arch/jackman_kcm*
+dist/arch/performer*
