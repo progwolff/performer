@@ -18,12 +18,16 @@ public:
     static jack_client_t *jackClient();
     static bool freeJackClient();
     
+    
+    static QMap<QString,QStringList> connections();
+    
 public slots:
     
     void kill() override;
     void preload() override;
     void activate() override;
     void deactivate() override;
+    static void connections(QMap<QString,QStringList> connections);
     
 signals:
     void jackconnection(const char* a, const char* b, bool connect);
@@ -55,8 +59,8 @@ private:
     QProcess *exec;
     QString clientName;
     
-    const char portlist[6][11];
-    
+    static const char portlist[6][11];
+    static const char allportlist[7][15];
 };
 
 #endif

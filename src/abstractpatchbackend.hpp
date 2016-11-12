@@ -2,6 +2,7 @@
 #define ABSTRACTPATCHBACKEND_H
 
 #include <QObject>
+#include <QMap>
 #include <jack/jack.h>
 
 /**
@@ -22,6 +23,12 @@ public:
     
     static jack_client_t *jackClient();
     
+    /**
+     * return the active connections of Performer
+     * @return a map which assignes each port of Performer to a list of ports
+     */
+    static QMap<QString,QStringList> connections();
+    
 signals:
     /**
      * Indicates the progress of loading of this patch
@@ -37,6 +44,12 @@ signals:
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);
     
 public slots:
+    
+    /**
+     * connect ports of Performer to the ports defined by connections
+     * @param connections a map which assignes each port of Performer to a list of ports
+     */
+    //static void connections(QMap<QString,QStringList> connections);
     
     /**
      * Kill this patch\n

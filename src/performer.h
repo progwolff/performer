@@ -68,9 +68,13 @@ private:
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
     
+    QList<QAction*> midi_cc_actions;
+    
     SetlistModel *model;
     
     QString m_path;
+    QString notesdefaultpath;
+    QString patchdefaultpath;
     
     QMap<unsigned char, QAction*> midi_cc_map;
     QMap<unsigned char, unsigned char> midi_cc_value_map;

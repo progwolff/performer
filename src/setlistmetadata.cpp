@@ -72,10 +72,10 @@ SetlistMetadata::~SetlistMetadata()
 
 void SetlistMetadata::update(const QVariantMap &conf)
 {
-    if(conf.value("patch").canConvert<QUrl>()) d->patch = conf.value("patch").toUrl();
-    if(conf.value("notes").canConvert<QUrl>()) d->notes = conf.value("notes").toUrl();
+    if(!conf.value("patch").isNull() && conf.value("patch").canConvert<QUrl>()) d->patch = conf.value("patch").toUrl();
+    if(!conf.value("notes").isNull() && conf.value("notes").canConvert<QUrl>()) d->notes = conf.value("notes").toUrl();
     if(!conf.value("preload").isNull()) d->preload = conf.value("preload").toBool();
-    if(conf.value("name").canConvert<QString>()) d->name = conf.value("name").toString();
+    if(!conf.value("name").isNull() && conf.value("name").canConvert<QString>()) d->name = conf.value("name").toString();
     if(!conf.value("progress").isNull()) d->progress = conf.value("progress").toInt();
 }
 

@@ -65,22 +65,10 @@ SetlistModel::SetlistModel(QObject *parent)
 
 SetlistModel::~SetlistModel()
 {
-    if(m_activebackend)
-    {
-        m_nextbackend->disconnect(this);
-        m_activebackend->kill();
-    }
-    if(m_previousbackend)
-    {
-        m_nextbackend->disconnect(this);
-        m_previousbackend->kill();
-    }
-    if(m_nextbackend)
-    {
-        m_nextbackend->disconnect(this);
-        m_nextbackend->kill();
-    }
     CarlaPatchBackend::freeJackClient();
+    removeBackend(m_activebackend);
+    removeBackend(m_previousbackend);
+    removeBackend(m_nextbackend);
 }
 
 int SetlistModel::rowCount(const QModelIndex &parent) const
@@ -201,6 +189,8 @@ void SetlistModel::update()
 
 void SetlistModel::update(const QModelIndex& index, const QVariantMap& conf)
 {
+    if(!index.isValid() || index.row() < 0 || index.row() >= m_setlist.size())
+        return;
     m_setlist[index.row()].update(conf);
 }
 
@@ -274,6 +264,16 @@ bool SetlistModel::removeRows(int row, int /*count*/, const QModelIndex& /*paren
     return true;
 }
 
+QMap<QString,QStringList> SetlistModel::connections() const
+{
+    return CarlaPatchBackend::connections();
+}
+
+void SetlistModel::connections(QMap<QString,QStringList> connections)
+{
+    CarlaPatchBackend::connections(connections);
+}
+
 void SetlistModel::createBackend(AbstractPatchBackend*& backend, int index)
 {
     if(fileExists(m_setlist[index].patch().toLocalFile()))
@@ -294,6 +294,7 @@ void SetlistModel::removeBackend(AbstractPatchBackend*& backend)
     
     backend->disconnect(this);
     backend->kill();
+    backend = nullptr;
 }
 
 void SetlistModel::playNow(const QModelIndex& ind)
@@ -316,16 +317,10 @@ void SetlistModel::playNow(const QModelIndex& ind)
     
     if(m_activebackend)
         m_activebackend->activate();
-    else
-        qDebug() << "no active backend";
-    if(m_previousbackend)
+    if(m_previousbackend && m_setlist[previousindex].preload())
         m_previousbackend->preload();
-    else
-        qDebug() << "no previous backend";
-    if(m_nextbackend)
+    if(m_nextbackend && m_setlist[nextindex].preload())
         m_nextbackend->preload();
-    else
-        qDebug() << "no next backend";
 }
 
 void SetlistModel::playPrevious()
@@ -349,9 +344,9 @@ void SetlistModel::playPrevious()
     
     if(m_activebackend)
         m_activebackend->activate();
-    if(m_previousbackend)
+    if(m_previousbackend && m_setlist[previousindex].preload())
         m_previousbackend->preload();
-    if(m_nextbackend)
+    if(m_nextbackend && m_setlist[nextindex].preload())
         m_nextbackend->preload();
     
     emit dataChanged(index(0,0), index(m_setlist.count()-1,0));
@@ -378,9 +373,9 @@ void SetlistModel::playNext()
     
     if(m_activebackend)
         m_activebackend->activate();
-    if(m_previousbackend)
+    if(m_previousbackend && m_setlist[previousindex].preload())
         m_previousbackend->preload();
-    if(m_nextbackend)
+    if(m_nextbackend && m_setlist[nextindex].preload())
         m_nextbackend->preload();
     
     

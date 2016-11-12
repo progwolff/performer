@@ -175,7 +175,7 @@
        <item row="1" column="1">
         <widget class="KUrlRequester" name="patchrequester">
          <property name="filter">
-          <string>Setlists (*.pfm)</string>
+          <string notr="true">*.carxp</string>
          </property>
          <property name="mode">
           <set>KFile::ExistingOnly|KFile::File|KFile::LocalOnly</set>

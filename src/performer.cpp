@@ -50,6 +50,7 @@ Performer::Performer(QWidget *parent) :
     ,m_setlist(new Ui::Setlist)
     ,midi_learn_action(nullptr)
 {
+    
    
     KLocalizedString::setApplicationDomain("performer");
    
@@ -66,20 +67,19 @@ Performer::Performer(QWidget *parent) :
     
     m_setlist->addButton->setEnabled(true);
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
-    //m_setlist->preferButton->setEnabled(false);
-    //connect(m_setlist->preferButton, SIGNAL(clicked()), SLOT(prefer()));
-    //m_setlist->deferButton->setEnabled(false);
-    //connect(m_setlist->deferButton, SIGNAL(clicked()), SLOT(defer()));
-    QAction *action = new QAction(i18n("Previous"), this);
+    
+    QAction *action = new QAction("Previous", this); //no translation to make config translation invariant
+    midi_cc_actions << action;
     connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});
     m_setlist->previousButton->setDefaultAction(action);
+    m_setlist->previousButton->setText(i18n(action->text().toLatin1()));
     m_setlist->previousButton->setEnabled(true);
-    connect(m_setlist->previousButton, SIGNAL(clicked()), action, SLOT(trigger()));
-    action = new QAction(i18n("Next"), this);
+    action = new QAction("Next", this); //no translation to make config translation invariant
+    midi_cc_actions << action;
     connect(action, &QAction::triggered, this, [this](){model->playNext(); songSelected(QModelIndex());});
     m_setlist->nextButton->setDefaultAction(action);
+    m_setlist->nextButton->setText(i18n(action->text().toLatin1()));
     m_setlist->nextButton->setEnabled(true);
-    connect(m_setlist->nextButton, SIGNAL(clicked()), action, SLOT(trigger()));
     
     connect(m_setlist->previousButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
     connect(m_setlist->nextButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
@@ -87,20 +87,26 @@ Performer::Performer(QWidget *parent) :
     m_setlist->setupBox->setVisible(false);
     connect(m_setlist->patchrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
     connect(m_setlist->notesrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
-    //connect(m_setlist->patchrequester, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
-    //connect(m_setlist->notesrequester, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
+    
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
     connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
     
     connect(m_setlist->setListView, SIGNAL(activated(QModelIndex)), SLOT(songSelected(QModelIndex)));
     connect(m_setlist->setListView, SIGNAL(clicked(QModelIndex)), SLOT(songSelected(QModelIndex)));
-    //connect(model, SIGNAL(changed(bool)), this, SIGNAL(changed(bool)));
+
     connect(model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), this, SLOT(receiveMidiEvent(unsigned char,unsigned char,unsigned char)));
+    
+    loadConfig();
 }
 
 
 Performer::~Performer() 
 {
+    saveConfig();
+    
+    for(QAction* action : midi_cc_actions)
+        delete action;
+    
     delete model;
     
     delete m_part;
@@ -117,13 +123,6 @@ void Performer::prefer()
     m_setlist->setListView->model()->removeRows(index.row(), 1, index.parent());
     index = m_setlist->setListView->model()->index(index.row()-1, index.column());
     m_setlist->setListView->setCurrentIndex(index);
-    
-    /*m_setlist->deferButton->setEnabled(false);
-    m_setlist->preferButton->setEnabled(false);
-    if(index.row() < m_setlist->setListView->model()->rowCount()-1)
-        m_setlist->deferButton->setEnabled(true);
-    if(index.row() > 0)
-        m_setlist->preferButton->setEnabled(true)*/;
 }
 
 void Performer::defer()
@@ -135,15 +134,6 @@ void Performer::defer()
     m_setlist->setListView->model()->removeRows(index.row(), 1, index.parent());
     index = m_setlist->setListView->model()->index(index.row()+1, index.column());
     m_setlist->setListView->setCurrentIndex(index);
-    
-    /*m_setlist->deferButton->setEnabled(false);
-    m_setlist->preferButton->setEnabled(false);
-    if(index.row() < m_setlist->setListView->model()->rowCount()-1)
-        m_setlist->deferButton->setEnabled(true);
-    if(index.row() > 0)
-        m_setlist->preferButton->setEnabled(true);*/
-    
-    saveFile("/home/wolff/test.pfm");
 }
 
 void Performer::remove()
@@ -289,7 +279,13 @@ void Performer::updateSelected()
 {
     QVariantMap map;
     map.insert("patch", m_setlist->patchrequester->url());
+    patchdefaultpath = m_setlist->patchrequester->url().path().section('/',0,-2);
+    if(!patchdefaultpath.isEmpty())
+        m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
     map.insert("notes", m_setlist->notesrequester->url());
+    notesdefaultpath = m_setlist->notesrequester->url().path().section('/',0,-2);
+    if(!notesdefaultpath.isEmpty())
+        m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(notesdefaultpath));
     map.insert("preload", m_setlist->preloadBox->isChecked());
     map.insert("name", m_setlist->nameEdit->text());
     model->update(m_setlist->setListView->currentIndex(), map);
@@ -304,7 +300,31 @@ void Performer::addSong()
 
 void Performer::loadConfig()
 {
-    //mDevicesConfig->reset();
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
+    
+    notesdefaultpath = config->group("paths").readEntry("notes", QString());
+    m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(notesdefaultpath));
+    patchdefaultpath = config->group("paths").readEntry("patch", QString());
+    m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
+    qDebug() << m_setlist->patchrequester->startDir();
+    
+    for(QString cc: config->group("midi").keyList())
+    {
+        for(QAction* action : midi_cc_actions)
+        {
+            if(config->group("midi").readEntry(cc, QString()) == action->text())
+                midi_cc_map[cc.toInt()]= action;
+        }
+    }
+    
+    QMap<QString, QStringList> connections;
+    for(QString port: config->group("connections").keyList())
+    {
+        for(QString& port : model->connections().keys())
+            connections[port] = config->group("connections").readEntry(port,QString()).split(',');
+    }
+    model->connections(connections);
 }
 
 void Performer::defaults()
@@ -338,6 +358,11 @@ void Performer::loadFile(const QString& path)
         config.insert("notes", QUrl::fromLocalFile(setlist.group(song).readEntry("notes",QString())));
         config.insert("preload", setlist.group(song).readEntry("preload",true));
         model->add(song, config);
+    }
+    if(setlist.groupList().size() > 0)
+    {
+        model->playNow(model->index(0,0));
+        songSelected(QModelIndex());
     }
 }
 
@@ -383,8 +408,20 @@ void Performer::saveConfig()
     
     
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    /*KSharedConfigPtr jackConfig = KSharedConfig::openConfig(dir+"/performer.conf");
+    KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
+    for(unsigned char cc: midi_cc_map.keys())
+    {
+        if(midi_cc_map[cc])
+            config->group("midi").writeEntry(QString::number(cc), midi_cc_map[cc]->text());
+    }
+    
+    config->deleteGroup("connections");
+    for(QString& port : model->connections().keys())
+        config->group("connections").writeEntry(port, model->connections()[port].join(','));
+    
+    config->group("paths").writeEntry("notes", notesdefaultpath);
+    config->group("paths").writeEntry("patch", patchdefaultpath);
     //args.unite(mBehaviorConfig->save());
     
     /*if(!args.empty())
@@ -426,7 +463,7 @@ void Performer::saveConfig()
     
     
     
-    //jackConfig->sync();
+    config->sync();
     loadConfig();
 }
 
@@ -472,7 +509,7 @@ void Performer::prepareUi()
 
     if (service)
     {
-      m_part = service->createInstance<KParts::ReadOnlyPart>(this);
+      m_part = service->createInstance<KParts::ReadOnlyPart>(this, QVariantList() << "Print/Preview");
 
       if (m_part)
       {

@@ -15,11 +15,13 @@ QSemaphore CarlaPatchBackend::instanceCounter(MAX_INSTANCES);
 QMutex CarlaPatchBackend::clientInitMutex;
 CarlaPatchBackend *CarlaPatchBackend::activeBackend = nullptr;
 
+const char CarlaPatchBackend::portlist[6][11]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"};
+const char CarlaPatchBackend::allportlist[7][15]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"};
+
 CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile)
 : AbstractPatchBackend(patchfile)
 , exec(nullptr)
 , clientName("")
-, portlist{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"}
 {
     emit progress(1);
     
@@ -66,10 +68,47 @@ jack_client_t *CarlaPatchBackend::jackClient()
     return m_client;
 }
 
+QMap<QString,QStringList> CarlaPatchBackend::connections()
+{
+    QMap<QString, QStringList> ret;
+    for(const char* port : allportlist)
+    {
+        QStringList conlist;
+        const char** cons = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
+        while(cons && *cons)
+        {
+            conlist << *cons;
+            ++cons;
+        }
+        ret[port] = conlist;
+    }
+    return ret;
+}
+
+void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
+{
+    for(const char* port : allportlist)
+    {
+        jack_port_disconnect(m_client, jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1())); 
+    }
+    for(const QString& port : connections.keys())
+    {
+        for(const QString& con : connections[port])
+        {
+            if(jack_port_flags(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1())) & JackPortIsOutput)
+                jack_connect(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1(), con.toLatin1());
+            else
+                jack_connect(m_client, con.toLatin1(), (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
+        }
+    }
+}
+
 void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, int connect, void* arg)
 {
     const char* name_a = jack_port_name(jack_port_by_id(m_client, a));
     const char* name_b = jack_port_name(jack_port_by_id(m_client, b));
+    if(!name_a || !name_b)
+        return;
     if(activeBackend && (portBelongsToClient(name_a, activeBackend->clientName) || portBelongsToClient(name_b, activeBackend->clientName)))
     {
         activeBackend->emit jackconnection(name_a, name_b, connect);
@@ -290,7 +329,7 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
     jack_midi_event_t in_event;
   
     // get the port data
-    void* port_buf = jack_port_get_buffer(jack_port_by_name(m_client, "Performer:control_gui-in"), nframes);
+    void* port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":control_gui-in").toLatin1()), nframes);
   
     // input: get number of events, and process them.
     jack_nframes_t event_count = jack_midi_get_event_count(port_buf);

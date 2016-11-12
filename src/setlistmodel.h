@@ -50,6 +50,8 @@ public:
     
     QModelIndex activeIndex() const;
     
+    QMap<QString,QStringList> connections() const;
+    
 public slots:
     void reset();
     void update();
@@ -61,6 +63,7 @@ public slots:
     void playPrevious();
     void playNext();
     int add(const QString &name, const QVariantMap &conf);
+    void connections(QMap<QString,QStringList> connections);
     
 signals:
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);
