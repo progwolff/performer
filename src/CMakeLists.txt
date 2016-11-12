@@ -39,7 +39,6 @@ target_link_libraries(performer
     KF5::ConfigWidgets
     KF5::Auth
     KF5::KIOWidgets
-    KF5::Declarative
     KF5::I18n
     KF5::XmlGui
     KF5::Parts

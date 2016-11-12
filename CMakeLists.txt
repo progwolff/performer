@@ -20,7 +20,6 @@ find_package(KF5 REQUIRED COMPONENTS
     Auth
     ConfigWidgets
     KIO
-    Declarative
     I18n
     XmlGui
     Parts
