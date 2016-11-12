@@ -1,0 +1,27 @@
+sudo: required
+
+language: cpp
+
+compiler:
+  - gcc
+  - clang
+
+arch:
+  packages:
+    - carla 
+    - xdg-utils
+    - kdeclarative
+    - kdelibs
+    - plasma-framework
+    - git
+    - extra-cmake-modules
+    - qt5-tools
+    - python
+    - okular-frameworks-git
+  script:
+    - "git clone https://github.com/progwolff/performer.git"
+    - "cd performer && makepkg -i && cd .."
+    - "cd dist/arch/ && makepkg -i"
+
+script:
+  - "curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash"
