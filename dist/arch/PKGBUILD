@@ -1,12 +1,12 @@
 pkgname=performer-git
-pkgver=r7.82ae352
+pkgver=r16.c366415
 pkgrel=1
 pkgdesc="Session manager for live audio performances"
 arch=('i686' 'x86_64')
 url="https://github.com/progwolff/performer"
 provides=('performer')
 license=("GPL")
-depends=('carla' 'xdg-utils' 'kdeclarative' 'kdelibs' 'plasma-framework')
+depends=('carla' 'kdebase-runtime' 'kparts') 
 makedepends=('git' 'extra-cmake-modules' 'qt5-tools' 'python')
 optdepends=('okular-git: display notes or chords')
 source=('performer::git+https://github.com/progwolff/performer.git')
