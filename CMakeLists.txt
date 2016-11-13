@@ -70,6 +70,11 @@ ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE)
 ENDIF(NOT GETTEXT_MSGFMT_EXECUTABLE)
 
 install(FILES performer.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
+ecm_install_icons(
+    ICONS
+        sc-apps-performer.svg
+    DESTINATION ${ICON_INSTALL_DIR}
+)
 
 add_subdirectory(src)
 

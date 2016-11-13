@@ -54,7 +54,7 @@ Performer::Performer(QWidget *parent) :
    
     KLocalizedString::setApplicationDomain("performer");
     
-    setWindowIcon(QIcon::fromTheme("audio-midi"));
+    setWindowIcon(QIcon::fromTheme("performer"));
    
     model = new SetlistModel(this);
     
