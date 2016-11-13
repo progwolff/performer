@@ -1,7 +1,7 @@
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Exec=performer
-Icon=audio-card
+Icon=audio-midi
 Type=Application
 Categories=Qt;KDE;AudioVideo
 Comment=Live performance audio session manager
