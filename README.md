@@ -1,5 +1,5 @@
 # Performer
-Live audio performance session manager using [Carla](https://github.com/falktx/Carla)
+Live performance audio session manager using [Carla](https://github.com/falktx/Carla)
 
 [![Build Status](https://travis-ci.org/progwolff/performer.svg?branch=master)](https://travis-ci.org/progwolff/performer)
 
