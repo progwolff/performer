@@ -42,12 +42,16 @@ int main (int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
+    parser.addPositionalArgument("[file]", i18n("Setlist to load"));
     aboutData.setupCommandLine(&parser);
     parser.process(app);
     aboutData.processCommandLine(&parser);
     
     Performer* window = new Performer(0);
     window->show();
+    const QStringList args = parser.positionalArguments();
+    if(args.size() > 0)
+        window->loadFile(args[0]);
     
     return app.exec();
 }

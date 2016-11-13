@@ -40,6 +40,7 @@ public slots:
     void saveConfig();
     void loadConfig();
     void defaults();
+    void loadFile(const QString& path);
     
 private slots:
     void showContextMenu(QPoint);
@@ -52,7 +53,6 @@ private slots:
     void remove();
     void saveFile(const QString& path=QString());
     void saveFileAs();
-    void loadFile(const QString& path);
     void loadFile();
     
     void receiveMidiEvent(unsigned char status, unsigned char data1, unsigned char data2);
