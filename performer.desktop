@@ -3,6 +3,6 @@
 Exec=performer
 Icon=audio-card
 Type=Application
-Categories=Qt;KDE;Multimedia
-
+Categories=Qt;KDE;AudioVideo
+Comment=Live performance audio session manager
 Name=Performer
