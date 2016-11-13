@@ -353,13 +353,19 @@ void Performer::loadFile(const QString& path)
     
     KConfigGroup setlist = set->group("setlist");
     
+    QMap<int,QString> songs;
     for(const QString& song : setlist.groupList())
+    {
+        songs.insert(song.section('-',0,0).toInt(), song);
+        qDebug() << song.section('-',0,0).toInt() << song.section('-',1);
+    }
+    for(const QString& song : songs)
     {
         QVariantMap config;
         config.insert("patch", QUrl::fromLocalFile(setlist.group(song).readEntry("patch",QString())));
         config.insert("notes", QUrl::fromLocalFile(setlist.group(song).readEntry("notes",QString())));
         config.insert("preload", setlist.group(song).readEntry("preload",true));
-        model->add(song, config);
+        model->add(song.section('-',1), config);
     }
     if(setlist.groupList().size() > 0)
     {
@@ -395,7 +401,7 @@ void Performer::saveFile(const QString& path)
     for(int i=0; i < m_setlist->setListView->model()->rowCount(); ++i)
     {
         QModelIndex index = model->index(i,0);
-        KConfigGroup song = setlist.group(index.data(SetlistModel::NameRole).toString());
+        KConfigGroup song = setlist.group(QString::number(index.row())+"-"+index.data(SetlistModel::NameRole).toString());
         song.writeEntry("patch",index.data(SetlistModel::PatchRole).toUrl().toLocalFile());
         song.writeEntry("notes",index.data(SetlistModel::NotesRole).toUrl().toLocalFile());
         song.writeEntry("preload",index.data(SetlistModel::PreloadRole).toBool());
@@ -424,47 +430,7 @@ void Performer::saveConfig()
     
     config->group("paths").writeEntry("notes", notesdefaultpath);
     config->group("paths").writeEntry("patch", patchdefaultpath);
-    //args.unite(mBehaviorConfig->save());
-    
-    /*if(!args.empty())
-    {
-        QMap<QString, QVariant>::const_iterator iterator;
-        
-        QString groupName = "Behavior";  
-        jackConfig->deleteGroup(groupName);
-        
-        for (iterator = args.constBegin() ; iterator != args.constEnd() ; ++iterator) {
-            
-            QString keyName = iterator.key();
-            
-            jackConfig->group(groupName).writeEntry(keyName, iterator.value());
-            
-            qDebug() << "[" << keyName << "]=" << iterator.value();
-        }
-    }
-    
-    args.clear();
-    args.unite(mDevicesConfig->save());
-    
-    if(!args.empty())
-    {
-        QMap<QString, QVariant>::const_iterator iterator;
-        
-        QString groupName = "Devices";  
-        jackConfig->deleteGroup(groupName);
-        
-        for (iterator = args.constBegin() ; iterator != args.constEnd() ; ++iterator) {
-            
-            QString keyName = iterator.key();
-            
-            jackConfig->group(groupName).writeEntry(keyName, iterator.value());
-            
-            qDebug() << "[" << keyName << "]=" << iterator.value();
-        }
-    }*/
-    
-    
-    
+       
     config->sync();
     loadConfig();
 }
