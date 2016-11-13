@@ -1,0 +1,189 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-11-13 19:07+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Julian Wolff <wolff@julianwolff.de>\n"
+"Language-Team: DE <wolff@julianwolff.de>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: main.cpp:21
+msgid "Performer"
+msgstr "Performer"
+
+#: main.cpp:25
+msgid "Live performance audio session manager"
+msgstr "Audio-Sessionmanager für Liveauftritte"
+
+#: main.cpp:29
+msgid "(c) 2016"
+msgstr ""
+
+#: main.cpp:32 main.cpp:38
+msgid " "
+msgstr ""
+
+#: main.cpp:38
+msgid "Julian Wolff"
+msgstr ""
+
+#: performer.cpp:165
+msgid "Play now"
+msgstr "Jetzt spielen"
+
+#: performer.cpp:173
+msgid "Prefer"
+msgstr "Vorziehen"
+
+#: performer.cpp:177
+msgid "Defer"
+msgstr "Zurückstellen"
+
+#: performer.cpp:183
+msgid "Remove entry"
+msgstr "Eintrag löschen"
+
+#: performer.cpp:212
+msgid "CC %1 Assigned"
+msgstr "CC %1 zugewiesen"
+
+#: performer.cpp:216
+msgid "Learn MIDI CC"
+msgstr "Lerne MIDI CC"
+
+#: performer.cpp:217
+msgid "Clear MIDI CC"
+msgstr "Lösche MIDI CC"
+
+#: performer.cpp:232
+msgid "Learning MIDI CC for action %1"
+msgstr "Lerne MIDI CC für Aktion %1"
+
+#: performer.cpp:247
+msgid "MIDI CC cleared for action %1"
+msgstr "MIDI CC für Aktion %1 gelöscht"
+
+#: performer.cpp:260
+msgid "MIDI CC %1 assigned to action %2"
+msgstr "MIDI CC %1 auf Aktion %2 zugewiesen"
+
+#: performer.cpp:296
+msgid "New Song"
+msgstr "Neuer Song"
+
+#: performer.cpp:337
+msgid "Setlists (*.pfm)"
+msgstr "Setlisten (*.pfm)"
+
+#: performer.cpp:371
+msgid "Save File As..."
+msgstr "Speichern unter..."
+
+#: performer.cpp:480
+msgid "Set up %1"
+msgstr "%1 einrichten"
+
+#: performer.cpp:541
+msgid "Okular KPart not found"
+msgstr "Okular KPart wurde nicht gefunden"
+
+#: performer.cpp:548
+msgid "File"
+msgstr "Datei"
+
+#: performer.cpp:551
+msgid "&New"
+msgstr "&Neu"
+
+#: performer.cpp:557
+msgid "&Open"
+msgstr "&Öffnen"
+
+#: performer.cpp:563
+msgid "&Save"
+msgstr "&Speichern"
+
+#: performer.cpp:569
+msgid "&Save as"
+msgstr "&Speichern unter"
+
+#. i18n: file: okularui.rc:11
+#. i18n: ectx: ToolBar (okularToolBar)
+#: rc.cpp:3
+msgid "Main Toolbar"
+msgstr "Hauptwerkzeugleiste"
+
+#. i18n: file: ui/setlist.ui:20
+#. i18n: ectx: property (windowTitle), widget (QDockWidget, Setlist)
+#: rc.cpp:6
+msgid "Se&tlist"
+msgstr "Se&tliste"
+
+#. i18n: file: ui/setlist.ui:36
+#. i18n: ectx: property (toolTip), widget (QListView, setListView)
+#. i18n: file: ui/setlist.ui:39
+#. i18n: ectx: property (whatsThis), widget (QListView, setListView)
+#: rc.cpp:9 rc.cpp:12
+msgid "A list of audio devices"
+msgstr "Eine Liste von Songs"
+
+#. i18n: file: ui/setlist.ui:86
+#. i18n: ectx: property (text), widget (QToolButton, addButton)
+#: rc.cpp:15
+msgid "Add"
+msgstr "Hinzufügen"
+
+#. i18n: file: ui/setlist.ui:109
+#. i18n: ectx: property (text), widget (QToolButton, previousButton)
+#: rc.cpp:18
+msgid "Previous"
+msgstr "Zurück"
+
+#. i18n: file: ui/setlist.ui:128
+#. i18n: ectx: property (text), widget (QToolButton, nextButton)
+#: rc.cpp:21
+msgid "Next"
+msgstr "Vor"
+
+#. i18n: file: ui/setlist.ui:150
+#. i18n: ectx: property (title), widget (QGroupBox, setupBox)
+#: rc.cpp:24
+msgid "Song Setup"
+msgstr "Song einrichten"
+
+#. i18n: file: ui/setlist.ui:171
+#. i18n: ectx: property (text), widget (QCheckBox, preloadBox)
+#: rc.cpp:27
+msgid "Preload"
+msgstr "Vorladen"
+
+#. i18n: file: ui/setlist.ui:195
+#. i18n: ectx: property (text), widget (QLabel, label)
+#: rc.cpp:30
+msgid "Carla Patch"
+msgstr "Carla Patch"
+
+#. i18n: file: ui/setlist.ui:202
+#. i18n: ectx: property (text), widget (QLabel, label_2)
+#: rc.cpp:33
+msgid "Notes"
+msgstr "Notizen"
+
+#: rc.cpp:34
+msgctxt "NAME OF TRANSLATORS"
+msgid "Your names"
+msgstr "Julian Wolff"
+
+#: rc.cpp:35
+msgctxt "EMAIL OF TRANSLATORS"
+msgid "Your emails"
+msgstr "wolff@julianwolff.de"

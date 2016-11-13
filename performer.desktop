@@ -6,3 +6,5 @@ Type=Application
 Categories=Qt;KDE;AudioVideo
 Comment=Live performance audio session manager
 Name=Performer
+
+Comment[de]=Audio-Sessionmanager für Liveauftritte

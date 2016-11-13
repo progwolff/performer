@@ -1,5 +1,5 @@
 #!/bin/sh
-BASEDIR="."	# root of translatable sources
+BASEDIR="src"	# root of translatable sources
 PROJECT="performer"	# project name
 BUGADDR=""	# MSGID-Bugs
 WDIR=`pwd`		# working dir
