@@ -14,6 +14,7 @@ jack_client_t *CarlaPatchBackend::m_client = nullptr;
 QSemaphore CarlaPatchBackend::instanceCounter(MAX_INSTANCES);
 QMutex CarlaPatchBackend::clientInitMutex;
 CarlaPatchBackend *CarlaPatchBackend::activeBackend = nullptr;
+QMap<QString,CarlaPatchBackend*> CarlaPatchBackend::clients;
 
 const char CarlaPatchBackend::portlist[6][11]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"};
 const char CarlaPatchBackend::allportlist[7][15]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"};
@@ -105,6 +106,8 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
 
 void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, int connect, void* arg)
 {
+    Q_UNUSED(arg);
+    
     const char* name_a = jack_port_name(jack_port_by_id(m_client, a));
     const char* name_b = jack_port_name(jack_port_by_id(m_client, b));
     if(!name_a || !name_b)
@@ -117,20 +120,43 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
     {
         activeBackend->emit jackconnection(name_a, name_b, connect);
     }
+    else
+    {
+        for(const QString& name : clients.keys())
+        {
+            if(portBelongsToClient(name_a, name) || portBelongsToClient(name_b, name))
+            {
+                if(clients[name])
+                {
+                    clients[name]->emit jackconnection(name_a, name_b, connect);
+                }
+            }
+        }
+    }
 }
 
 void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
 {
-    //qDebug() << "connect" << a << b << connect;
-    if(connect && (QString::fromLatin1(a).contains(clientName+":") || QString::fromLatin1(b).contains(clientName+":")))
+    if(this == activeBackend)
     {
-        if(!jack_port_connected_to(
-                jack_port_by_name(m_client, replace(a, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")), 
-                                            replace(b, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":"))
-          )
-            jack_disconnect(m_client, a, b);
+        //qDebug() << "connect" << a << b << connect;
+        if(connect && (QString::fromLatin1(a).contains(clientName+":") || QString::fromLatin1(b).contains(clientName+":")))
+        {
+            if(!jack_port_connected_to
+                (
+                    jack_port_by_name(m_client, replace(a, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")), 
+                                                replace(b, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")
+                )
+            )
+                jack_disconnect(m_client, a, b);
+        }
+        connectClient();
     }
-    connectClient();
+    for(CarlaPatchBackend* backend : clients)
+    {
+        if(backend != activeBackend)
+            backend->disconnectClient();
+    }
 }
 
 bool CarlaPatchBackend::freeJackClient()
@@ -177,6 +203,8 @@ void CarlaPatchBackend::kill()
 {
     deactivate();
     instanceCounter.release();
+    if(!clientName.isEmpty())
+        clients.remove(clientName);
     if(exec && clientName.isEmpty())
         clientInitMutex.unlock();
     if(exec)
@@ -200,6 +228,12 @@ void CarlaPatchBackend::preload()
     {
     
         QStringList pre = jackClients();
+        QMap<QString,QString> preClients;
+        for(const QString& port : pre)
+        {
+            QString client = port.section(':', 0, 0).trimmed();
+            preClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
+        }
         
         QStringList env = QProcess::systemEnvironment();
         exec = new QProcess(this);
@@ -213,6 +247,7 @@ void CarlaPatchBackend::preload()
         connect(exec, SIGNAL(finished(int,QProcess::ExitStatus)), exec, SLOT(deleteLater()));
         connect(exec, &QProcess::errorOccurred, this, [this]()
         {
+            qDebug() << exec->readAllStandardError();
             emit progress(-2);
             exec->deleteLater();
             exec = nullptr;
@@ -220,9 +255,12 @@ void CarlaPatchBackend::preload()
         
         exec->start("carla-patchbay", QStringList() << patchfile);
         
-        connect(exec, &QProcess::readyReadStandardOutput, this, [this,pre](){
+        std::function<void()> outputhandler;
+        outputhandler = [this,pre,outputhandler,preClients](){
             static QString stdout;
-            stdout += QString::fromLatin1(exec->readAllStandardOutput());
+            QString newoutput = QString::fromLatin1(exec->readAllStandardOutput());
+            qDebug() << newoutput;
+            stdout += newoutput;
             //qDebug() << stdout;
             if(stdout.contains("loaded sucessfully!"))
             {
@@ -233,14 +271,21 @@ void CarlaPatchBackend::preload()
             if(clientName.isEmpty())
             {
                 QStringList post = jackClients();
+                QMap<QString,QString> postClients;
                 for(const QString& port : post)
                 {
-                    //qDebug() << port;
-                    if(!pre.contains(port))
+                    QString client = port.section(':', 0, 0).trimmed();
+                    
+                    postClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
+                    //qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                    
+                    if(!pre.contains(port) || (preClients[client] != postClients[client]))
                     {
-                        clientName = port.section(':', 0, 0).trimmed();
+                        clientName = client;
+                        qDebug() << "new port detected: " << port;
                         if(!clientName.isEmpty())
                         {
+                            clients.insert(clientName, this);
                             clientInitMutex.unlock();
                             qDebug() << "started " << clientName;
                             disconnectClient();
@@ -254,7 +299,9 @@ void CarlaPatchBackend::preload()
             if(this != activeBackend)
                 disconnectClient();
             
-        });
+        };
+        
+        connect(exec, &QProcess::readyReadStandardOutput, this, outputhandler);
         
         emit progress(10);
     }
@@ -271,10 +318,13 @@ void CarlaPatchBackend::activate()
         preload();
     if(clientName.isEmpty())
     {
+        qDebug() << "cannot activate. clientName is empty";
         QTimer::singleShot(200, this, SLOT(activate()));
         return;
     }
     connectClient();
+    
+    qDebug() << "activated client " << clientName << " with patch " << patchfile;
 }
 
 void CarlaPatchBackend::deactivate()
@@ -326,6 +376,8 @@ QByteArray CarlaPatchBackend::replace(const char* str, const QString& a, const Q
 
 int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
 {
+    Q_UNUSED(arg);
+    
     jack_midi_event_t in_event;
   
     // get the port data
@@ -335,7 +387,7 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
     jack_nframes_t event_count = jack_midi_get_event_count(port_buf);
     if(event_count > 0)
     {
-        for(int i=0; i<event_count; i++)
+        for(unsigned int i=0; i<event_count; i++)
         {
             jack_midi_event_get(&in_event, port_buf, i);
             if(activeBackend && IS_MIDICC(in_event.buffer[0]))

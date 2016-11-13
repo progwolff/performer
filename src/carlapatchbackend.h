@@ -34,6 +34,8 @@ signals:
     
 private slots:
     void jackconnect(const char* a, const char* b, bool connect);
+    void connectClient();
+    void disconnectClient();
     
 private:
     ~CarlaPatchBackend(){}
@@ -47,8 +49,6 @@ private:
     
     static int receiveMidiEvents(jack_nframes_t nframes, void* arg);
     
-    void connectClient();
-    void disconnectClient();
     
     static bool portBelongsToClient(const char* port, jack_client_t *client);
     static bool portBelongsToClient(const char* port, const char *client);
@@ -58,6 +58,8 @@ private:
     
     QProcess *exec;
     QString clientName;
+    
+    static QMap<QString,CarlaPatchBackend*> clients;
     
     static const char portlist[6][11];
     static const char allportlist[7][15];

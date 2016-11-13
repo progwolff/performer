@@ -65,10 +65,10 @@ SetlistModel::SetlistModel(QObject *parent)
 
 SetlistModel::~SetlistModel()
 {
-    CarlaPatchBackend::freeJackClient();
     removeBackend(m_activebackend);
     removeBackend(m_previousbackend);
     removeBackend(m_nextbackend);
+    while(!CarlaPatchBackend::freeJackClient());
 }
 
 int SetlistModel::rowCount(const QModelIndex &parent) const
@@ -310,6 +310,8 @@ void SetlistModel::playNow(const QModelIndex& ind)
     removeBackend(m_nextbackend);
     
     createBackend(m_activebackend, activeindex);
+    m_previousbackend = nullptr;
+    m_nextbackend = nullptr;
     if(previousindex >= 0)
         createBackend(m_previousbackend, previousindex);
     if(nextindex >= 0)
@@ -339,6 +341,7 @@ void SetlistModel::playPrevious()
     
     m_nextbackend = m_activebackend;
     m_activebackend = m_previousbackend;
+    m_previousbackend = nullptr;
     if(previousindex >= 0 && previousindex <=  m_setlist.size()-1)
         createBackend(m_previousbackend, previousindex);
     
@@ -368,6 +371,7 @@ void SetlistModel::playNext()
     
     m_previousbackend = m_activebackend;
     m_activebackend = m_nextbackend;
+    m_nextbackend = nullptr;
     if(nextindex >= 0 && nextindex <= m_setlist.size()-1)
         createBackend(m_nextbackend, nextindex);
     
