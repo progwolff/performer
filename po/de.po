@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-13 19:07+0100\n"
+"POT-Creation-Date: 2016-11-13 19:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Julian Wolff <wolff@julianwolff.de>\n"
 "Language-Team: DE <wolff@julianwolff.de>\n"
@@ -35,6 +35,15 @@ msgstr ""
 #: main.cpp:38
 msgid "Julian Wolff"
 msgstr ""
+
+#: main.cpp:45
+msgid "[file]"
+msgstr "[Datei]"
+
+#: main.cpp:45
+#, fuzzy
+msgid "Setlist to load"
+msgstr "Lade gegebene Se&tliste"
 
 #: performer.cpp:165
 msgid "Play now"

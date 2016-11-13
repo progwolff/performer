@@ -42,7 +42,7 @@ int main (int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addPositionalArgument("[file]", i18n("Setlist to load"));
+    parser.addPositionalArgument(i18n("[file]"), i18n("Setlist to load"));
     aboutData.setupCommandLine(&parser);
     parser.process(app);
     aboutData.processCommandLine(&parser);
