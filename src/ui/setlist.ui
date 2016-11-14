@@ -33,10 +33,10 @@
        <bool>true</bool>
       </property>
       <property name="toolTip">
-       <string>A list of audio devices</string>
+       <string>A list of songs</string>
       </property>
       <property name="whatsThis">
-       <string>A list of audio devices</string>
+       <string>A list of songs</string>
       </property>
       <property name="dragEnabled">
        <bool>true</bool>
