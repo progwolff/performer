@@ -24,7 +24,7 @@ CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile)
 , exec(nullptr)
 , clientName("")
 {
-    emit progress(1);
+    emit progress(PROGRESS_CREATE);
     
     instanceCounter.acquire(1);
     
@@ -43,9 +43,13 @@ jack_client_t *CarlaPatchBackend::jackClient()
         if (m_client == NULL) {
             if (status & JackServerFailed) {
                 fprintf (stderr, "JACK server not running\n");
+                if(activeBackend)
+                    activeBackend->emit progress(JACK_NO_SERVER);
             } else {
                 fprintf (stderr, "jack_client_open() failed, "
                 "status = 0x%2.0x\n", status);
+                if(activeBackend)
+                    activeBackend->emit progress(JACK_OPEN_FAILED);
             }
             return nullptr;
         }
@@ -209,7 +213,7 @@ void CarlaPatchBackend::kill()
         clientInitMutex.unlock();
     if(exec)
     {
-        emit progress(0);
+        emit progress(PROGRESS_NONE);
         exec->terminate();
         connect(exec, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(deleteLater()));
     }
@@ -222,7 +226,7 @@ void CarlaPatchBackend::preload()
     if(exec)
         return;
     
-    emit progress(5);
+    emit progress(PROGRESS_PRELOAD);
     
     if(clientInitMutex.tryLock())
     {
@@ -245,7 +249,7 @@ void CarlaPatchBackend::preload()
                     clientInitMutex.unlock();
                 exec = nullptr;
                 clientName = "";
-                emit progress(-1);
+                emit progress(PROCESS_EXIT);
             }
             QObject::sender()->deleteLater();
         });
@@ -257,7 +261,7 @@ void CarlaPatchBackend::preload()
                     clientInitMutex.unlock();
                 exec = nullptr;
                 clientName = "";
-                emit progress(-2);
+                emit progress(PROCESS_ERROR);
             }
             qDebug() << ((QProcess*)QObject::sender())->readAllStandardError();
             QObject::sender()->deleteLater();
@@ -274,10 +278,10 @@ void CarlaPatchBackend::preload()
             //qDebug() << stdout;
             if(stdout.contains("loaded sucessfully!"))
             {
-                emit progress(50);
+                emit progress(PROGRESS_LOADED);
             }
             if(stdout.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully
-                emit progress(100);
+                emit progress(PROGRESS_READY);
             if(clientName.isEmpty())
             {
                 QStringList post = jackClients();
@@ -314,7 +318,7 @@ void CarlaPatchBackend::preload()
         
         connect(exec, &QProcess::readyReadStandardOutput, this, outputhandler);
         
-        emit progress(10);
+        emit progress(PROGRESS_ACTIVE);
     }
     else 
         QTimer::singleShot(200, this, SLOT(preload()));

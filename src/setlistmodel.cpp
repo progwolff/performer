@@ -45,6 +45,8 @@
 
 #include <QUrl>
 
+#include <QErrorMessage>
+
 #include "setlistmetadata.h"
 #include "carlapatchbackend.h"
 #include <qbrush.h>
@@ -60,7 +62,12 @@ SetlistModel::SetlistModel(QObject *parent)
     previousindex = -1;
     nextindex = -1;
     
-    CarlaPatchBackend::jackClient();
+    connect(this, SIGNAL(jackClientState(int)), this, SLOT(updateProgress(int)), Qt::QueuedConnection);
+    
+    
+    if(!CarlaPatchBackend::jackClient())
+        emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
+    
 }
 
 SetlistModel::~SetlistModel()
@@ -401,29 +408,39 @@ void SetlistModel::updateProgress(int p)
 {
     QVariantMap m; 
     m.insert("progress", p);
-    int ind;
+    int ind = -1;
     if(QObject::sender() == m_activebackend)
         ind = activeindex;
     else if(QObject::sender() == m_previousbackend)
         ind = previousindex;
     else if(QObject::sender() == m_nextbackend)
         ind = nextindex;
-    else
-        return;
+    
+    switch(p)
+    {
+        case AbstractPatchBackend::PROCESS_ERROR:
+        case AbstractPatchBackend::PROCESS_EXIT:
+            qDebug() << "error on " << m_setlist[ind].name() << ". Trying to restart.";
+            if(ind == activeindex)
+                m_activebackend->activate();
+            else if(ind == previousindex && m_setlist[previousindex].preload())
+                m_previousbackend->preload();
+            else if(m_setlist[nextindex].preload())
+                m_nextbackend->preload();
+        break;
+        case AbstractPatchBackend::JACK_NO_SERVER:
+            qDebug() << "no jack server running.";
+            emit error(i18n("Could not find a running jack server. Can't load Carla patches."));
+        break;
+        case AbstractPatchBackend::JACK_OPEN_FAILED:
+            qDebug() << "failed to create a jack client.";
+            emit error(i18n("Could not create a client on the existing jack server. Can't load Carla patches."));
+        break;
+    }
+    
     if(ind >= 0 && ind < m_setlist.size())
     {
         m_setlist[ind].update(m);
         emit dataChanged(index(ind,0), index(ind,0));
-        
-        if(p < 0)
-        {
-            qDebug() << "error on " << m_setlist[ind].name() << ". Trying to restart.";
-            if(ind == activeindex)
-                m_activebackend->activate();
-            else if(ind == previousindex)
-                m_previousbackend->preload();
-            else
-                m_nextbackend->preload();
-        }
     }
 }

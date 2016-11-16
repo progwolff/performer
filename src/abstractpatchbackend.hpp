@@ -13,6 +13,8 @@ class AbstractPatchBackend : public QObject
     Q_OBJECT
     
 public:
+    enum ERROR_CODE : int {JACK_NO_SERVER=-4, JACK_OPEN_FAILED=-3, PROCESS_ERROR=-2, PROCESS_EXIT=-1, PROGRESS_NONE=0, PROGRESS_CREATE=1, PROGRESS_PRELOAD=5, PROGRESS_ACTIVE=10, PROGRESS_LOADED=50, PROGRESS_READY=100};
+    
     /**
      * Create a patch backend instance and assign a patch file
      * @param patchfile the patch file to assign to this backend instance

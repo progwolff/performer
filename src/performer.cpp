@@ -97,6 +97,7 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->setListView, SIGNAL(clicked(QModelIndex)), SLOT(songSelected(QModelIndex)));
 
     connect(model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), this, SLOT(receiveMidiEvent(unsigned char,unsigned char,unsigned char)));
+    connect(model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
     
     loadConfig();
 }
@@ -114,6 +115,14 @@ Performer::~Performer()
     delete m_part;
     delete m_dock;
     delete m_setlist;
+}
+
+void Performer::error(const QString& msg)
+{
+    qDebug() << "error: " << msg;
+    QErrorMessage *box = new QErrorMessage(this);
+    box->showMessage(msg);
+    //box->deleteLater();
 }
 
 void Performer::prefer()

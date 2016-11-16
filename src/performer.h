@@ -60,6 +60,8 @@ private slots:
     void midiLearn(QAction* action);
     void midiClear(QAction* action);
     
+    void error(const QString& message);
+    
 private:
     void prepareUi();
     
