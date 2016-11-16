@@ -226,7 +226,7 @@ void CarlaPatchBackend::preload()
     
     if(clientInitMutex.tryLock())
     {
-    
+        exec = new QProcess(this);
         QStringList pre = jackClients();
         QMap<QString,QString> preClients;
         for(const QString& port : pre)
@@ -236,21 +236,31 @@ void CarlaPatchBackend::preload()
         }
         
         QStringList env = QProcess::systemEnvironment();
-        exec = new QProcess(this);
         exec->setEnvironment(env);
         connect(exec, static_cast<void (QProcess::*)(int,QProcess::ExitStatus)>(&QProcess::finished), this, [this]()
         {
-            emit progress(0); 
-            exec->deleteLater();
-            exec = nullptr;
+            if(QObject::sender() == exec)
+            {
+                if(clientName.isEmpty())
+                    clientInitMutex.unlock();
+                exec = nullptr;
+                clientName = "";
+                emit progress(-1);
+            }
+            QObject::sender()->deleteLater();
         });
-        connect(exec, SIGNAL(finished(int,QProcess::ExitStatus)), exec, SLOT(deleteLater()));
         connect(exec, &QProcess::errorOccurred, this, [this]()
         {
-            qDebug() << exec->readAllStandardError();
-            emit progress(-2);
-            exec->deleteLater();
-            exec = nullptr;
+            if(QObject::sender() == exec)
+            {
+                if(clientName.isEmpty())
+                    clientInitMutex.unlock();
+                exec = nullptr;
+                clientName = "";
+                emit progress(-2);
+            }
+            qDebug() << ((QProcess*)QObject::sender())->readAllStandardError();
+            QObject::sender()->deleteLater();
         });
         
         exec->start("carla-patchbay", QStringList() << patchfile);
@@ -281,12 +291,13 @@ void CarlaPatchBackend::preload()
                     
                     if(!pre.contains(port) || (preClients[client] != postClients[client]))
                     {
-                        clientName = client;
+                        QString name = client;
                         qDebug() << "new port detected: " << port;
-                        if(!clientName.isEmpty())
+                        if(!name.isEmpty())
                         {
-                            clients.insert(clientName, this);
                             clientInitMutex.unlock();
+                            clientName = name;
+                            clients.insert(clientName, this);
                             qDebug() << "started " << clientName;
                             disconnectClient();
                             break;

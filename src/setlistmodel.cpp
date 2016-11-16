@@ -414,5 +414,16 @@ void SetlistModel::updateProgress(int p)
     {
         m_setlist[ind].update(m);
         emit dataChanged(index(ind,0), index(ind,0));
+        
+        if(p < 0)
+        {
+            qDebug() << "error on " << m_setlist[ind].name() << ". Trying to restart.";
+            if(ind == activeindex)
+                m_activebackend->activate();
+            else if(ind == previousindex)
+                m_previousbackend->preload();
+            else
+                m_nextbackend->preload();
+        }
     }
 }
