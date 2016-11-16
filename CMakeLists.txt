@@ -73,10 +73,17 @@ install(FILES performer.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 ecm_install_icons(
     ICONS
         sc-apps-performer.svg
+	sc-mimetypes-application-x-performer-setlist.svg
     DESTINATION ${ICON_INSTALL_DIR}
 )
+
+install(FILES x-performer-setlist.xml DESTINATION ${XDG_MIME_INSTALL_DIR})
+
+find_package(SharedMimeInfo ${SMI_MIN_VERSION})
+if(SHARED_MIME_INFO_FOUND)
+	update_xdg_mimetypes(${XDG_MIME_INSTALL_DIR})
+endif(SHARED_MIME_INFO_FOUND)
 
 add_subdirectory(src)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
-
