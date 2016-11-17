@@ -36,22 +36,22 @@ public:
         ActiveRole,
         ProgressRole
     };
-               
+
     explicit SetlistModel(QObject *parent=0);
     virtual ~SetlistModel();
-    
+
     int rowCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
-    
+
     Qt::DropActions supportedDropActions() const;
     Qt::ItemFlags flags(const QModelIndex &index) const;
-    
+
     bool fileExists(const QString&) const;
-    
+
     QModelIndex activeIndex() const;
-    
+
     QMap<QString,QStringList> connections() const;
-    
+
 public slots:
     void reset();
     void update();
@@ -64,20 +64,20 @@ public slots:
     void playNext();
     int add(const QString &name, const QVariantMap &conf);
     void connections(QMap<QString,QStringList> connections);
-    
+
 signals:
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);
     void error(const QString& msg);
     void jackClientState(int s);
-    
+
 private:
     QList<SetlistMetadata> m_setlist;
     void createBackend(AbstractPatchBackend*& backend, int index);
     void removeBackend(AbstractPatchBackend*& backend);
-    
+
     int movedindex;
     int activeindex,previousindex,nextindex;
-    
+
     AbstractPatchBackend *m_activebackend,*m_previousbackend,*m_nextbackend;
 };
 
