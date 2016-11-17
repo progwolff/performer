@@ -299,6 +299,11 @@ void SetlistModel::removeBackend(AbstractPatchBackend*& backend)
     backend = nullptr;
 }
 
+void SetlistModel::panic()
+{
+    playNow(index(activeindex,0));
+}
+
 void SetlistModel::playNow(const QModelIndex& ind)
 {
     if(!ind.isValid() || ind.row()>=m_setlist.size() || ind.row()<0)

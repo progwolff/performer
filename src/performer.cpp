@@ -505,6 +505,8 @@ void Performer::prepareUi()
 
             // and integrate the part's GUI with the shell's
             createGUI(m_part);
+            
+            toolBar()->addSeparator();
     
         }
         else
@@ -549,6 +551,21 @@ void Performer::prepareUi()
     filemenu->addAction(action);
     
     menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Panic!"));
+    action->setIcon(QIcon::fromTheme("dialog-warning"));
+    connect(action, SIGNAL(triggered(bool)), model, SLOT(panic()));
+    midi_cc_actions << action;
+    QToolButton* toolButton = new QToolButton();
+    toolButton->setDefaultAction(action);
+    toolButton->setToolButtonStyle(Qt::ToolButtonFollowStyle);
+    toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(toolButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+    toolBar()->addWidget(toolButton);
+    
+    
+    
 }
 
 #include "performer.moc"

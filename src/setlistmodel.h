@@ -64,6 +64,7 @@ public slots:
     void playNext();
     int add(const QString &name, const QVariantMap &conf);
     void connections(QMap<QString,QStringList> connections);
+    void panic();
 
 signals:
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);
