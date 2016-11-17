@@ -431,6 +431,10 @@ void SetlistModel::updateProgress(int p)
         case AbstractPatchBackend::JACK_NO_SERVER:
             qDebug() << "no jack server running.";
             emit error(i18n("Could not find a running jack server. Can't load Carla patches."));
+            removeBackend(m_activebackend);
+            removeBackend(m_previousbackend);
+            removeBackend(m_nextbackend);
+            while(!CarlaPatchBackend::freeJackClient());
         break;
         case AbstractPatchBackend::JACK_OPEN_FAILED:
             qDebug() << "failed to create a jack client.";

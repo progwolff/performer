@@ -48,6 +48,7 @@ private:
     static CarlaPatchBackend *activeBackend;
     
     static int receiveMidiEvents(jack_nframes_t nframes, void* arg);
+    static void serverLost(void* arg);
     
     
     static bool portBelongsToClient(const char* port, jack_client_t *client);

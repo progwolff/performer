@@ -67,10 +67,21 @@ jack_client_t *CarlaPatchBackend::jackClient()
             
             jack_set_process_callback(m_client, &CarlaPatchBackend::receiveMidiEvents, NULL);
             
+            jack_on_shutdown(m_client, &CarlaPatchBackend::serverLost, NULL);
+            
             jack_activate(m_client);
         }
     } 
     return m_client;
+}
+
+void CarlaPatchBackend::serverLost(void* arg)
+{
+    Q_UNUSED(arg);
+    
+    m_client = nullptr; 
+    if(activeBackend)
+        activeBackend->emit progress(JACK_NO_SERVER);
 }
 
 QMap<QString,QStringList> CarlaPatchBackend::connections()
