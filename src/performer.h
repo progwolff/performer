@@ -24,6 +24,7 @@
 
 class SetlistModel;
 class QStyledItemDelegate;
+class QAbstractScrollArea;
 
 namespace Ui {
     class Setlist;
@@ -64,7 +65,7 @@ private slots:
     
 private:
     void prepareUi();
-    
+    void setupPageViewActions();
     
     KParts::ReadOnlyPart *m_part;
     Ui::Setlist *m_setlist;
@@ -81,6 +82,8 @@ private:
     QMap<unsigned char, QAction*> midi_cc_map;
     QMap<unsigned char, unsigned char> midi_cc_value_map;
     QAction* midi_learn_action;
+    
+    QAbstractScrollArea* pageView;
 };
 
 #endif // PERFORMER_H

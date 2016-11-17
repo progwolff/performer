@@ -49,6 +49,7 @@ Performer::Performer(QWidget *parent) :
     KParts::MainWindow(parent)
     ,m_setlist(new Ui::Setlist)
     ,midi_learn_action(nullptr)
+    ,pageView(nullptr)
 {
     
    
@@ -71,12 +72,14 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
     
     QAction *action = new QAction("Previous", this); //no translation to make config translation invariant
+    action->setData("switch");
     midi_cc_actions << action;
     connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});
     m_setlist->previousButton->setDefaultAction(action);
     m_setlist->previousButton->setText(i18n(action->text().toLatin1()));
     m_setlist->previousButton->setEnabled(true);
     action = new QAction("Next", this); //no translation to make config translation invariant
+    action->setData("switch");
     midi_cc_actions << action;
     connect(action, &QAction::triggered, this, [this](){model->playNext(); songSelected(QModelIndex());});
     m_setlist->nextButton->setDefaultAction(action);
@@ -200,38 +203,78 @@ void Performer::showContextMenu(QPoint pos)
 
 void Performer::midiContextMenuRequested(const QPoint& pos)
 {
-    QToolButton *sender = (QToolButton*)QObject::sender();
-    if(sender)
+    if(QObject::sender()->inherits("QToolButton"))
     {
-        QPoint globalPos = sender->mapToGlobal(pos);
-        QMenu myMenu;
-        QAction *action;
-        
-        unsigned char cc = 128;
-        QMapIterator<unsigned char, QAction*> i(midi_cc_map);
-        while (i.hasNext()) {
-            i.next();
-            if(i.value() == sender->defaultAction())
-            {
-                cc = i.key();
-                break;
-            }
-        }
-        
-        if(cc <= 127)
+        QToolButton *sender = (QToolButton*)QObject::sender();
+        if(sender)
         {
-            action = myMenu.addAction(QIcon::fromTheme("tag-assigned"), i18n("CC %1 Assigned", cc), this, [](){});
-            action->setEnabled(false);
-            myMenu.addSeparator();
+            QPoint globalPos = sender->mapToGlobal(pos);
+            QMenu myMenu;
+            QAction *action;
+            
+            unsigned char cc = 128;
+            QMapIterator<unsigned char, QAction*> i(midi_cc_map);
+            while (i.hasNext()) {
+                i.next();
+                if(i.value() == sender->defaultAction())
+                {
+                    cc = i.key();
+                    break;
+                }
+            }
+            
+            if(cc <= 127)
+            {
+                action = myMenu.addAction(QIcon::fromTheme("tag-assigned"), i18n("CC %1 Assigned", cc), this, [](){});
+                action->setEnabled(false);
+                myMenu.addSeparator();
+            }
+            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts"), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction()); midiLearn(sender->defaultAction());});
+            action = myMenu.addAction(QIcon::fromTheme("remove"), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction());});
+            if(cc > 127) 
+                action->setEnabled(false);
+            
+            // Show context menu at handling position
+            myMenu.exec(globalPos);
         }
-        action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts"), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction()); midiLearn(sender->defaultAction());});
-        action = myMenu.addAction(QIcon::fromTheme("remove"), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction());});
-        if(cc > 127) 
-            action->setEnabled(false);
-        
-        // Show context menu at handling position
-        myMenu.exec(globalPos);
     }
+    else if(QObject::sender()->inherits("QScrollBar"))
+    {
+        QScrollBar *sender = (QScrollBar*)QObject::sender();
+        if(sender)
+        {
+            QPoint globalPos = sender->mapToGlobal(pos);
+            QMenu myMenu;
+            QAction *action;
+            
+            unsigned char cc = 128;
+            QMapIterator<unsigned char, QAction*> i(midi_cc_map);
+            while (i.hasNext()) {
+                i.next();
+                if(i.value() == sender->actions()[0])
+                {
+                    cc = i.key();
+                    break;
+                }
+            }
+            
+            if(cc <= 127)
+            {
+                action = myMenu.addAction(QIcon::fromTheme("tag-assigned"), i18n("CC %1 Assigned", cc), this, [](){});
+                action->setEnabled(false);
+                myMenu.addSeparator();
+            }
+            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts"), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->actions()[0]); midiLearn(sender->actions()[0]);});
+            action = myMenu.addAction(QIcon::fromTheme("remove"), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->actions()[0]);});
+            if(cc > 127) 
+                action->setEnabled(false);
+            
+            // Show context menu at handling position
+            myMenu.exec(globalPos);
+        }
+    }
+    else
+        qDebug() << "MIDI context menu not implemented for this type of object.";
 }
 
 void Performer::midiLearn(QAction* action)
@@ -275,11 +318,19 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
         else
         {
             QAction* action = midi_cc_map[data1];
-            unsigned char olddata2 = midi_cc_value_map[data1];
-            if(data2 < MIDI_BUTTON_THRESHOLD_LOWER || data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
-                midi_cc_value_map[data1] = data2;
-            if(action && olddata2 < MIDI_BUTTON_THRESHOLD_LOWER && data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
+            if(action && action->data().toString() == "switch")
             {
+                unsigned char olddata2 = midi_cc_value_map[data1];
+                if(data2 < MIDI_BUTTON_THRESHOLD_LOWER || data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
+                    midi_cc_value_map[data1] = data2;
+                if(olddata2 < MIDI_BUTTON_THRESHOLD_LOWER && data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
+                {
+                    action->trigger();
+                }
+            }
+            else if(action)
+            {
+                action->setData(data2);
                 action->trigger();
             }
         }
@@ -464,7 +515,14 @@ void Performer::songSelected(const QModelIndex& index)
     m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
     
     if(m_part && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+    {
         m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
+        
+        if(!pageView)
+        {
+            setupPageViewActions();
+        }
+    }
     
     /*m_setlist->deferButton->setEnabled(false);
     m_setlist->preferButton->setEnabled(false);
@@ -506,8 +564,8 @@ void Performer::prepareUi()
             // and integrate the part's GUI with the shell's
             createGUI(m_part);
             
-            toolBar()->addSeparator();
-    
+            toolBar()->addSeparator()->setVisible(true);
+            
         }
         else
         {
@@ -553,11 +611,13 @@ void Performer::prepareUi()
     menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
     
     action = new QAction(this);
-    action->setText(i18n("&Panic!"));
+    action->setText("Panic");
     action->setIcon(QIcon::fromTheme("dialog-warning"));
+    action->setData("switch");
     connect(action, SIGNAL(triggered(bool)), model, SLOT(panic()));
     midi_cc_actions << action;
     QToolButton* toolButton = new QToolButton();
+    toolButton->setText(i18n("&Panic!"));
     toolButton->setDefaultAction(action);
     toolButton->setToolButtonStyle(Qt::ToolButtonFollowStyle);
     toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -565,7 +625,62 @@ void Performer::prepareUi()
     toolBar()->addWidget(toolButton);
     
     
+}
+
+void Performer::setupPageViewActions()
+{
+    QObjectList children = m_part->widget()->children();
+    int size = children.size();
+    int newsize = size;
+    do 
+    {
+        size = children.size();
+        for(QObject* child : children)
+        {
+            for(QObject* grandchild : child->children())
+            {
+                if(!children.contains(grandchild))
+                {
+                    children << grandchild;
+                    if(((QWidget*)child)->objectName() == "okular::pageView")
+                    {
+                        pageView = (QAbstractScrollArea*)child;
+                        break;
+                    }
+                }
+            }
+        }
+        newsize = children.size();
+    } while(!pageView && newsize > size);
+    QScrollBar* scrollBar = pageView->verticalScrollBar();
+    scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
     
+    QAction *action = new QAction(this);
+    action->setText("ScrollV");
+    connect(action, &QAction::triggered, this, [scrollBar,action](){
+        qDebug() << "scrollV: " << action->data().toInt(); 
+        scrollBar->setSliderPosition(
+            (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
+        );
+    });
+    midi_cc_actions << action;
+    scrollBar->addAction(action);
+    
+    scrollBar = pageView->horizontalScrollBar();
+    scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+    
+    action = new QAction(this);
+    action->setText("ScrollH");
+    connect(action, &QAction::triggered, this, [scrollBar,action](){
+        qDebug() << "scrollH: " << action->data().toInt(); 
+        scrollBar->setSliderPosition(
+            (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
+        );
+    });
+    midi_cc_actions << action;
+    scrollBar->addAction(action);
 }
 
 #include "performer.moc"
