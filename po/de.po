@@ -41,7 +41,6 @@ msgid "[file]"
 msgstr "[Datei]"
 
 #: main.cpp:45
-#, fuzzy
 msgid "Setlist to load"
 msgstr "Lade gegebene Se&tliste"
 
@@ -150,7 +149,6 @@ msgid "&Save as"
 msgstr "&Speichern unter"
 
 #: performer.cpp:648
-#, fuzzy
 msgid "Performer Toolbar"
 msgstr "Performer-Werkzeugleiste"
 
@@ -192,7 +190,6 @@ msgstr "Se&tliste"
 #. i18n: file: ui/setlist.ui:39
 #. i18n: ectx: property (whatsThis), widget (QListView, setListView)
 #: rc.cpp:9 rc.cpp:12
-#, fuzzy
 msgid "A list of songs"
 msgstr "Eine Liste von Songs"
 

@@ -135,7 +135,8 @@ Performer::Performer(QWidget *parent) :
     
     loadConfig();
     
-    setAlwaysOnTop(alwaysontop);
+    alwaysontop = !alwaysontop;
+    setAlwaysOnTop(!alwaysontop);
 }
 
 
