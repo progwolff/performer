@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-13 19:31+0100\n"
+"POT-Creation-Date: 2016-11-18 13:18+0100\n"
 "PO-Revision-Date: 2016-11-13 19:33+0100\n"
 "Last-Translator: Julian Wolff <wolff@julianwolff.de>\n"
 "Language-Team: DE <wolff@julianwolff.de>\n"
@@ -45,85 +45,108 @@ msgstr "[Datei]"
 msgid "Setlist to load"
 msgstr "Lade gegebene Se&tliste"
 
-#: performer.cpp:165
+#: performer.cpp:181
 msgid "Play now"
 msgstr "Jetzt spielen"
 
-#: performer.cpp:173
+#: performer.cpp:189
 msgid "Prefer"
 msgstr "Vorziehen"
 
-#: performer.cpp:177
+#: performer.cpp:193
 msgid "Defer"
 msgstr "Zurückstellen"
 
-#: performer.cpp:183
+#: performer.cpp:199
 msgid "Remove entry"
 msgstr "Eintrag löschen"
 
-#: performer.cpp:212
+#: performer.cpp:230 performer.cpp:265
 msgid "CC %1 Assigned"
 msgstr "CC %1 zugewiesen"
 
-#: performer.cpp:216
+#: performer.cpp:234 performer.cpp:269
 msgid "Learn MIDI CC"
 msgstr "Lerne MIDI CC"
 
-#: performer.cpp:217
+#: performer.cpp:235 performer.cpp:270
 msgid "Clear MIDI CC"
 msgstr "Lösche MIDI CC"
 
-#: performer.cpp:232
+#: performer.cpp:288
 msgid "Learning MIDI CC for action %1"
 msgstr "Lerne MIDI CC für Aktion %1"
 
-#: performer.cpp:247
+#: performer.cpp:303
 msgid "MIDI CC cleared for action %1"
 msgstr "MIDI CC für Aktion %1 gelöscht"
 
-#: performer.cpp:260
+#: performer.cpp:316
 msgid "MIDI CC %1 assigned to action %2"
 msgstr "MIDI CC %1 auf Aktion %2 zugewiesen"
 
-#: performer.cpp:296
+#: performer.cpp:360
 msgid "New Song"
 msgstr "Neuer Song"
 
-#: performer.cpp:337
+#: performer.cpp:403
 msgid "Setlists (*.pfm)"
 msgstr "Setlisten (*.pfm)"
 
-#: performer.cpp:371
+#: performer.cpp:443
 msgid "Save File As..."
 msgstr "Speichern unter..."
 
-#: performer.cpp:480
+#: performer.cpp:514
 msgid "Set up %1"
 msgstr "%1 einrichten"
 
-#: performer.cpp:541
+#: performer.cpp:584
 msgid "Okular KPart not found"
 msgstr "Okular KPart wurde nicht gefunden"
 
-#: performer.cpp:548
+#: performer.cpp:591
 msgid "File"
 msgstr "Datei"
 
-#: performer.cpp:551
+#: performer.cpp:594
 msgid "&New"
 msgstr "&Neu"
 
-#: performer.cpp:557
+#: performer.cpp:600
 msgid "&Open"
 msgstr "&Öffnen"
 
-#: performer.cpp:563
+#: performer.cpp:606
 msgid "&Save"
 msgstr "&Speichern"
 
-#: performer.cpp:569
+#: performer.cpp:612
 msgid "&Save as"
 msgstr "&Speichern unter"
+
+#: performer.cpp:619
+#, fuzzy
+msgid "Performer Toolbar"
+msgstr "Performer"
+
+#: performer.cpp:634
+msgid "Always on top"
+msgstr "Immer im Vordergrund"
+
+#: performer.cpp:648
+msgid "Panic!"
+msgstr "Panik!"
+
+#: setlistmodel.cpp:424
+msgid "Could not find a running jack server. Can't load Carla patches."
+msgstr "Konnte keinen laufenden Jack-Server finden. Kann Carla Patches nicht laden."
+
+#: setlistmodel.cpp:432
+msgid ""
+"Could not create a client on the existing jack server. Can't load Carla "
+"patches."
+msgstr "Konnte keinen Client unter dem laufenden Jack Server erzeugen. Kann Carla nicht laden."
 
 #. i18n: file: okularui.rc:11
 #. i18n: ectx: ToolBar (okularToolBar)
@@ -142,7 +165,8 @@ msgstr "Se&tliste"
 #. i18n: file: ui/setlist.ui:39
 #. i18n: ectx: property (whatsThis), widget (QListView, setListView)
 #: rc.cpp:9 rc.cpp:12
-msgid "A list of audio devices"
+#, fuzzy
+msgid "A list of songs"
 msgstr "Eine Liste von Songs"
 
 #. i18n: file: ui/setlist.ui:86
