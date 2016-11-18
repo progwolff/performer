@@ -72,14 +72,14 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
     
     QAction *action = new QAction("Previous", this); //no translation to make config translation invariant
-    action->setData("switch");
+    action->setData("button");
     midi_cc_actions << action;
     connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});
     m_setlist->previousButton->setDefaultAction(action);
     m_setlist->previousButton->setText(i18n(action->text().toLatin1()));
     m_setlist->previousButton->setEnabled(true);
     action = new QAction("Next", this); //no translation to make config translation invariant
-    action->setData("switch");
+    action->setData("button");
     midi_cc_actions << action;
     connect(action, &QAction::triggered, this, [this](){model->playNext(); songSelected(QModelIndex());});
     m_setlist->nextButton->setDefaultAction(action);
@@ -103,6 +103,8 @@ Performer::Performer(QWidget *parent) :
     connect(model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
     
     loadConfig();
+    
+    setAlwaysOnTop(alwaysontop);
 }
 
 
@@ -318,7 +320,7 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
         else
         {
             QAction* action = midi_cc_map[data1];
-            if(action && action->data().toString() == "switch")
+            if(action && action->data().toString() == "button")
             {
                 unsigned char olddata2 = midi_cc_value_map[data1];
                 if(data2 < MIDI_BUTTON_THRESHOLD_LOWER || data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
@@ -330,7 +332,7 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
             }
             else if(action)
             {
-                action->setData(data2);
+                action->setData(data2); // jack midi is normalized (0 to 100)
                 action->trigger();
             }
         }
@@ -387,6 +389,8 @@ void Performer::loadConfig()
             connections[port] = config->group("connections").readEntry(port,QString()).split(',');
     }
     model->connections(connections);
+    
+    alwaysontop = config->group("window").readEntry("alwaysontop",false);
 }
 
 void Performer::defaults()
@@ -490,6 +494,8 @@ void Performer::saveConfig()
     
     config->group("paths").writeEntry("notes", notesdefaultpath);
     config->group("paths").writeEntry("patch", patchdefaultpath);
+    
+    config->group("window").writeEntry("alwaysontop", alwaysontop);
        
     config->sync();
     loadConfig();
@@ -610,20 +616,28 @@ void Performer::prepareUi()
     
     menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
     
+    toolBar()->setWindowTitle(i18n("Performer Toolbar"));
+    
+    alwaysontopaction = new QAction(this);
+    alwaysontopaction->setText(i18n("Always on top"));
+    alwaysontopaction->setCheckable(true);
+    alwaysontopaction->setIcon(QIcon::fromTheme("arrow-up"));
+    connect(alwaysontopaction, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));
+    toolBar()->addAction(alwaysontopaction);
+    
     action = new QAction(this);
     action->setText("Panic");
     action->setIcon(QIcon::fromTheme("dialog-warning"));
-    action->setData("switch");
+    action->setData("button");
     connect(action, SIGNAL(triggered(bool)), model, SLOT(panic()));
     midi_cc_actions << action;
-    QToolButton* toolButton = new QToolButton();
-    toolButton->setText(i18n("&Panic!"));
+    QToolButton* toolButton = new QToolButton(toolBar());
     toolButton->setDefaultAction(action);
-    toolButton->setToolButtonStyle(Qt::ToolButtonFollowStyle);
+    toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(toolButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
     toolBar()->addWidget(toolButton);
-    
+    toolButton->setText(i18n("Panic!"));
     
 }
 
@@ -681,6 +695,23 @@ void Performer::setupPageViewActions()
     });
     midi_cc_actions << action;
     scrollBar->addAction(action);
+}
+
+void Performer::setAlwaysOnTop(bool ontop)
+{
+    alwaysontop = ontop;
+    if(alwaysontop)
+    {
+        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+        alwaysontopaction->setChecked(true);
+        show();
+    }
+    else
+    {
+        setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+        alwaysontopaction->setChecked(false);
+        show();
+    }
 }
 
 #include "performer.moc"

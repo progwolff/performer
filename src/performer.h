@@ -63,6 +63,8 @@ private slots:
     
     void error(const QString& message);
     
+    void setAlwaysOnTop(bool ontop);
+    
 private:
     void prepareUi();
     void setupPageViewActions();
@@ -82,8 +84,11 @@ private:
     QMap<unsigned char, QAction*> midi_cc_map;
     QMap<unsigned char, unsigned char> midi_cc_value_map;
     QAction* midi_learn_action;
+    QAction* alwaysontopaction;
     
     QAbstractScrollArea* pageView;
+    
+    bool alwaysontop;
 };
 
 #endif // PERFORMER_H
