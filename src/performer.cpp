@@ -619,11 +619,20 @@ void Performer::prepareUi()
     toolBar()->setWindowTitle(i18n("Performer Toolbar"));
     
     alwaysontopaction = new QAction(this);
-    alwaysontopaction->setText(i18n("Always on top"));
+    alwaysontopaction->setText("Alwaysontop");
     alwaysontopaction->setCheckable(true);
     alwaysontopaction->setIcon(QIcon::fromTheme("arrow-up"));
+    alwaysontopaction->setData("button");
     connect(alwaysontopaction, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));
-    toolBar()->addAction(alwaysontopaction);
+    connect(alwaysontopaction, SIGNAL(triggered(bool)), this, SLOT(setAlwaysOnTop(bool)));
+    midi_cc_actions << alwaysontopaction;
+    QToolButton* toolButton = new QToolButton(toolBar());
+    toolButton->setDefaultAction(alwaysontopaction);
+    toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(toolButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+    toolButton->setText(i18n("Always on top"));
+    toolBar()->addWidget(toolButton);
     
     action = new QAction(this);
     action->setText("Panic");
@@ -631,13 +640,13 @@ void Performer::prepareUi()
     action->setData("button");
     connect(action, SIGNAL(triggered(bool)), model, SLOT(panic()));
     midi_cc_actions << action;
-    QToolButton* toolButton = new QToolButton(toolBar());
+    toolButton = new QToolButton(toolBar());
     toolButton->setDefaultAction(action);
     toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(toolButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    toolBar()->addWidget(toolButton);
     toolButton->setText(i18n("Panic!"));
+    toolBar()->addWidget(toolButton);
     
 }
 
@@ -699,18 +708,21 @@ void Performer::setupPageViewActions()
 
 void Performer::setAlwaysOnTop(bool ontop)
 {
-    alwaysontop = ontop;
-    if(alwaysontop)
+    if(ontop != alwaysontop)
     {
-        setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-        alwaysontopaction->setChecked(true);
-        show();
-    }
-    else
-    {
-        setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
-        alwaysontopaction->setChecked(false);
-        show();
+        alwaysontop = ontop;
+        if(alwaysontop)
+        {
+            setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+            alwaysontopaction->setChecked(true);
+            show();
+        }
+        else
+        {
+            setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+            alwaysontopaction->setChecked(false);
+            show();
+        }
     }
 }
 

@@ -340,6 +340,8 @@ void CarlaPatchBackend::activate()
 {
     activeBackend = this;
     
+    if(patchfile.isEmpty())
+        return;
     if(!exec) 
         preload();
     if(clientName.isEmpty())

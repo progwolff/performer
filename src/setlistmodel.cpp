@@ -63,7 +63,9 @@ SetlistModel::SetlistModel(QObject *parent)
     nextindex = -1;
 
     connect(this, SIGNAL(jackClientState(int)), this, SLOT(updateProgress(int)), Qt::QueuedConnection);
-
+    
+    
+    reset();
 
     if(!CarlaPatchBackend::jackClient())
         emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
@@ -168,25 +170,14 @@ void SetlistModel::reset()
 
     endInsertRows();
 
-    if(m_activebackend)
-    {
-        m_activebackend->disconnect(this);
-        m_activebackend->kill();
-    }
-    if(m_previousbackend)
-    {
-        m_previousbackend->disconnect(this);
-        m_previousbackend->kill();
-    }
-    if(m_nextbackend)
-    {
-        m_nextbackend->disconnect(this);
-        m_nextbackend->kill();
-    }
+    removeBackend(m_activebackend);
+    removeBackend(m_previousbackend);
+    removeBackend(m_nextbackend);
+    
+    m_activebackend = new CarlaPatchBackend("");
+    m_activebackend->activate();
+    connect(m_activebackend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
 
-    m_activebackend = nullptr;
-    m_previousbackend = nullptr;
-    m_nextbackend = nullptr;
 }
 
 void SetlistModel::update()
