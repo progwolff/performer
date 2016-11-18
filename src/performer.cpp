@@ -556,10 +556,6 @@ void Performer::songSelected(const QModelIndex& index)
     {
         m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
         
-        if(!pageView)
-        {
-            setupPageViewActions();
-        }
     }
     
     /*m_setlist->deferButton->setEnabled(false);
@@ -616,6 +612,12 @@ void Performer::prepareUi()
         setupGUI(ToolBar | Keys | StatusBar | Save);
         
         KXmlGuiWindow::createGUI();
+    }
+    
+
+    if(!pageView)
+    {
+        setupPageViewActions();
     }
     
     QMenu *filemenu = new QMenu(i18n("File"));
