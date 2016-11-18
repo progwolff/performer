@@ -1,6 +1,8 @@
 # Performer
 Live performance audio session manager using [Carla](https://github.com/falktx/Carla)
 
+![Screenshot](./.screenshot.png "Screenshot")
+
 [![Build Status](https://travis-ci.org/progwolff/performer.svg?branch=master)](https://travis-ci.org/progwolff/performer)
 
 Performer lets you manage all the songs in your setlist as individual carla patches and loads each of them when you need it.
