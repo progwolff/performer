@@ -80,6 +80,29 @@ SetlistModel::~SetlistModel()
     while(!CarlaPatchBackend::freeJackClient());
 }
 
+void SetlistModel::createBackend(AbstractPatchBackend*& backend, int index)
+{
+    if(fileExists(m_setlist[index].patch().toLocalFile()))
+    {
+        qDebug() << "creating backend for" << m_setlist[index].patch().toLocalFile();
+        backend = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile());
+        connect(backend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
+        connect(backend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
+    }
+    else
+        backend = nullptr;
+}
+
+void SetlistModel::removeBackend(AbstractPatchBackend*& backend)
+{
+    if(!backend)
+        return;
+
+    backend->disconnect(this);
+    backend->kill();
+    backend = nullptr;
+}
+
 int SetlistModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
@@ -265,29 +288,6 @@ QMap<QString,QStringList> SetlistModel::connections() const
 void SetlistModel::connections(QMap<QString,QStringList> connections)
 {
     CarlaPatchBackend::connections(connections);
-}
-
-void SetlistModel::createBackend(AbstractPatchBackend*& backend, int index)
-{
-    if(fileExists(m_setlist[index].patch().toLocalFile()))
-    {
-        qDebug() << "creating backend for" << m_setlist[index].patch().toLocalFile();
-        backend = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile());
-        connect(backend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
-        connect(backend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
-    }
-    else
-        backend = nullptr;
-}
-
-void SetlistModel::removeBackend(AbstractPatchBackend*& backend)
-{
-    if(!backend)
-        return;
-
-    backend->disconnect(this);
-    backend->kill();
-    backend = nullptr;
 }
 
 void SetlistModel::panic()

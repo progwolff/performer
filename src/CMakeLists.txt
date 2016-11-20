@@ -35,6 +35,7 @@ target_link_libraries(performer
     Qt5::X11Extras
     Qt5::Quick
     Qt5::QuickWidgets
+    Qt5::Concurrent
     KF5::ConfigWidgets
     KF5::KIOWidgets
     KF5::I18n

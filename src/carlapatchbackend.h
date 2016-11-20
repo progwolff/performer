@@ -6,6 +6,8 @@
 #include <QSemaphore>
 #include <QMutex>
 
+#include <QThread>
+
 class QProcess;
 
 class CarlaPatchBackend : public AbstractPatchBackend
@@ -64,6 +66,14 @@ private:
     
     static const char portlist[6][11];
     static const char allportlist[7][15];
+    
+    /**
+     * calls a function and cancels execution after timeout milliseconds.
+     * @param timeout timeout in ms
+     * @param function the function to execute
+     */
+    template<typename T>
+    static void try_run(int timeout, T function);
 };
 
 #endif
