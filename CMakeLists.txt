@@ -2,29 +2,41 @@ project(performer)
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 set(PROJECT_VERSION "0.1.0")
 set(QT_MIN_VERSION "0.1.0")
-find_package(ECM REQUIRED NO_MODULE)
-set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-include(ECMInstallIcons)
-include(KDEInstallDirs)
-include(KDECMakeSettings)
-include(KDECompilerSettings)
-include(FeatureSummary)
 
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Widgets Designer X11Extras Quick QuickWidgets Concurrent)
 
-find_package(KF5 REQUIRED COMPONENTS
-    CoreAddons
-    I18n
-    XmlGui
-    ConfigWidgets
-    KIO
-    I18n
-    XmlGui
-    Parts
-)
+find_package(ECM NO_MODULE)
+if(ECM_FOUND)
+    set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
+    include(ECMInstallIcons)
+    include(KDEInstallDirs)
+    include(KDECMakeSettings)
+    include(KDECompilerSettings)
+    include(FeatureSummary)
 
+    find_package(KF5 COMPONENTS
+        CoreAddons
+        I18n
+        XmlGui
+        ConfigWidgets
+        KIO
+        I18n
+        XmlGui
+     #   OPTIONAL_COMPONENTS
+      #  Parts
+    )
 
-list(APPEND QML_DIRS "${ECM_MODULE_DIR}")
+    if(KF5_FOUND)
+        add_definitions(-DWITH_KF5) 
+    endif(KF5_FOUND)
+
+    if(KF5Parts_FOUND)
+        add_definitions(-DWITH_KPARTS)
+    endif(KF5Parts_FOUND)
+    
+    list(APPEND QML_DIRS "${ECM_MODULE_DIR}")
+endif(ECM_FOUND)
+
 set(QML_IMPORT_PATH "${QML_DIRS}" CACHE STRING "Qt Creator 4.1 extra qml import paths")
 
 add_definitions(-DTRANSLATION_DOMAIN=\"performer\")
@@ -69,15 +81,7 @@ ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE)
 
 ENDIF(NOT GETTEXT_MSGFMT_EXECUTABLE)
 
-install(FILES performer.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
-ecm_install_icons(
-    ICONS
-        sc-apps-performer.svg
-	sc-mimetypes-application-x-performer-setlist.svg
-    DESTINATION ${ICON_INSTALL_DIR}
-)
 
-install(FILES x-performer-setlist.xml DESTINATION ${XDG_MIME_INSTALL_DIR})
 
 find_package(SharedMimeInfo ${SMI_MIN_VERSION})
 if(SHARED_MIME_INFO_FOUND)
@@ -86,4 +90,17 @@ endif(SHARED_MIME_INFO_FOUND)
 
 add_subdirectory(src)
 
-feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+if(ECM_FOUND)
+    install(FILES performer.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
+
+    ecm_install_icons(
+        ICONS
+            sc-apps-performer.svg
+        sc-mimetypes-application-x-performer-setlist.svg
+        DESTINATION ${ICON_INSTALL_DIR}
+    )
+
+    install(FILES x-performer-setlist.xml DESTINATION ${XDG_MIME_INSTALL_DIR})
+    
+    feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+endif(ECM_FOUND)

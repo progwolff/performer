@@ -25,34 +25,36 @@
 #include "midi.h"
 
 #include <KAboutData>
-
 #include <KLocalizedString>
-#include <QDebug>
 #include <KMessageBox>
-#include <QStandardPaths>
-
 #include <kservice.h>
 #include <kdeclarative.h>
 #include <KToolBar>
-#include <QStyledItemDelegate>
 #include <KSharedConfig>
 #include <KConfig>
 #include <KConfigGroup>
 #include <KUrlRequesterDialog>
 
+#include <QDebug>
+
+#include <QStyledItemDelegate>
+#include <QStandardPaths>
 #include <QMenu>
 
 #include "setlistmodel.h"
 #include "setlistview.h"
 
 Performer::Performer(QWidget *parent) :
+#ifdef WITH_KPARTS
     KParts::MainWindow(parent)
+#else
+    KMainWindow(parent)
+#endif
     ,m_setlist(new Ui::Setlist)
     ,midi_learn_action(nullptr)
     ,pageView(nullptr)
 {
     
-   
     KLocalizedString::setApplicationDomain("performer");
     
     setWindowIcon(QIcon::fromTheme("performer"));
@@ -148,8 +150,9 @@ Performer::~Performer()
         delete action;
     
     delete model;
-    
+#ifdef WITH_KPARTS
     delete m_part;
+#endif
     delete m_dock;
     delete m_setlist;
 }
@@ -444,7 +447,6 @@ void Performer::loadFile(const QString& path)
     m_path = path;
     
     model->reset();
-    
     KSharedConfigPtr set = KSharedConfig::openConfig(path);
     
     KConfigGroup setlist = set->group("setlist");
@@ -502,8 +504,9 @@ void Performer::saveFile(const QString& path)
         song.writeEntry("notes",index.data(SetlistModel::NotesRole).toUrl().toLocalFile());
         song.writeEntry("preload",index.data(SetlistModel::PreloadRole).toBool());
     }
-    
+
     set->sync();
+    
 }
 
 void Performer::saveConfig()
@@ -512,6 +515,7 @@ void Performer::saveConfig()
     
     
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
     for(unsigned char cc: midi_cc_map.keys())
@@ -530,6 +534,7 @@ void Performer::saveConfig()
     config->group("window").writeEntry("alwaysontop", alwaysontop);
        
     config->sync();
+
     loadConfig();
 }
 
@@ -551,12 +556,12 @@ void Performer::songSelected(const QModelIndex& index)
     //m_setlist->patchrequester->clear();
     m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
     m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
-    
+#ifdef WITH_KPARTS
     if(m_part && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
     {
         m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
-        
     }
+#endif
     
     /*m_setlist->deferButton->setEnabled(false);
     m_setlist->preferButton->setEnabled(false);
@@ -572,7 +577,7 @@ void Performer::prepareUi()
     m_dock = new QDockWidget(this);
     m_setlist->setupUi(m_dock);
     addDockWidget(Qt::LeftDockWidgetArea, m_dock);
-    
+#ifdef WITH_KPARTS
     //query the .desktop file to load the requested Part
     KService::Ptr service = KService::serviceByDesktopPath("okular_part.desktop");
 
@@ -608,12 +613,10 @@ void Performer::prepareUi()
     if(!service || !m_part)
     {
         KMessageBox::error(this, i18n("Okular KPart not found"));
-    
         setupGUI(ToolBar | Keys | StatusBar | Save);
-        
         KXmlGuiWindow::createGUI();
     }
-    
+#endif
 
     if(!pageView)
     {
@@ -656,6 +659,7 @@ void Performer::prepareUi()
 
 void Performer::setupPageViewActions()
 {
+#ifdef WITH_KPARTS
     QObjectList children = m_part->widget()->children();
     int size = children.size();
     int newsize = size;
@@ -708,6 +712,7 @@ void Performer::setupPageViewActions()
     });
     midi_cc_actions << action;
     scrollBar->addAction(action);
+#endif
 }
 
 void Performer::setAlwaysOnTop(bool ontop)

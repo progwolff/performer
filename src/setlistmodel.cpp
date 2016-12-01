@@ -16,7 +16,11 @@
  */
 
 #define TRANSLATION_DOMAIN "performer"
+
 #include <KLocalizedString>
+#include <KConfig>
+#include <KConfigGroup>
+#include <KSharedConfig>
 
 #include "setlistmodel.h"
 
@@ -25,21 +29,10 @@
 #include <QIcon>
 #include <QFont>
 
-#include <KConfig>
-#include <KConfigGroup>
 #include <QDebug>
-#include <KSharedConfig>
 #include <QStandardPaths>
 #include <QProcess>
 #include <QRegularExpression>
-
-#include <alsa/global.h>
-#include <alsa/output.h>
-#include <alsa/input.h>
-#include <alsa/conf.h>
-#include <alsa/pcm.h>
-#include <alsa/control.h>
-
 
 #include <QFileInfo>
 

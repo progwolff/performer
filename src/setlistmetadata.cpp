@@ -16,15 +16,16 @@
  */
 
 #define TRANSLATION_DOMAIN "performer"
+
 #include <KLocalizedString>
+#include <KDesktopFile>
+#include <KConfigGroup>
 
 #include "setlistmetadata.h"
 
 #include <QSharedData>
 #include <QSharedPointer>
 
-#include <KDesktopFile>
-#include <KConfigGroup>
 #include <QUrl>
 
 class SetlistMetadataPrivate : public QSharedData

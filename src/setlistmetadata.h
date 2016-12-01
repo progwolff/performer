@@ -24,6 +24,7 @@
 class SetlistMetadataPrivate;
 class QUrl;
 
+
 class SetlistMetadata
 {
 public:

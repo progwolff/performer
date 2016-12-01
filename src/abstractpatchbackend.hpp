@@ -66,7 +66,7 @@ public slots:
     
     /**
      * Activate this patch.\n
-     * After calling this, the patch should receive MIDI events and output sound.
+     * After calling this, the patch should react to MIDI events and output sound.
      */
     virtual void activate() = 0;
     

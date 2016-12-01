@@ -34,6 +34,7 @@ CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile)
     connect(this, SIGNAL(jackconnection(const char*, const char*, bool)), this, SLOT(jackconnect(const char*, const char*, bool)));
     
     jackClient();
+    
 }
 
 jack_client_t *CarlaPatchBackend::jackClient()
@@ -465,5 +466,8 @@ void CarlaPatchBackend::try_run(int timeout, T function)
     QFuture<void> funct = QtConcurrent::run(function);
     while(timer.elapsed() < timeout && funct.isRunning());
     if(funct.isRunning())
+    {
+        qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms";
         funct.cancel();
+    }
 }

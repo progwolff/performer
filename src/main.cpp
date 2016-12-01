@@ -4,15 +4,22 @@
 #include <QApplication>
 #include <QCommandLineParser>
 
-#include <KAboutData>
 #include <KLocalizedString>
+#include <KAboutData>
 
 #include "performer.h"
  
 int main (int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    
+    QCommandLineParser parser;
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument(i18n("[file]"), i18n("Setlist to load"));
+  
     KLocalizedString::setApplicationDomain("Performer");
+    
     
     KAboutData aboutData(
                          // The program name used internally. (componentName)
@@ -38,15 +45,12 @@ int main (int argc, char *argv[])
     aboutData.addAuthor(i18n("Julian Wolff"), i18n(" "), QStringLiteral("wolff@julianwolff.de"),
                          QStringLiteral("http://github.com/progwolff"), QStringLiteral(""));
     KAboutData::setApplicationData(aboutData);
- 
-    QCommandLineParser parser;
-    parser.addHelpOption();
-    parser.addVersionOption();
-    parser.addPositionalArgument(i18n("[file]"), i18n("Setlist to load"));
+   
+    
     aboutData.setupCommandLine(&parser);
     parser.process(app);
     aboutData.processCommandLine(&parser);
-    
+
     Performer* window = new Performer(0);
     window->show();
     const QStringList args = parser.positionalArguments();

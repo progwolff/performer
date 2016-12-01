@@ -11,9 +11,9 @@ Additionally Performer uses [Okular](https://github.com/KDE/okular) to display n
 Dependencies:
 * Carla
 * kdebase-runtime
-* kparts 
 * extra-cmake-modules (make)
 * qt5-tools (make)
 * python (make)
+* kparts (optional: display notes or chors)
 * okular-git (optional: display notes or chords)
 

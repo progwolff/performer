@@ -17,8 +17,13 @@
 #ifndef PERFORMER_H
 #define PERFORMER_H
 
+#ifdef WITH_KPARTS
 #include <kparts/mainwindow.h>
 #include <kparts/readwritepart.h>
+#else
+#include <KMainWindow>
+#endif
+
   
 #include <QDockWidget>
 
@@ -30,7 +35,12 @@ namespace Ui {
     class Setlist;
 }
 
-class Performer : public KParts::MainWindow
+class Performer :
+#ifdef WITH_KPARTS
+    public KParts::MainWindow
+#else
+    public KMainWindow
+#endif
 {
     Q_OBJECT
 public:
@@ -69,7 +79,9 @@ private:
     void prepareUi();
     void setupPageViewActions();
     
+#ifdef WITH_KPARTS
     KParts::ReadOnlyPart *m_part;
+#endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
     
