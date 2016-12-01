@@ -22,8 +22,8 @@ if(ECM_FOUND)
         KIO
         I18n
         XmlGui
-     #   OPTIONAL_COMPONENTS
-      #  Parts
+        OPTIONAL_COMPONENTS
+        Parts
     )
 
     if(KF5_FOUND)
