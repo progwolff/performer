@@ -3,7 +3,16 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 set(PROJECT_VERSION "0.1.0")
 set(QT_MIN_VERSION "0.1.0")
 
-find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Widgets Designer X11Extras Quick QuickWidgets Concurrent)
+find_package(Qt5 ${QT_MIN_VERSION} 
+    CONFIG REQUIRED COMPONENTS 
+    Core 
+    #Gui 
+    #Widgets 
+    #Designer 
+    X11Extras 
+    Quick 
+    QuickWidgets
+    Concurrent)
 
 find_package(ECM NO_MODULE)
 if(ECM_FOUND)
