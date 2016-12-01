@@ -17,11 +17,9 @@ if(ECM_FOUND)
     find_package(KF5 COMPONENTS
         CoreAddons
         I18n
-        XmlGui
-        ConfigWidgets
-        KIO
-        I18n
-        XmlGui
+        #ConfigWidgets
+        #KIO
+        #XmlGui
         OPTIONAL_COMPONENTS
         Parts
     )
