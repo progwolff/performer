@@ -14,6 +14,6 @@ Dependencies:
 * extra-cmake-modules (make)
 * qt5-tools (make)
 * python (make)
-* kparts (optional: display notes or chors)
+* kparts (optional: display notes or chords)
 * okular-git (optional: display notes or chords)
 

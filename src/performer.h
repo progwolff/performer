@@ -80,6 +80,11 @@ private slots:
     
     void setAlwaysOnTop(bool ontop);
     
+#ifndef WITH_KF5
+    void requestPatch();
+    void requestNotes();
+#endif
+    
 private:
     void prepareUi();
     void setupPageViewActions();

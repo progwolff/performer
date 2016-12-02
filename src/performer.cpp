@@ -131,6 +131,9 @@ Performer::Performer(QWidget *parent) :
 #ifdef WITH_KF5
     connect(m_setlist->patchrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
     connect(m_setlist->notesrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
+#else
+    connect(m_setlist->patchrequestbutton, SIGNAL(clicked()), SLOT(requestPatch()));
+    connect(m_setlist->notesrequestbutton, SIGNAL(clicked()), SLOT(requestNotes()));
 #endif
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
     connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
@@ -396,8 +399,29 @@ void Performer::updateSelected()
     map.insert("preload", m_setlist->preloadBox->isChecked());
     map.insert("name", m_setlist->nameEdit->text());
     model->update(m_setlist->setListView->currentIndex(), map);
+#else
+    QVariantMap map;
+    map.insert("patch", QUrl::fromLocalFile(m_setlist->patchrequestedit->text()));
+    map.insert("notes", QUrl::fromLocalFile(m_setlist->notesrequestedit->text()));
+    map.insert("preload", m_setlist->preloadBox->isChecked());
+    map.insert("name", m_setlist->nameEdit->text());
+    model->update(m_setlist->setListView->currentIndex(), map);
 #endif
 }
+
+#ifndef WITH_KF5
+void Performer::requestPatch()
+{
+    m_setlist->patchrequestedit->setText(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), i18n("Carla Patch (*.carxp)")));
+    updateSelected();
+}
+
+void Performer::requestNotes()
+{
+    m_setlist->notesrequestedit->setText(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), QString()));
+    updateSelected();
+}
+#endif
 
 void Performer::addSong()
 {
@@ -578,6 +602,9 @@ void Performer::songSelected(const QModelIndex& index)
         m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
     }
 #endif
+#else
+    m_setlist->patchrequestedit->setText(ind.data(SetlistModel::PatchRole).toUrl().toLocalFile());
+    m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
 #endif
     /*m_setlist->deferButton->setEnabled(false);
     m_setlist->preferButton->setEnabled(false);
