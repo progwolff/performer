@@ -51,7 +51,7 @@
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent)
-#elifdef WITH_KF5
+#elif WITH_KF5
     KMainWindow(parent)
 #else
     QMainWindow(parent)
