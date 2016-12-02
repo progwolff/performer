@@ -19,6 +19,7 @@
 #define SETLISTMODEL_H
 
 #include <QAbstractListModel>
+#include "fallback.h"
 
 class SetlistMetadata;
 class AbstractPatchBackend;

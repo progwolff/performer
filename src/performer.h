@@ -23,6 +23,7 @@
 #elif WITH_KF5
 #include <KXmlGuiWindow>
 #else
+#include "fallback.h"
 #include <QtWidgets>
 #endif
 
@@ -106,6 +107,8 @@ private:
     
     bool alwaysontop;
 };
+
+
 
 #endif // PERFORMER_H
 

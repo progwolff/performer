@@ -17,9 +17,11 @@
 
 #define TRANSLATION_DOMAIN "performer"
 
+#ifdef WITH_KF5
 #include <KLocalizedString>
 #include <KDesktopFile>
 #include <KConfigGroup>
+#endif //WITH_KF5
 
 #include "setlistmetadata.h"
 

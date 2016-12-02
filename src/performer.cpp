@@ -24,6 +24,7 @@
 #include "ui_setlist.h"
 #include "midi.h"
 
+#ifdef WITH_KF5
 #include <KAboutData>
 #include <KLocalizedString>
 #include <KMessageBox>
@@ -34,6 +35,7 @@
 #include <KConfig>
 #include <KConfigGroup>
 #include <KUrlRequesterDialog>
+#endif //WITH_KF5
 
 #include <QDebug>
 

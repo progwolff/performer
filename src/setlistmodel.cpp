@@ -17,10 +17,12 @@
 
 #define TRANSLATION_DOMAIN "performer"
 
+#ifdef WITH_KF5
 #include <KLocalizedString>
 #include <KConfig>
 #include <KConfigGroup>
 #include <KSharedConfig>
+#endif //WITH_KF5
 
 #include "setlistmodel.h"
 
