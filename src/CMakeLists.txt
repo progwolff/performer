@@ -21,17 +21,16 @@ set(PERFORMER_SRCS
     setlistview.cpp
 )
 
-set(PERFORMER_UI
-     ui/setlist.ui
-#    qml/main.qml
-#    qml/TooltipArea.qml
-#    ui/behaviorconfig.ui
-#    qml/behavior.qml
-)
 
-if(KF5_FOUND)
+if(WITH_KF5)
+    set(PERFORMER_UI ui/setlist.ui)
     ki18n_wrap_ui(PERFORMER ${PERFORMER_UI})
-endif(KF5_FOUND)
+else(WITH_KF5)
+    set(PERFORMER_UI ui/setlist_without_kde.ui)
+    qt5_wrap_ui(PERFORMER ${PERFORMER_UI})
+endif(WITH_KF5)
+
+    
 
 add_executable(performer ${PERFORMER_SRCS} ${PERFORMER_UI})
 
@@ -45,7 +44,7 @@ target_link_libraries(performer
     Qt5::Concurrent
 )
 
-if(KF5_FOUND)
+if(WITH_KF5)
     target_link_libraries(performer
     #KF5::ConfigWidgets
     KF5::KIOWidgets
@@ -53,7 +52,7 @@ if(KF5_FOUND)
     #KF5::XmlGui
     KF5::CoreAddons
     )
-endif(KF5_FOUND)
+endif(WITH_KF5)
 
 if(NOT WITH_KPARTS)
     target_link_libraries(performer
@@ -61,11 +60,11 @@ if(NOT WITH_KPARTS)
     )
 endif(NOT WITH_KPARTS)
 
-if(KF5Parts_FOUND)
+if(WITH_KPARTS)
     target_link_libraries(performer
     KF5::Parts
     )
-endif(KF5Parts_FOUND)
+endif(WITH_KPARTS)
 
 if(JACK_FOUND)
     target_link_libraries(performer

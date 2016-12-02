@@ -21,10 +21,10 @@
 
 
 #include "performer.h"
-#include "ui_setlist.h"
 #include "midi.h"
 
 #ifdef WITH_KF5
+#include "ui_setlist.h"
 #include <KAboutData>
 #include <KLocalizedString>
 #include <KMessageBox>
@@ -35,6 +35,8 @@
 #include <KConfig>
 #include <KConfigGroup>
 #include <KUrlRequesterDialog>
+#else
+#include "ui_setlist_without_kde.h"
 #endif //WITH_KF5
 
 #include <QDebug>
@@ -49,7 +51,7 @@
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent)
-#elif WITH_KF5
+#elifdef WITH_KF5
     KMainWindow(parent)
 #else
     QMainWindow(parent)
@@ -58,9 +60,9 @@ Performer::Performer(QWidget *parent) :
     ,midi_learn_action(nullptr)
     ,pageView(nullptr)
 {
-    
+#ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
-    
+#endif
     setWindowIcon(QIcon::fromTheme("performer"));
    
     
@@ -126,9 +128,10 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->nextButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
     
     m_setlist->setupBox->setVisible(false);
+#ifdef WITH_KF5
     connect(m_setlist->patchrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
     connect(m_setlist->notesrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
-    
+#endif
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
     connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
     
@@ -380,6 +383,7 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
 
 void Performer::updateSelected()
 {
+#ifdef WITH_KF5
     QVariantMap map;
     map.insert("patch", m_setlist->patchrequester->url());
     patchdefaultpath = m_setlist->patchrequester->url().path().section('/',0,-2);
@@ -392,6 +396,7 @@ void Performer::updateSelected()
     map.insert("preload", m_setlist->preloadBox->isChecked());
     map.insert("name", m_setlist->nameEdit->text());
     model->update(m_setlist->setListView->currentIndex(), map);
+#endif
 }
 
 void Performer::addSong()
@@ -403,6 +408,7 @@ void Performer::addSong()
 
 void Performer::loadConfig()
 {
+#ifdef WITH_KF5
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
@@ -430,6 +436,7 @@ void Performer::loadConfig()
     model->connections(connections);
     
     alwaysontop = config->group("window").readEntry("alwaysontop",false);
+#endif
 }
 
 void Performer::defaults()
@@ -451,6 +458,7 @@ void Performer::loadFile(const QString& path)
     m_path = path;
     
     model->reset();
+#ifdef WITH_KF5
     KSharedConfigPtr set = KSharedConfig::openConfig(path);
     
     KConfigGroup setlist = set->group("setlist");
@@ -474,6 +482,7 @@ void Performer::loadFile(const QString& path)
         model->playNow(model->index(0,0));
         songSelected(QModelIndex());
     }
+#endif
 }
 
 void Performer::saveFileAs()
@@ -493,7 +502,7 @@ void Performer::saveFile(const QString& path)
         saveFileAs();
         return;
     }
-    
+#ifdef WITH_KF5
     KSharedConfigPtr set = KSharedConfig::openConfig(filename);
     for(const QString& group : set->groupList())
         set->deleteGroup(group);
@@ -510,6 +519,7 @@ void Performer::saveFile(const QString& path)
     }
 
     set->sync();
+#endif
     
 }
 
@@ -519,7 +529,7 @@ void Performer::saveConfig()
     
     
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    
+#ifdef WITH_KF5
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
     for(unsigned char cc: midi_cc_map.keys())
@@ -540,6 +550,7 @@ void Performer::saveConfig()
     config->sync();
 
     loadConfig();
+#endif
 }
 
 void Performer::songSelected(const QModelIndex& index)
@@ -555,6 +566,7 @@ void Performer::songSelected(const QModelIndex& index)
     m_setlist->setupBox->setTitle(i18n("Set up %1", ind.data(SetlistModel::NameRole).toString()));
     m_setlist->nameEdit->setText(ind.data(SetlistModel::NameRole).toString());
     //m_setlist->patchrequester->clear();
+#ifdef WITH_KF5
     m_setlist->patchrequester->setUrl(ind.data(SetlistModel::PatchRole).toUrl());
     qDebug() << "patch: " << ind.data(SetlistModel::PatchRole).toUrl().toLocalFile();
     //m_setlist->patchrequester->clear();
@@ -566,7 +578,7 @@ void Performer::songSelected(const QModelIndex& index)
         m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
     }
 #endif
-    
+#endif
     /*m_setlist->deferButton->setEnabled(false);
     m_setlist->preferButton->setEnabled(false);
     if(index.row() < m_setlist->setListView->model()->rowCount()-1)
@@ -739,5 +751,16 @@ void Performer::setAlwaysOnTop(bool ontop)
         }
     }
 }
+
+
+#ifndef WITH_KF5
+QToolBar* Performer::toolBar()
+{
+    static QToolBar* toolbar = nullptr;
+    if(!toolbar)
+        toolbar = addToolBar("Default Tool Bar");
+    return toolbar;
+}
+#endif
 
 #include "performer.moc"

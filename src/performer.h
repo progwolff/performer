@@ -20,7 +20,7 @@
 #ifdef WITH_KPARTS
 #include <kparts/mainwindow.h>
 #include <kparts/readwritepart.h>
-#elif WITH_KF5
+#elifdef WITH_KF5
 #include <KXmlGuiWindow>
 #else
 #include "fallback.h"
@@ -41,7 +41,7 @@ namespace Ui {
 class Performer :
 #ifdef WITH_KPARTS
     public KParts::MainWindow
-#elif WITH_KF5
+#elifdef WITH_KF5
     public KMainWindow
 #else
     public QMainWindow
@@ -106,6 +106,10 @@ private:
     QAbstractScrollArea* pageView;
     
     bool alwaysontop;
+    
+#ifndef WITH_KF5
+    QToolBar* toolBar();
+#endif
 };
 
 

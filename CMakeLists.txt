@@ -31,14 +31,14 @@ if(ECM_FOUND)
     )
 
     if(KF5_FOUND)
-        add_definitions(-DWITH_KF5) 
+#        add_definitions(-DWITH_KF5) 
     endif(KF5_FOUND)
 
-    if(KF5Parts_FOUND)
+    if(WITH_KF5 AND KF5Parts_FOUND)
         add_definitions(-DWITH_KPARTS)
-    else(KF5Parts_FOUND)
+    else(WITH_KF5 AND KF5Parts_FOUND)
         find_package(KF5 REQUIRED COMPONENTS XmlGui)
-    endif(KF5Parts_FOUND)
+    endif(WITH_KF5 AND KF5Parts_FOUND)
 
     include(KDEInstallDirs)
     include(KDECMakeSettings)
