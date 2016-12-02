@@ -47,8 +47,10 @@
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent)
+#elif WITH_KDELIBS
+    public KMainWindow
 #else
-    KMainWindow(parent)
+    public QMainWindow
 #endif
     ,m_setlist(new Ui::Setlist)
     ,midi_learn_action(nullptr)

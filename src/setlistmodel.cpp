@@ -40,6 +40,8 @@
 
 #include <QErrorMessage>
 
+#include <QApplication>
+
 #include "setlistmetadata.h"
 #include "carlapatchbackend.h"
 #include <qbrush.h>
@@ -140,22 +142,25 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
         QLinearGradient gradient(0, 1, 1, 1);
         gradient.setCoordinateMode(QGradient::StretchToDeviceMode);
 
-        gradient.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0));
+        //gradient.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0));
         if(stop+.01 <= 1)
             gradient.setColorAt(stop+.01, QColor::fromRgbF(0, 0, 0, 0));
 
         if(fileExists(metadata.patch().toLocalFile()) && metadata.progress() >= 0)
         {
+            QColor active = QApplication::palette().color(QPalette::Highlight); //QColor::fromRgbF(.18, .80, .44, 1)
+            active = QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()/3);
+            QColor inactive = QApplication::palette().color(QPalette::Base); //QColor::fromRgbF(.95, .61, .07, 1)
             if(index.row()==activeindex)
-                gradient.setColorAt(stop, QColor::fromRgbF(.18, .80, .44, 1));
+                gradient.setColorAt(stop, active);
             else if(index.row()==previousindex || index.row()==nextindex)
-                gradient.setColorAt(stop, QColor::fromRgbF(.95, .61, .07, 1));
+                gradient.setColorAt(stop, QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()/3));
             else
-                gradient.setColorAt(stop, QColor::fromRgbF(0, 0, 0, 0));
+                gradient.setColorAt(stop, inactive);
         }
         else
         {
-            gradient.setColorAt(stop, QColor::fromRgbF(.75, .22, .17, 1));
+            gradient.setColorAt(stop, QApplication::palette().color(QPalette::AlternateBase));
         }
         return QBrush(gradient);
     }

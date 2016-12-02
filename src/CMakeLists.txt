@@ -39,7 +39,7 @@ target_compile_definitions(performer PRIVATE -DPROJECT_VERSION="${PROJECT_VERSIO
 
 target_link_libraries(performer
     Qt5::Widgets
-    Qt5::X11Extras
+    #Qt5::X11Extras
     Qt5::Quick
     Qt5::QuickWidgets
     Qt5::Concurrent
@@ -47,10 +47,10 @@ target_link_libraries(performer
 
 if(KF5_FOUND)
     target_link_libraries(performer
-    KF5::ConfigWidgets
+    #KF5::ConfigWidgets
     KF5::KIOWidgets
     KF5::I18n
-    KF5::XmlGui
+    #KF5::XmlGui
     KF5::CoreAddons
     )
 endif(KF5_FOUND)

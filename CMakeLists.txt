@@ -7,9 +7,9 @@ find_package(Qt5 ${QT_MIN_VERSION}
     CONFIG REQUIRED COMPONENTS 
     Core 
     #Gui 
-    #Widgets 
+    Widgets 
     #Designer 
-    X11Extras 
+    #X11Extras 
     Quick 
     QuickWidgets
     Concurrent)
@@ -23,11 +23,11 @@ if(ECM_FOUND)
     include(KDECompilerSettings)
     include(FeatureSummary)
 
-    find_package(KF5 COMPONENTS
+    find_package(KF5 REQUIRED COMPONENTS
         CoreAddons
         I18n
         #ConfigWidgets
-        #KIO
+        KIO
         #XmlGui
         OPTIONAL_COMPONENTS
         Parts
@@ -88,13 +88,6 @@ ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE)
 
 ENDIF(NOT GETTEXT_MSGFMT_EXECUTABLE)
 
-
-
-find_package(SharedMimeInfo ${SMI_MIN_VERSION})
-if(SHARED_MIME_INFO_FOUND)
-	update_xdg_mimetypes(${XDG_MIME_INSTALL_DIR})
-endif(SHARED_MIME_INFO_FOUND)
-
 add_subdirectory(src)
 
 if(ECM_FOUND)
@@ -111,3 +104,9 @@ if(ECM_FOUND)
     
     feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 endif(ECM_FOUND)
+
+find_package(SharedMimeInfo ${SMI_MIN_VERSION})
+if(SHARED_MIME_INFO_FOUND)
+	update_xdg_mimetypes(${XDG_MIME_INSTALL_DIR})
+endif(SHARED_MIME_INFO_FOUND)
+
