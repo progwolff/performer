@@ -51,7 +51,7 @@
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent)
-#elif WITH_KF5
+#elif defined WITH_KF5
     KMainWindow(parent)
 #else
     QMainWindow(parent)
@@ -432,8 +432,8 @@ void Performer::addSong()
 
 void Performer::loadConfig()
 {
-#ifdef WITH_KF5
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+#ifdef WITH_KF5
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
     notesdefaultpath = config->group("paths").readEntry("notes", QString());
@@ -460,6 +460,41 @@ void Performer::loadConfig()
     model->connections(connections);
     
     alwaysontop = config->group("window").readEntry("alwaysontop",false);
+#else
+    QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
+    
+    config.beginGroup("paths");
+    notesdefaultpath = config.value("notes", QString()).toString();
+    //m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(notesdefaultpath));
+    patchdefaultpath = config.value("patch", QString()).toString();
+    //m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
+    config.endGroup();
+    
+    config.beginGroup("midi");
+    for(QString cc: config.allKeys())
+    {
+        qDebug() << cc;
+        for(QAction* action : midi_cc_actions)
+        {
+            if(config.value(cc, QString()).toString() == action->objectName())
+                midi_cc_map[cc.toInt()]= action;
+        }
+    }
+    config.endGroup();
+    
+    QMap<QString, QStringList> connections;
+    config.beginGroup("connections");
+    for(QString port: config.allKeys())
+    {
+        for(QString& port : model->connections().keys())
+            connections[port] = config.value(port,QString()).toString().split(',');
+    }
+    model->connections(connections);
+    config.endGroup();
+    
+    config.beginGroup("window");
+    alwaysontop = config.value("alwaysontop",false).toBool();
+    config.endGroup();
 #endif
 }
 
@@ -506,6 +541,33 @@ void Performer::loadFile(const QString& path)
         model->playNow(model->index(0,0));
         songSelected(QModelIndex());
     }
+#else
+    QSettings set(path, QSettings::NativeFormat);
+    qDebug() << set.childGroups();
+    qDebug() << set.allKeys();
+    set.beginGroup("setlist");
+    QMap<int,QString> songs;
+    for(const QString& song : set.childGroups())
+    {
+        songs.insert(song.section('-',0,0).toInt(), song);
+        qDebug() << song.section('-',0,0).toInt() << song.section('-',1);
+    }
+    for(const QString& song : songs)
+    {
+        QVariantMap config;
+        set.beginGroup(song);
+        config.insert("patch", QUrl::fromLocalFile(set.value("patch",QString()).toString()));
+        config.insert("notes", QUrl::fromLocalFile(set.value("notes",QString()).toString()));
+        config.insert("preload", set.value("preload",true));
+        model->add(song.section('-',1), config);
+        set.endGroup();
+    }
+    if(set.childGroups().size() > 0)
+    {
+        model->playNow(model->index(0,0));
+        songSelected(QModelIndex());
+    }
+    set.endGroup();
 #endif
 }
 
@@ -543,6 +605,25 @@ void Performer::saveFile(const QString& path)
     }
 
     set->sync();
+#else
+    QSettings set(filename, QSettings::NativeFormat);
+    set.clear();
+    
+    set.beginGroup("setlist");
+    
+    for(int i=0; i < m_setlist->setListView->model()->rowCount(); ++i)
+    {
+        QModelIndex index = model->index(i,0);
+        set.beginGroup(QString::number(index.row())+"-"+index.data(SetlistModel::NameRole).toString());
+        set.setValue("patch",index.data(SetlistModel::PatchRole).toUrl().toLocalFile());
+        set.setValue("notes",index.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+        set.setValue("preload",index.data(SetlistModel::PreloadRole).toBool());
+        set.endGroup();
+    }
+    
+    set.endGroup();
+
+    set.sync();
 #endif
     
 }
@@ -573,8 +654,35 @@ void Performer::saveConfig()
        
     config->sync();
 
-    loadConfig();
+#else
+    QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
+    
+    config.beginGroup("midi");
+    for(unsigned char cc: midi_cc_map.keys())
+    {
+        if(midi_cc_map[cc])
+            config.setValue(QString::number(cc), midi_cc_map[cc]->objectName());
+    }
+    config.endGroup();
+    
+    config.remove("connections");
+    config.beginGroup("connections");
+    for(QString& port : model->connections().keys())
+        config.setValue(port, model->connections()[port].join(','));
+    config.endGroup();
+    
+    config.beginGroup("paths");
+    config.setValue("notes", notesdefaultpath);
+    config.setValue("patch", patchdefaultpath);
+    config.endGroup();
+    
+    config.beginGroup("window");
+    config.setValue("alwaysontop", alwaysontop);
+    config.endGroup();   
+    
+    config.sync();
 #endif
+    loadConfig();
 }
 
 void Performer::songSelected(const QModelIndex& index)
