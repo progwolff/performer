@@ -25,9 +25,9 @@ if(ECM_FOUND)
         I18n
         #ConfigWidgets
         KIO
-        XmlGui
-        #OPTIONAL_COMPONENTS
-        #Parts
+        #XmlGui
+        OPTIONAL_COMPONENTS
+        Parts
     )
 
     if(KF5_FOUND)
