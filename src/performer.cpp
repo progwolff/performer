@@ -47,10 +47,10 @@
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent)
-#elif WITH_KDELIBS
-    public KMainWindow
+#elif WITH_KF5
+    KMainWindow(parent)
 #else
-    public QMainWindow
+    QMainWindow(parent)
 #endif
     ,m_setlist(new Ui::Setlist)
     ,midi_learn_action(nullptr)
@@ -670,6 +670,7 @@ void Performer::setupPageViewActions()
         size = children.size();
         for(QObject* child : children)
         {
+            if(!child || child->children().isEmpty()) continue;
             for(QObject* grandchild : child->children())
             {
                 if(!children.contains(grandchild))

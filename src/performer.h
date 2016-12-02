@@ -20,8 +20,8 @@
 #ifdef WITH_KPARTS
 #include <kparts/mainwindow.h>
 #include <kparts/readwritepart.h>
-#elif WITH_KDELIBS
-#include <KMainWindow>
+#elif WITH_KF5
+#include <KXmlGuiWindow>
 #else
 #include <QtWidgets>
 #endif
@@ -40,7 +40,7 @@ namespace Ui {
 class Performer :
 #ifdef WITH_KPARTS
     public KParts::MainWindow
-#elif WITH_KDELIBS
+#elif WITH_KF5
     public KMainWindow
 #else
     public QMainWindow

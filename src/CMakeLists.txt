@@ -55,6 +55,12 @@ if(KF5_FOUND)
     )
 endif(KF5_FOUND)
 
+if(NOT WITH_KPARTS)
+    target_link_libraries(performer
+    KF5::XmlGui
+    )
+endif(NOT WITH_KPARTS)
+
 if(KF5Parts_FOUND)
     target_link_libraries(performer
     KF5::Parts

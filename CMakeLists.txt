@@ -18,9 +18,6 @@ find_package(ECM NO_MODULE)
 if(ECM_FOUND)
     set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
     include(ECMInstallIcons)
-    include(KDEInstallDirs)
-    include(KDECMakeSettings)
-    include(KDECompilerSettings)
     include(FeatureSummary)
 
     find_package(KF5 REQUIRED COMPONENTS
@@ -28,9 +25,9 @@ if(ECM_FOUND)
         I18n
         #ConfigWidgets
         KIO
-        #XmlGui
-        OPTIONAL_COMPONENTS
-        Parts
+        XmlGui
+        #OPTIONAL_COMPONENTS
+        #Parts
     )
 
     if(KF5_FOUND)
@@ -39,7 +36,13 @@ if(ECM_FOUND)
 
     if(KF5Parts_FOUND)
         add_definitions(-DWITH_KPARTS)
+    else(KF5Parts_FOUND)
+        find_package(KF5 REQUIRED COMPONENTS XmlGui)
     endif(KF5Parts_FOUND)
+
+    include(KDEInstallDirs)
+    include(KDECMakeSettings)
+    include(KDECompilerSettings)
     
     list(APPEND QML_DIRS "${ECM_MODULE_DIR}")
 endif(ECM_FOUND)
