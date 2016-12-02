@@ -20,7 +20,7 @@ if(ECM_FOUND)
     include(ECMInstallIcons)
     include(FeatureSummary)
 
-    find_package(KF5 REQUIRED COMPONENTS
+    find_package(KF5 COMPONENTS
         CoreAddons
         I18n
         #ConfigWidgets
@@ -45,7 +45,7 @@ if(ECM_FOUND)
             Message("Building with KParts")
         endif()
     else()
-        find_package(KF5 REQUIRED COMPONENTS XmlGui)
+        find_package(KF5 COMPONENTS XmlGui)
     endif()
 
     include(KDEInstallDirs)
