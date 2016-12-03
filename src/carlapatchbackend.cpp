@@ -309,16 +309,16 @@ void CarlaPatchBackend::preload()
         
         std::function<void()> outputhandler;
         outputhandler = [this,pre,outputhandler,preClients](){
-            static QString stdout;
+            static QString stdoutstr;
             QString newoutput = QString::fromLatin1(exec->readAllStandardOutput());
             qDebug() << newoutput;
-            stdout += newoutput;
-            //qDebug() << stdout;
-            if(stdout.contains("loaded sucessfully!"))
+            stdoutstr += newoutput;
+            //qDebug() << stdoutstr;
+            if(stdoutstr.contains("loaded sucessfully!"))
             {
                 emit progress(PROGRESS_LOADED);
             }
-            if(stdout.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully
+            if(stdoutstr.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully
                 emit progress(PROGRESS_READY);
             if(clientName.isEmpty())
             {
@@ -349,7 +349,7 @@ void CarlaPatchBackend::preload()
                     }
                 }
             }
-            stdout = stdout.section('\n',-1);
+            stdoutstr = stdoutstr.section('\n',-1);
             
             if(this != activeBackend)
                 disconnectClient();

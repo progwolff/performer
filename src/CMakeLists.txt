@@ -54,11 +54,11 @@ if(WITH_KF5)
     )
 endif(WITH_KF5)
 
-if(NOT WITH_KPARTS)
+if(NOT WITH_KPARTS AND WITH_KF5)
     target_link_libraries(performer
     KF5::XmlGui
     )
-endif(NOT WITH_KPARTS)
+endif(NOT WITH_KPARTS AND WITH_KF5)
 
 if(WITH_KPARTS)
     target_link_libraries(performer
