@@ -46,29 +46,36 @@ target_link_libraries(performer
 
 if(WITH_KF5)
     target_link_libraries(performer
-    #KF5::ConfigWidgets
-    KF5::KIOWidgets
-    KF5::I18n
-    #KF5::XmlGui
-    KF5::CoreAddons
+        #KF5::ConfigWidgets
+        KF5::KIOWidgets
+        KF5::I18n
+        #KF5::XmlGui
+        KF5::CoreAddons
     )
 endif(WITH_KF5)
 
 if(NOT WITH_KPARTS AND WITH_KF5)
     target_link_libraries(performer
-    KF5::XmlGui
+        KF5::XmlGui
     )
 endif(NOT WITH_KPARTS AND WITH_KF5)
 
 if(WITH_KPARTS)
     target_link_libraries(performer
-    KF5::Parts
+        KF5::Parts
     )
+else(WITH_KPARTS)
+    if(WITH_QWEBENGINE)
+        target_link_libraries(performer 
+            Qt5::WebEngineWidgets
+        )
+        install( DIRECTORY pdf.js DESTINATION ${CMAKE_INSTALL_DATADIR}/performer )
+    endif(WITH_QWEBENGINE)
 endif(WITH_KPARTS)
 
 if(JACK_FOUND)
     target_link_libraries(performer
-    ${JACK_LIBRARIES}
+        ${JACK_LIBRARIES}
     )
 endif(JACK_FOUND)
 
