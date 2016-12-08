@@ -179,6 +179,7 @@ Performer::~Performer()
     delete m_part;
 #endif
 #ifdef WITH_QWEBENGINE
+	m_webview->close();
     delete m_webview;
 #endif
     delete m_dock;

@@ -85,6 +85,9 @@ else(WITH_KPARTS)
         target_link_libraries(performer 
             Qt5::WebEngineWidgets
         )
+		if(NOT DEFINED CMAKE_INSTALL_DATADIR)
+		    set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_BINDIR}/data)
+		endif()
         install( DIRECTORY pdf.js DESTINATION ${CMAKE_INSTALL_DATADIR}/performer )
     endif(WITH_QWEBENGINE)
 endif(WITH_KPARTS)
