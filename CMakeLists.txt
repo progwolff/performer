@@ -12,7 +12,13 @@ find_package(Qt5 ${QT_MIN_VERSION}
     #X11Extras 
     Quick 
     QuickWidgets
-    Concurrent)
+    Concurrent
+    )
+    
+find_package(Qt5 ${QT_MIN_VESION}
+    OPTIONAL_COMPONENTS
+    WebEngineWidgets
+)
 
 find_package(ECM NO_MODULE)
 if(ECM_FOUND)
@@ -54,6 +60,16 @@ if(ECM_FOUND)
     
     list(APPEND QML_DIRS "${ECM_MODULE_DIR}")
 endif(ECM_FOUND)
+
+if(NOT WITH_KPARTS)
+    if(Qt5WebEngineWidgets_FOUND)
+        option(WITH_QWEBENGINE "Build with QWebEngine (View files without Okular)" ON)
+        if(WITH_QWEBENGINE)
+            add_definitions(-DWITH_QWEBENGINE)
+            Message("Building with QWebEngine")
+        endif()
+    endif()
+endif()
 
 set(QML_IMPORT_PATH "${QML_DIRS}" CACHE STRING "Qt Creator 4.1 extra qml import paths")
 

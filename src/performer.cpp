@@ -48,6 +48,11 @@
 #include "setlistmodel.h"
 #include "setlistview.h"
 
+#ifdef WITH_QWEBENGINE
+#include <QWebEngineSettings>
+#include <QMimeDatabase>
+#endif
+
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent)
@@ -63,6 +68,13 @@ Performer::Performer(QWidget *parent) :
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
 #endif
+
+#ifdef WITH_QWEBENGINE
+    m_webview = new QWebEngineView(this);
+    setCentralWidget(m_webview);
+    QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
+#endif
+    
     setWindowIcon(QIcon::fromTheme("performer"));
    
     
@@ -79,6 +91,7 @@ Performer::Performer(QWidget *parent) :
     
     m_setlist->addButton->setEnabled(true);
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
+    m_setlist->addButton->setIcon(QIcon::fromTheme("list-add"));//, QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     
     QAction *action = new QAction(i18n("Previous"), this); //no translation to make config translation invariant
     action->setData("button");
@@ -97,7 +110,7 @@ Performer::Performer(QWidget *parent) :
    
     alwaysontopaction = new QAction(i18n("Always on top"),this);
     alwaysontopaction->setCheckable(true);
-    alwaysontopaction->setIcon(QIcon::fromTheme("arrow-up"));
+    alwaysontopaction->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
     alwaysontopaction->setData("button");
     connect(alwaysontopaction, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));
     connect(alwaysontopaction, SIGNAL(triggered(bool)), this, SLOT(setAlwaysOnTop(bool)));
@@ -111,7 +124,7 @@ Performer::Performer(QWidget *parent) :
     alwaysontopaction->setObjectName("Alwaysontop");
     
     action = new QAction(i18n("Panic!"),this);
-    action->setIcon(QIcon::fromTheme("dialog-warning"));
+    action->setIcon(QIcon::fromTheme("dialog-warning", QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning)));
     action->setData("button");
     action->setToolTip(i18n("Terminate and reload all Carla instances."));
     connect(action, SIGNAL(triggered(bool)), model, SLOT(panic()));
@@ -134,6 +147,8 @@ Performer::Performer(QWidget *parent) :
 #else
     connect(m_setlist->patchrequestbutton, SIGNAL(clicked()), SLOT(requestPatch()));
     connect(m_setlist->notesrequestbutton, SIGNAL(clicked()), SLOT(requestNotes()));
+    m_setlist->patchrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
+    m_setlist->notesrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
 #endif
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
     connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
@@ -162,6 +177,9 @@ Performer::~Performer()
     delete model;
 #ifdef WITH_KPARTS
     delete m_part;
+#endif
+#ifdef WITH_QWEBENGINE
+    delete m_webview;
 #endif
     delete m_dock;
     delete m_setlist;
@@ -223,7 +241,7 @@ void Performer::showContextMenu(QPoint pos)
         QMenu myMenu;
         QAction *action;
         
-        action = myMenu.addAction(QIcon::fromTheme("media-playback-start"), i18n("Play now"), this, [this,index](){model->playNow(index);});
+        action = myMenu.addAction(QIcon::fromTheme("media-playback-start", QApplication::style()->standardIcon(QStyle::SP_MediaPlay)), i18n("Play now"), this, [this,index](){model->playNow(index);});
         if(!model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
             action->setEnabled(false);
         if(index.data(SetlistModel::ActiveRole).toBool() && index.data(SetlistModel::ProgressRole).toInt() > 0)
@@ -231,17 +249,17 @@ void Performer::showContextMenu(QPoint pos)
         
         myMenu.addSeparator();
         
-        action = myMenu.addAction(QIcon::fromTheme("go-up"), i18n("Prefer"), this, SLOT(prefer()));
+        action = myMenu.addAction(QIcon::fromTheme("go-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)), i18n("Prefer"), this, SLOT(prefer()));
         if(index.row() <= 0)
             action->setEnabled(false);
         
-        action = myMenu.addAction(QIcon::fromTheme("go-down"), i18n("Defer"), this, SLOT(defer()));
+        action = myMenu.addAction(QIcon::fromTheme("go-down", QApplication::style()->standardIcon(QStyle::SP_ArrowDown)), i18n("Defer"), this, SLOT(defer()));
         if(index.row() >= m_setlist->setListView->model()->rowCount()-1)
             action->setEnabled(false);
         
         myMenu.addSeparator();
         
-        myMenu.addAction(QIcon::fromTheme("list-remove"), i18n("Remove entry"), this, SLOT(remove()));
+        myMenu.addAction(QIcon::fromTheme("list-remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Remove entry"), this, SLOT(remove()));
         
         // Show context menu at handling position
         myMenu.exec(globalPos);
@@ -272,12 +290,12 @@ void Performer::midiContextMenuRequested(const QPoint& pos)
             
             if(cc <= 127)
             {
-                action = myMenu.addAction(QIcon::fromTheme("tag-assigned"), i18n("CC %1 Assigned", cc), this, [](){});
+                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc), this, [](){});
                 action->setEnabled(false);
                 myMenu.addSeparator();
             }
-            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts"), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction()); midiLearn(sender->defaultAction());});
-            action = myMenu.addAction(QIcon::fromTheme("remove"), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction());});
+            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction()); midiLearn(sender->defaultAction());});
+            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction());});
             if(cc > 127) 
                 action->setEnabled(false);
             
@@ -307,12 +325,12 @@ void Performer::midiContextMenuRequested(const QPoint& pos)
             
             if(cc <= 127)
             {
-                action = myMenu.addAction(QIcon::fromTheme("tag-assigned"), i18n("CC %1 Assigned", cc), this, [](){});
+                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc), this, [](){});
                 action->setEnabled(false);
                 myMenu.addSeparator();
             }
-            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts"), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->actions()[0]); midiLearn(sender->actions()[0]);});
-            action = myMenu.addAction(QIcon::fromTheme("remove"), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->actions()[0]);});
+            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->actions()[0]); midiLearn(sender->actions()[0]);});
+            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->actions()[0]);});
             if(cc > 127) 
                 action->setEnabled(false);
             
@@ -704,15 +722,34 @@ void Performer::songSelected(const QModelIndex& index)
     //m_setlist->patchrequester->clear();
     m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
     m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
-#ifdef WITH_KPARTS
-    if(m_part && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
-    {
-        m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
-    }
-#endif
 #else
     m_setlist->patchrequestedit->setText(ind.data(SetlistModel::PatchRole).toUrl().toLocalFile());
     m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+#endif
+#ifdef WITH_KPARTS
+if(m_part && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+{
+    m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
+}
+#endif
+#ifdef WITH_QWEBENGINE
+if(m_webview && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+{
+    QMimeDatabase db;
+    QMimeType type = db.mimeTypeForFile(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+    
+    if(type.name() == "application/pdf")
+    {
+        QUrl pdfurl = QUrl::fromLocalFile(QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/pdf.js/web/viewer.html"));
+        pdfurl.setQuery(QString("file=")+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+        qDebug() << pdfurl;
+        m_webview->load(pdfurl);
+    }
+    else
+    {
+        m_webview->load(ind.data(SetlistModel::NotesRole).toUrl());
+    }
+}
 #endif
     /*m_setlist->deferButton->setEnabled(false);
     m_setlist->preferButton->setEnabled(false);
@@ -778,25 +815,25 @@ void Performer::prepareUi()
     
     QAction* action = new QAction(this);
     action->setText(i18n("&New"));
-    action->setIcon(QIcon::fromTheme("document-new"));
+    action->setIcon(QIcon::fromTheme("document-new", QApplication::style()->standardIcon(QStyle::SP_FileIcon)));
     connect(action, SIGNAL(triggered(bool)), model, SLOT(reset()));
     filemenu->addAction(action);
     
     action = new QAction(this);
     action->setText(i18n("&Open"));
-    action->setIcon(QIcon::fromTheme("document-open"));
+    action->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
     filemenu->addAction(action);
     
     action = new QAction(this);
     action->setText(i18n("&Save"));
-    action->setIcon(QIcon::fromTheme("document-save"));
+    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
     filemenu->addAction(action);
     
     action = new QAction(this);
     action->setText(i18n("&Save as"));
-    action->setIcon(QIcon::fromTheme("document-save"));
+    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
     filemenu->addAction(action);
     
@@ -864,6 +901,33 @@ void Performer::setupPageViewActions()
     });
     midi_cc_actions << action;
     scrollBar->addAction(action);
+#endif
+#ifdef WITH_QWEBENGINE
+    QObjectList children = m_webview->children();
+    int size = children.size();
+    int newsize = size;
+    do 
+    {
+        size = children.size();
+        for(QObject* child : children)
+        {
+            if(!child || child->children().isEmpty()) continue;
+            for(QObject* grandchild : child->children())
+            {
+                if(!children.contains(grandchild))
+                {
+                    children << grandchild;
+                    qDebug() << ((QWidget*)child)->objectName();
+                    if(((QWidget*)child)->objectName() == "okular::pageView")
+                    {
+                        pageView = (QAbstractScrollArea*)child;
+                        break;
+                    }
+                }
+            }
+        }
+        newsize = children.size();
+    } while(!pageView && newsize > size);
 #endif
 }
 

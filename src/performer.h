@@ -18,13 +18,25 @@
 #define PERFORMER_H
 
 #ifdef WITH_KPARTS
+
 #include <kparts/mainwindow.h>
 #include <kparts/readwritepart.h>
+
 #elif defined WITH_KF5
+
 #include <KXmlGuiWindow>
+
 #else
+
 #include "fallback.h"
 #include <QtWidgets>
+
+#ifdef WITH_QWEBENGINE
+
+#include <QWebEngineView>
+
+#endif
+
 #endif
 
   
@@ -91,6 +103,9 @@ private:
     
 #ifdef WITH_KPARTS
     KParts::ReadOnlyPart *m_part;
+#endif
+#ifdef WITH_QWEBENGINE
+    QWebEngineView* m_webview;
 #endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
