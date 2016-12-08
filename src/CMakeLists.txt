@@ -1,11 +1,25 @@
    
 # add_subdirectory(configwidgets)
 
-find_package ( PkgConfig REQUIRED )
+find_package ( PkgConfig  )
+if(PkgConfig_FOUND)
 pkg_check_modules ( JACK jack )
 if(JACK_FOUND)
     add_definitions(-DWITH_JACK)
+	set(WITH_JACK 1)
 endif(JACK_FOUND)
+else(PkgConfig_FOUND)
+if(DEFINED JACK_LIBRARIES)
+	add_definitions(-DWITH_JACK)
+	message("looking for jack headers in ${JACK_INCLUDEDIR}")
+	message("using jack lib ${JACK_LIBRARIES}")
+	set(WITH_JACK 1)
+else()
+MESSAGE("pkgconfig not found. please set JACK_INCLUDEDIR and JACK_LIBRARIES.")
+endif()
+endif(PkgConfig_FOUND)
+
+set(CMAKE_AUTOMOC ON)
 
 include_directories ( ${JACK_INCLUDEDIR} ${JACK_INCLUDE_DIRS} )
 link_directories ( ${JACK_LIBDIR} ${JACK_LIBRARY_DIRS} )
@@ -28,6 +42,7 @@ if(WITH_KF5)
 else(WITH_KF5)
     set(PERFORMER_UI ui/setlist_without_kde.ui)
     qt5_wrap_ui(PERFORMER ${PERFORMER_UI})
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif(WITH_KF5)
 
     
@@ -43,6 +58,7 @@ target_link_libraries(performer
     Qt5::QuickWidgets
     Qt5::Concurrent
 )
+
 
 if(WITH_KF5)
     target_link_libraries(performer
@@ -66,11 +82,11 @@ if(WITH_KPARTS)
     )
 endif(WITH_KPARTS)
 
-if(JACK_FOUND)
+if(WITH_JACK)
     target_link_libraries(performer
     ${JACK_LIBRARIES}
     )
-endif(JACK_FOUND)
+endif(WITH_JACK)
 
 if(NOT DEFINED CMAKE_INSTALL_BINDIR)
   set(CMAKE_INSTALL_BINDIR "bin" CACHE PATH "user executables (bin)")

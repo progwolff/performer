@@ -3,6 +3,15 @@
 
 #include <QObject>
 #include <QMap>
+
+//fix jack when building with Visual Studio
+#if defined(_MSC_VER) && !defined(WIN32)
+#define WIN32
+#endif
+#if defined(_MSC_VER)
+#define int8_t
+#endif
+
 #include <jack/jack.h>
 
 /**
@@ -13,7 +22,7 @@ class AbstractPatchBackend : public QObject
     Q_OBJECT
     
 public:
-    enum ERROR_CODE : int {JACK_NO_SERVER=-4, JACK_OPEN_FAILED=-3, PROCESS_ERROR=-2, PROCESS_EXIT=-1, PROGRESS_NONE=0, PROGRESS_CREATE=1, PROGRESS_PRELOAD=5, PROGRESS_ACTIVE=10, PROGRESS_LOADED=50, PROGRESS_READY=100};
+    enum ERROR_CODE : int {JACK_NO_SERVER=-5, JACK_OPEN_FAILED=-4, PROCESS_FAILEDTOSTART=-3, PROCESS_ERROR=-2, PROCESS_EXIT=-1, PROGRESS_NONE=0, PROGRESS_CREATE=1, PROGRESS_PRELOAD=5, PROGRESS_ACTIVE=10, PROGRESS_LOADED=50, PROGRESS_READY=100};
     
     /**
      * Create a patch backend instance and assign a patch file

@@ -187,12 +187,14 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
 
 void SetlistModel::reset()
 {
-    beginInsertRows(QModelIndex(), 0, m_setlist.count()-1);
+	if (m_setlist.count() > 0)
+	{
+		beginInsertRows(QModelIndex(), 0, m_setlist.count() - 1);
 
-    m_setlist.clear();
+		m_setlist.clear();
 
-    endInsertRows();
-
+		endInsertRows();
+	}
     removeBackend(m_activebackend);
     removeBackend(m_previousbackend);
     removeBackend(m_nextbackend);
@@ -225,7 +227,7 @@ int SetlistModel::add(const QString &name, const QVariantMap &conf)
     return m_setlist.size()-1;
 }
 
-bool SetlistModel::dropMimeData(const QMimeData */*data*/, Qt::DropAction /*action*/, int row, int /*column*/, const QModelIndex &/*parent*/)
+bool SetlistModel::dropMimeData(const QMimeData * /*data*/, Qt::DropAction /*action*/, int row, int /*column*/, const QModelIndex & /*parent*/)
 {
     movedindex = row;
 
@@ -409,6 +411,9 @@ void SetlistModel::updateProgress(int p)
 
     switch(p)
     {
+	case AbstractPatchBackend::PROCESS_FAILEDTOSTART:
+		emit error(i18n("Failed to start Carla process."));
+		break;
     case AbstractPatchBackend::PROCESS_ERROR:
     case AbstractPatchBackend::PROCESS_EXIT:
         qDebug() << "error on " << m_setlist[ind].name() << ". Trying to restart.";
