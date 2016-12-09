@@ -31,11 +31,11 @@
 #include "fallback.h"
 #include <QtWidgets>
 
+#endif
+
 #ifdef WITH_QWEBENGINE
 
 #include <QWebEngineView>
-
-#endif
 
 #endif
 
