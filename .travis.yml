@@ -11,6 +11,7 @@ arch:
     - carla
     - git
     - qt5-tools
+    - qt5-declarative
     - python
     - cmake
   script:
