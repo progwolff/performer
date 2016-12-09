@@ -9,13 +9,9 @@ compiler:
 arch:
   packages:
     - carla
-    - kdebase-runtime
-    - kparts
     - git
-    - extra-cmake-modules
     - qt5-tools
     - python
-    - okular-git
   script:
     - "git clone https://github.com/progwolff/performer.git"
     - "cd performer/dist/arch/ && makepkg -i"
