@@ -179,6 +179,7 @@ Performer::~Performer()
     delete m_part;
 #endif
 #ifdef WITH_QWEBENGINE
+	m_webview->close();
     delete m_webview;
 #endif
     delete m_dock;
@@ -560,7 +561,7 @@ void Performer::loadFile(const QString& path)
         songSelected(QModelIndex());
     }
 #else
-    QSettings set(path, QSettings::NativeFormat);
+    QSettings set(path, QSettings::IniFormat);
     qDebug() << set.childGroups();
     qDebug() << set.allKeys();
     set.beginGroup("setlist");
@@ -624,7 +625,7 @@ void Performer::saveFile(const QString& path)
 
     set->sync();
 #else
-    QSettings set(filename, QSettings::NativeFormat);
+    QSettings set(filename, QSettings::IniFormat);
     set.clear();
     
     set.beginGroup("setlist");

@@ -287,11 +287,11 @@ void CarlaPatchBackend::preload()
                     clientInitMutex.unlock();
                 exec = nullptr;
                 clientName = "";
-                emit progress(PROCESS_EXIT);
+	            emit progress(PROCESS_EXIT);
             }
             QObject::sender()->deleteLater();
         });
-        connect(exec, &QProcess::errorOccurred, this, [this]()
+        connect(exec, &QProcess::errorOccurred, this, [this](QProcess::ProcessError err)
         {
             if(QObject::sender() == exec)
             {
@@ -299,7 +299,14 @@ void CarlaPatchBackend::preload()
                     clientInitMutex.unlock();
                 exec = nullptr;
                 clientName = "";
-                emit progress(PROCESS_ERROR);
+				if (err == QProcess::FailedToStart)
+				{
+					emit progress(PROCESS_FAILEDTOSTART);
+					if (this == activeBackend)
+						activeBackend = nullptr;
+				}
+				else 
+					emit progress(PROCESS_ERROR);
             }
             qDebug() << ((QProcess*)QObject::sender())->readAllStandardError();
             QObject::sender()->deleteLater();
@@ -373,6 +380,8 @@ void CarlaPatchBackend::activate()
         return;
     if(!exec) 
         preload();
+	if (this != activeBackend)
+		return;
     if(clientName.isEmpty())
     {
         qDebug() << "cannot activate. clientName is empty";

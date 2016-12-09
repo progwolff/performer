@@ -63,7 +63,11 @@ int main (int argc, char *argv[])
     if(args.size() > 0)
         window->loadFile(args[0]);
     
-    return app.exec();
+    int exitcode = app.exec();
+
+	delete window;
+
+	return exitcode;
 }
 
 
