@@ -7,7 +7,7 @@ url="https://github.com/progwolff/performer"
 provides=('performer')
 license=("GPL")
 depends=('carla') 
-makedepends=('git' 'qt5-tools' 'python')
+makedepends=('git' 'cmake' 'qt5-tools' 'python')
 optdepends=('kdebase-runtime: KDE integration'
     'extra-cmake-modules: KDE integration'
     'okular-git: display notes or chords' 

@@ -12,6 +12,7 @@ arch:
     - git
     - qt5-tools
     - python
+    - cmake
   script:
     - "git clone https://github.com/progwolff/performer.git"
     - "cd performer/dist/arch/ && makepkg -i"
