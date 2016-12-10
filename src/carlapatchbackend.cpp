@@ -381,8 +381,8 @@ void CarlaPatchBackend::activate()
         return;
     if(!exec) 
         preload();
-	if (this != activeBackend)
-		return;
+    if (this != activeBackend)
+        return;
     if(clientName.isEmpty())
     {
         qDebug() << "cannot activate. clientName is empty";

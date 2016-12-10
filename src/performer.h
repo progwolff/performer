@@ -42,6 +42,7 @@
 #include <QDockWidget>
 
 #include <QPointer>
+#include <QScrollArea>
 
 class SetlistModel;
 class QStyledItemDelegate;
@@ -108,6 +109,7 @@ private:
 #endif
 #ifdef WITH_QWEBENGINE
     QWebEngineView *m_webview;
+    QScrollArea *m_webviewarea;
 #endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
