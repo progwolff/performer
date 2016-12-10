@@ -39,8 +39,9 @@
 
 #endif
 
-  
 #include <QDockWidget>
+
+#include <QPointer>
 
 class SetlistModel;
 class QStyledItemDelegate;
@@ -105,7 +106,7 @@ private:
     KParts::ReadOnlyPart *m_part;
 #endif
 #ifdef WITH_QWEBENGINE
-    QWebEngineView* m_webview;
+    QWebEngineView *m_webview;
 #endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
@@ -123,7 +124,7 @@ private:
     QAction* midi_learn_action;
     QAction* alwaysontopaction;
     
-    QAbstractScrollArea* pageView;
+    QPointer<QAbstractScrollArea> pageView;
     
     bool alwaysontop;
     

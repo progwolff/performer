@@ -65,6 +65,8 @@ target_link_libraries(performer
 
 
 if(WITH_KF5)
+    kde_enable_exceptions()
+
     target_link_libraries(performer
         #KF5::ConfigWidgets
         KF5::KIOWidgets
