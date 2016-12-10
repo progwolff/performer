@@ -90,6 +90,7 @@ private slots:
     void midiClear(QAction* action);
     
     void error(const QString& message);
+    void info(const QString& message);
     
     void setAlwaysOnTop(bool ontop);
     

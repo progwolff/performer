@@ -158,6 +158,7 @@ Performer::Performer(QWidget *parent) :
 
     connect(model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), this, SLOT(receiveMidiEvent(unsigned char,unsigned char,unsigned char)));
     connect(model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
+    connect(model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
     
     
     loadConfig();
@@ -197,6 +198,12 @@ void Performer::error(const QString& msg)
     QErrorMessage *box = new QErrorMessage(this);
     box->showMessage(msg);
     //box->deleteLater();
+}
+
+void Performer::info(const QString& msg)
+{
+    qDebug() << "info: " << msg;
+    statusBar()->showMessage(msg);
 }
 
 void Performer::prefer()

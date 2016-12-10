@@ -199,6 +199,7 @@ bool CarlaPatchBackend::freeJackClient()
     {
         try_run(500, [](){
             jack_client_close(m_client);
+            m_client = nullptr;
         });
         return true;
     }

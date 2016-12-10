@@ -48,6 +48,8 @@
 #include "carlapatchbackend.h"
 #include <qbrush.h>
 
+#include <QTimer>
+
 SetlistModel::SetlistModel(QObject *parent)
     : QAbstractListModel(parent)
     , m_activebackend(nullptr)
@@ -426,11 +428,39 @@ void SetlistModel::updateProgress(int p)
         break;
     case AbstractPatchBackend::JACK_NO_SERVER:
         qDebug() << "no jack server running.";
-        emit error(i18n("Could not find a running jack server. Can't load Carla patches."));
-        removeBackend(m_activebackend);
         removeBackend(m_previousbackend);
         removeBackend(m_nextbackend);
+        removeBackend(m_activebackend);
         while(!CarlaPatchBackend::freeJackClient());
+        emit info(i18n("Could not find a running jack server. Will retry to connect to server in %1 seconds.", 10));
+        QTimer *timer;
+        timer = new QTimer(this);
+        timer->setInterval(1000);
+        timer->setSingleShot(false);
+        int *secondsleft;
+        secondsleft = new int(10);
+        connect(timer, &QTimer::timeout, this, [this,secondsleft](){
+            --*secondsleft;
+            if(*secondsleft <= 0)
+            {
+                emit info("");
+                    
+                if(!CarlaPatchBackend::jackClient())
+                    emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
+                else
+                {
+                    panic();
+                }
+                delete secondsleft;
+                ((QTimer*)QObject::sender())->stop();
+                ((QTimer*)QObject::sender())->deleteLater();
+            }
+            else
+            {
+                emit info(i18n("Could not find a running jack server. Will retry to connect to server in %1 seconds.", *secondsleft));
+            }
+        });
+        timer->start();
         break;
     case AbstractPatchBackend::JACK_OPEN_FAILED:
         qDebug() << "failed to create a jack client.";
