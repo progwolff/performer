@@ -14,6 +14,7 @@ arch:
     - qt5-declarative
     - python
     - cmake
+    - gdb
   script:
     - "git clone https://github.com/progwolff/performer.git"
     - "cd performer/dist/arch/ && makepkg -Cci"
