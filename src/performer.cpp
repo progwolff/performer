@@ -849,6 +849,8 @@ void Performer::prepareUi()
 void Performer::setupPageViewActions()
 {
 #ifdef WITH_KPARTS
+    if(!m_part || !m_part->widget())
+        return;
     QObjectList children = m_part->widget()->children();
     int size = children.size();
     int newsize = size;
@@ -874,39 +876,42 @@ void Performer::setupPageViewActions()
         }
         newsize = children.size();
     } while(!pageView && newsize > size);
-    if(!pageView)
-        return;
-    QScrollBar* scrollBar = pageView->verticalScrollBar();
-    scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    
-    QAction *action = new QAction(i18n("Scroll vertical"), this);
-    action->setObjectName("ScrollV");
-    connect(action, &QAction::triggered, this, [scrollBar,action](){
-        qDebug() << "scrollV: " << action->data().toInt(); 
-        scrollBar->setSliderPosition(
-            (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
-        );
-    });
-    midi_cc_actions << action;
-    scrollBar->addAction(action);
-    
-    scrollBar = pageView->horizontalScrollBar();
-    scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    
-    action = new QAction(i18n("Scroll horizontal"), this);
-    action->setObjectName("ScrollH");
-    connect(action, &QAction::triggered, this, [scrollBar,action](){
-        qDebug() << "scrollH: " << action->data().toInt(); 
-        scrollBar->setSliderPosition(
-            (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
-        );
-    });
-    midi_cc_actions << action;
-    scrollBar->addAction(action);
+    if(pageView)
+    {
+        QScrollBar* scrollBar = pageView->verticalScrollBar();
+        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+        
+        QAction *action = new QAction(i18n("Scroll vertical"), this);
+        action->setObjectName("ScrollV");
+        connect(action, &QAction::triggered, this, [scrollBar,action](){
+            qDebug() << "scrollV: " << action->data().toInt(); 
+            scrollBar->setSliderPosition(
+                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
+            );
+        });
+        midi_cc_actions << action;
+        scrollBar->addAction(action);
+        
+        scrollBar = pageView->horizontalScrollBar();
+        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+        
+        action = new QAction(i18n("Scroll horizontal"), this);
+        action->setObjectName("ScrollH");
+        connect(action, &QAction::triggered, this, [scrollBar,action](){
+            qDebug() << "scrollH: " << action->data().toInt(); 
+            scrollBar->setSliderPosition(
+                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
+            );
+        });
+        midi_cc_actions << action;
+        scrollBar->addAction(action);
+    }
 #endif
 #ifdef WITH_QWEBENGINE
+    if(!m_webview)
+        return;
     QObjectList children = m_webview->children();
     int size = children.size();
     int newsize = size;
