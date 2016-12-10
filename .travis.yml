@@ -16,7 +16,11 @@ arch:
     - cmake
   script:
     - "git clone https://github.com/progwolff/performer.git"
-    - "cd performer/dist/arch/ && makepkg -i"
+    - "cd performer/dist/arch/ && makepkg -Cci"
+    - "packer -S --noconfirm qt-webengine"
+    - "makepkg -fCci"
+    - "packer -S --noconfirm extra-cmake-modules kdebase-runtime kparts okular-git"
+    - "makepkg -fCci"
 
 script:
   - "curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash"
