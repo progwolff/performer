@@ -36,13 +36,14 @@
 #ifdef WITH_QWEBENGINE
 
 #include <QWebEngineView>
+#include <QScrollArea>
+#include <QComboBox>
 
 #endif
 
 #include <QDockWidget>
 
 #include <QPointer>
-#include <QScrollArea>
 
 class SetlistModel;
 class QStyledItemDelegate;
@@ -110,6 +111,7 @@ private:
 #ifdef WITH_QWEBENGINE
     QWebEngineView *m_webview;
     QScrollArea *m_webviewarea;
+    QComboBox *m_zoombox;
 #endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
