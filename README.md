@@ -12,10 +12,9 @@ Dependencies:
 * Carla
 * qt5-base
 * qt5-declarative
-* kdebase-runtime (optional: KDE integration)
-* extra-cmake-modules (make, optional: KDE integration)
 * qt5-tools (make)
 * python (make)
+* extra-cmake-modules (make, optional: KDE integration)
 * kdebase-runtime (optional: KDE integration)
 * kparts (optional: display notes or chords with okular)
 * okular-git (optional: display notes or chords)
