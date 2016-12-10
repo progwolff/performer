@@ -852,6 +852,7 @@ void Performer::setupPageViewActions()
     QObjectList children = m_part->widget()->children();
     int size = children.size();
     int newsize = size;
+    pageView = nullptr;
     do 
     {
         size = children.size();
@@ -873,6 +874,8 @@ void Performer::setupPageViewActions()
         }
         newsize = children.size();
     } while(!pageView && newsize > size);
+    if(!pageView)
+        return;
     QScrollBar* scrollBar = pageView->verticalScrollBar();
     scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
@@ -907,6 +910,7 @@ void Performer::setupPageViewActions()
     QObjectList children = m_webview->children();
     int size = children.size();
     int newsize = size;
+    pageView = nullptr;
     do 
     {
         size = children.size();
