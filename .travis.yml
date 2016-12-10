@@ -19,7 +19,7 @@ arch:
     - "git clone https://github.com/progwolff/performer.git"
     - "cd performer/dist/arch/ && makepkg -Cci"
     - "timeout 10s gdb -ex run  performer || true"
-    - "pacaur -S --noconfirm qt-webengine"
+    - "pacaur -S --noconfirm qt5-webengine"
     - "makepkg -fCci"
     - "timeout 10s gdb -ex run  performer || true"
     - "pacaur -S --noconfirm extra-cmake-modules kdebase-runtime kparts okular-git"
