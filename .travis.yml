@@ -14,9 +14,17 @@ arch:
     - qt5-declarative
     - python
     - cmake
+    - gdb
   script:
     - "git clone https://github.com/progwolff/performer.git"
-    - "cd performer/dist/arch/ && makepkg -i"
+    - "cd performer/dist/arch/ && makepkg -Cci"
+    - "timeout 10s gdb -ex run  performer || true"
+    - "pacaur -S --noconfirm qt5-webengine"
+    - "cd performer/dist/arch/ && makepkg -fCci"
+    - "timeout 10s gdb -ex run  performer || true"
+    - "pacaur -S --noconfirm extra-cmake-modules kdebase-runtime kparts okular-git"
+    - "cd performer/dist/arch/ && makepkg -fCci"
+    - "timeout 10s gdb -ex run  performer || true"
 
 script:
   - "curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash"

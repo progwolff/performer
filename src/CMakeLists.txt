@@ -19,6 +19,10 @@ MESSAGE("pkgconfig not found. please set JACK_INCLUDEDIR and JACK_LIBRARIES.")
 endif()
 endif(PkgConfig_FOUND)
 
+if(NOT WITH_JACK)
+message( FATAL_ERROR "Jack could not be found. Performer will noch work without Jack." )
+endif()
+
 set(CMAKE_AUTOMOC ON)
 
 include_directories ( ${JACK_INCLUDEDIR} ${JACK_INCLUDE_DIRS} )
@@ -61,6 +65,8 @@ target_link_libraries(performer
 
 
 if(WITH_KF5)
+    kde_enable_exceptions()
+
     target_link_libraries(performer
         #KF5::ConfigWidgets
         KF5::KIOWidgets

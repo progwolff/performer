@@ -36,11 +36,14 @@
 #ifdef WITH_QWEBENGINE
 
 #include <QWebEngineView>
+#include <QScrollArea>
+#include <QComboBox>
 
 #endif
 
-  
 #include <QDockWidget>
+
+#include <QPointer>
 
 class SetlistModel;
 class QStyledItemDelegate;
@@ -89,6 +92,7 @@ private slots:
     void midiClear(QAction* action);
     
     void error(const QString& message);
+    void info(const QString& message);
     
     void setAlwaysOnTop(bool ontop);
     
@@ -105,7 +109,9 @@ private:
     KParts::ReadOnlyPart *m_part;
 #endif
 #ifdef WITH_QWEBENGINE
-    QWebEngineView* m_webview;
+    QWebEngineView *m_webview;
+    QScrollArea *m_webviewarea;
+    QComboBox *m_zoombox;
 #endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
@@ -123,7 +129,7 @@ private:
     QAction* midi_learn_action;
     QAction* alwaysontopaction;
     
-    QAbstractScrollArea* pageView;
+    QPointer<QAbstractScrollArea> pageView;
     
     bool alwaysontop;
     

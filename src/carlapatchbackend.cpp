@@ -199,6 +199,7 @@ bool CarlaPatchBackend::freeJackClient()
     {
         try_run(500, [](){
             jack_client_close(m_client);
+            m_client = nullptr;
         });
         return true;
     }
@@ -390,8 +391,8 @@ void CarlaPatchBackend::activate()
         return;
     if(!exec) 
         preload();
-	if (this != activeBackend)
-		return;
+    if (this != activeBackend)
+        return;
     if(clientName.isEmpty())
     {
         qDebug() << "cannot activate. clientName is empty";

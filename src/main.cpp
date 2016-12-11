@@ -57,17 +57,17 @@ int main (int argc, char *argv[])
     aboutData.processCommandLine(&parser);
 #endif //WITH_KF5
 
-    Performer* window = new Performer(0);
+    Performer *window = new Performer(nullptr);
     window->show();
     const QStringList args = parser.positionalArguments();
     if(args.size() > 0)
         window->loadFile(args[0]);
     
-    int exitcode = app.exec();
-
-	delete window;
-
-	return exitcode;
+    int exit = app.exec();
+    
+    //delete window;
+    
+    return exit;
 }
 
 
