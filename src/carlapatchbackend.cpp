@@ -44,7 +44,7 @@ jack_client_t *CarlaPatchBackend::jackClient()
         qDebug() << "creating jack client";
         jack_status_t status;
         try_run(500,[&status](){
-            m_client = jack_client_open("Performer", JackNoStartServer, &status, NULL);
+            m_client = jack_client_open("Performer", JackNoStartServer, &status);
         });
         if (m_client == NULL) {
             if (status & JackServerFailed) {
@@ -312,60 +312,70 @@ void CarlaPatchBackend::preload()
             QObject::sender()->deleteLater();
         });
         
-        exec->start("carla-patchbay", QStringList() << patchfile);
-        
-        std::function<void()> outputhandler;
-        outputhandler = [this,pre,outputhandler,preClients](){
-            static QString stdoutstr;
-            QString newoutput = QString::fromLatin1(exec->readAllStandardOutput());
-            qDebug() << newoutput;
-            stdoutstr += newoutput;
-            //qDebug() << stdoutstr;
-            if(stdoutstr.contains("loaded sucessfully!"))
-            {
-                emit progress(PROGRESS_LOADED);
-            }
-            if(stdoutstr.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully
-                emit progress(PROGRESS_READY);
-            if(clientName.isEmpty())
-            {
-                QStringList post = jackClients();
-                QMap<QString,QString> postClients;
-                for(const QString& port : post)
-                {
-                    QString client = port.section(':', 0, 0).trimmed();
-                    
-                    try_run(500,[&postClients,&client](){
-                        postClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
-                    });
-                    //qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLatin1());
-                    
-                    if(!pre.contains(port) || (preClients[client] != postClients[client]))
-                    {
-                        QString name = client;
-                        qDebug() << "new port detected: " << port;
-                        if(!name.isEmpty())
-                        {
-                            clientInitMutex.unlock();
-                            clientName = name;
-                            clients.insert(clientName, this);
-                            qDebug() << "started " << clientName;
-                            disconnectClient();
-                            break;
-                        }
-                    }
-                }
-            }
-            stdoutstr = stdoutstr.section('\n',-1);
-            
-            if(this != activeBackend)
-                disconnectClient();
-            
-        };
-        
-        connect(exec, &QProcess::readyReadStandardOutput, this, outputhandler);
-        
-        emit progress(PROGRESS_ACTIVE);
+		QString carlaPath = QStandardPaths::findExecutable("carla-patchbay");
+		qDebug() << "carlaPath: " << carlaPath;
+		if(carlaPath.isEmpty())
+			carlaPath = QStandardPaths::findExecutable("Carla");
+		qDebug() << "carlaPath: " << carlaPath;
+		if (carlaPath.isEmpty())
+			emit progress(PROCESS_FAILEDTOSTART);
+		else
+		{
+			exec->start(carlaPath, QStringList() << patchfile);
+
+			std::function<void()> outputhandler;
+			outputhandler = [this, pre, outputhandler, preClients]() {
+				static QString stdoutstr;
+				QString newoutput = QString::fromLatin1(exec->readAllStandardOutput());
+				qDebug() << newoutput;
+				stdoutstr += newoutput;
+				//qDebug() << stdoutstr;
+				if (stdoutstr.contains("loaded sucessfully!"))
+				{
+					emit progress(PROGRESS_LOADED);
+				}
+				if (stdoutstr.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully
+					emit progress(PROGRESS_READY);
+				if (clientName.isEmpty())
+				{
+					QStringList post = jackClients();
+					QMap<QString, QString> postClients;
+					for (const QString& port : post)
+					{
+						QString client = port.section(':', 0, 0).trimmed();
+
+						try_run(500, [&postClients, &client]() {
+							postClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
+						});
+						//qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLatin1());
+
+						if (!pre.contains(port) || (preClients[client] != postClients[client]))
+						{
+							QString name = client;
+							qDebug() << "new port detected: " << port;
+							if (!name.isEmpty())
+							{
+								clientInitMutex.unlock();
+								clientName = name;
+								clients.insert(clientName, this);
+								qDebug() << "started " << clientName;
+								disconnectClient();
+								break;
+							}
+						}
+					}
+				}
+				stdoutstr = stdoutstr.section('\n', -1);
+
+				if (this != activeBackend)
+					disconnectClient();
+
+			};
+
+			connect(exec, &QProcess::readyReadStandardOutput, this, outputhandler);
+
+			emit progress(PROGRESS_ACTIVE);
+		}
     }
     else 
         QTimer::singleShot(200, this, SLOT(preload()));
