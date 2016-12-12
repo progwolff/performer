@@ -139,11 +139,29 @@ Performer::Performer(QWidget *parent) :
 #ifdef WITH_KF5
     connect(m_setlist->patchrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
     connect(m_setlist->notesrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
+#ifndef WITH_JACK
+    m_setlist->patchrequester->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
+    m_setlist->patchrequester->setEnabled(false);
+#endif
+#if !defined(WITH_KPARTS) && !defined(WITH_QWEBENGINE)
+    m_setlist->notesrequester->setToolTip(i18n("Performer was built without KParts or QWebEngine. Rebuild Performer with KParts or QWebEngine to enable displaying notes."));
+    m_setlist->notesrequester->setEnabled(false);
+#endif
 #else
     connect(m_setlist->patchrequestbutton, SIGNAL(clicked()), SLOT(requestPatch()));
     connect(m_setlist->notesrequestbutton, SIGNAL(clicked()), SLOT(requestNotes()));
     m_setlist->patchrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     m_setlist->notesrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
+#ifndef WITH_JACK
+    m_setlist->patchrequestbutton->setEnabled(false);
+    m_setlist->patchrequestedit->setEnabled(false);
+    m_setlist->patchrequestbutton->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
+#endif
+#if !defined(WITH_KPARTS) && !defined(WITH_QWEBENGINE)
+    m_setlist->notesrequestbutton->setEnabled(false);
+    m_setlist->notesrequestedit->setEnabled(false);
+    m_setlist->patchrequestbutton->setToolTip(i18n("Performer was built without KParts or QWebEngine. Rebuild Performer with KParts or QWebEngine to enable displaying notes."));
+#endif
 #endif
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
     connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
