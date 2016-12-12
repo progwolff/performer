@@ -515,7 +515,7 @@ void CarlaPatchBackend::try_run(int timeout, T function)
     while(timer.elapsed() < timeout && funct.isRunning());
     if(funct.isRunning())
     {
-        qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms";
+        qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms" << __FUNCTION__;
         funct.cancel();
     }
 }

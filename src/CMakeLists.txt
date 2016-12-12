@@ -29,7 +29,14 @@ endif(WITH_KF5)
 
     
 if(ANDROID)
-add_library(performer ${PERFORMER_SRCS} ${PERFORMER_UI})
+add_library(performer SHARED ${PERFORMER_SRCS} ${PERFORMER_UI})
+include(../cmake/AddQtAndroidApk.cmake)
+add_qt_android_apk(performer_apk performer
+	NAME "Performer"
+	VERSION_CODE 1
+	PACKAGE_NAME "de.julianwolff.performer"
+	DEPENDS performer
+)
 elseif(WIN32)
 add_executable(performer WIN32 ${PERFORMER_SRCS} ${PERFORMER_UI})
 else()
