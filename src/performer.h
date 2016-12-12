@@ -41,6 +41,15 @@
 
 #endif
 
+#ifdef WITH_QTWEBVIEW
+
+#include <QtWebView/QtWebView>
+#include <QQuickWidget>
+#include <QScrollArea>
+#include <QComboBox>
+
+#endif
+
 #include <QDockWidget>
 
 #include <QPointer>
@@ -112,6 +121,11 @@ private:
     QWebEngineView *m_webview;
     QScrollArea *m_webviewarea;
     QComboBox *m_zoombox;
+#endif
+#ifdef WITH_QTWEBVIEW
+    QScrollArea *m_webviewarea;
+    QComboBox *m_zoombox;
+    QQuickWidget *m_webview;
 #endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;

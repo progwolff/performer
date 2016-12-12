@@ -80,7 +80,7 @@ private:
      * @param function the function to execute
      */
     template<typename T>
-    static void try_run(int timeout, T function);
+    static void try_run(int timeout, T function, const char* name="");
 };
 
 #endif

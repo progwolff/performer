@@ -51,7 +51,7 @@ jack_client_t *CarlaPatchBackend::jackClient()
         jack_status_t status;
         try_run(500,[&status](){
             m_client = jack_client_open("Performer", JackNoStartServer, &status, NULL);
-        });
+        }, "jack_client_open");
         if (m_client == NULL) {
             if (status & JackServerFailed) {
                 fprintf (stderr, "JACK server not running\n");
@@ -83,7 +83,7 @@ jack_client_t *CarlaPatchBackend::jackClient()
                 jack_on_shutdown(m_client, &CarlaPatchBackend::serverLost, NULL);
                 
                 jack_activate(m_client);
-            });
+            }, "register callbacks");
         }
     } 
     return m_client;
@@ -105,6 +105,7 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
 {
     QMap<QString, QStringList> ret;
 #ifdef WITH_JACK
+    if(m_client)
     for(const char* port : allportlist)
     {
         QStringList conlist;
@@ -213,6 +214,7 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
 #ifdef WITH_JACK
 bool CarlaPatchBackend::freeJackClient()
 {
+    activeBackend = nullptr;
     if(instanceCounter.available() >= MAX_INSTANCES)
     {
         try_run(500, [](){
@@ -507,7 +509,7 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
 
 
 template<typename T>
-void CarlaPatchBackend::try_run(int timeout, T function)
+void CarlaPatchBackend::try_run(int timeout, T function, const char* name)
 {
     QTime timer;
     timer.start();
@@ -515,7 +517,7 @@ void CarlaPatchBackend::try_run(int timeout, T function)
     while(timer.elapsed() < timeout && funct.isRunning());
     if(funct.isRunning())
     {
-        qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms" << __FUNCTION__;
+        qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms" << name;
         funct.cancel();
     }
 }

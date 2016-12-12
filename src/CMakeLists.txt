@@ -17,7 +17,6 @@ set(PERFORMER_SRCS
     setlistview.cpp
 )
 
-
 if(WITH_KF5)
     set(PERFORMER_UI ui/setlist.ui)
     ki18n_wrap_ui(PERFORMER ${PERFORMER_UI})
@@ -78,17 +77,27 @@ if(WITH_KPARTS)
     target_link_libraries(performer
         KF5::Parts
     )
-else(WITH_KPARTS)
-    if(WITH_QWEBENGINE)
-        target_link_libraries(performer 
-            Qt5::WebEngineWidgets
-        )
-		if(NOT DEFINED CMAKE_INSTALL_DATADIR)
-		    set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_BINDIR}/data)
-		endif()
-        install( DIRECTORY pdf.js DESTINATION ${CMAKE_INSTALL_DATADIR}/performer )
-    endif(WITH_QWEBENGINE)
 endif(WITH_KPARTS)
+
+if(WITH_QWEBENGINE)
+    target_link_libraries(performer 
+        Qt5::WebEngineWidgets
+    )
+    if(NOT DEFINED CMAKE_INSTALL_DATADIR)
+        set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_BINDIR}/data)
+    endif()
+    install( DIRECTORY pdf.js DESTINATION ${CMAKE_INSTALL_DATADIR}/performer )
+endif(WITH_QWEBENGINE)
+
+if(WITH_QTWEBVIEW)
+    target_link_libraries(performer 
+        Qt5::WebView
+    )
+    if(NOT DEFINED CMAKE_INSTALL_DATADIR)
+        set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_BINDIR}/data)
+    endif()
+    install( DIRECTORY pdf.js DESTINATION ${CMAKE_INSTALL_DATADIR}/performer )
+endif(WITH_QTWEBVIEW)
 
 if(WITH_JACK)
     target_link_libraries(performer
@@ -111,5 +120,9 @@ if(ECM_FOUND)
     install( FILES Performerui.rc DESTINATION ${KXMLGUI_INSTALL_DIR}/performer )
 endif(ECM_FOUND)
 #kcoreaddons_desktop_to_json(performer ../performer.desktop)
+
+if(WITH_QTWEBVIEW)
+    install(FILES qml/webview.qml DESTINATION ${CMAKE_INSTALL_DATADIR}/performer)
+endif()
 
 

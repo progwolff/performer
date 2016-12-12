@@ -18,6 +18,15 @@ int main (int argc, char *argv[])
 {
     QApplication app(argc, argv);
     
+#ifdef WITH_QTWEBVIEW
+#ifdef QT_WEBVIEW_WEBENGINE_BACKEND
+    QtWebEngine::initalize();
+#else
+    QtWebView::initialize();
+#endif
+#endif
+
+    
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();

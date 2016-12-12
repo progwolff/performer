@@ -20,6 +20,7 @@ find_package(Qt5 ${QT_MIN_VERSION}
 find_package(Qt5 ${QT_MIN_VESION}
     OPTIONAL_COMPONENTS
     WebEngineWidgets
+    WebView
 )
 
 find_package(ECM NO_MODULE)
@@ -69,6 +70,16 @@ if(NOT WITH_KPARTS)
         if(WITH_QWEBENGINE)
             add_definitions(-DWITH_QWEBENGINE)
             Message("Building with QWebEngine")
+        endif()
+    endif()
+endif()
+
+if(NOT WITH_KPARTS AND NOT WITH_QWEBENGINE)
+    if(Qt5WebView_FOUND)
+        option(WITH_QTWEBVIEW "Build with QtWebView (View files without Okular or QWebEngineView)" ON)
+        if(WITH_QTWEBVIEW)
+            add_definitions(-DWITH_QTWEBVIEW)
+            Message("Building with QtWebView")
         endif()
     endif()
 endif()

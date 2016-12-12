@@ -453,17 +453,19 @@ void SetlistModel::updateProgress(int p)
                     
 #ifdef WITH_JACK
                 if(!CarlaPatchBackend::jackClient())
-                    emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
+                {
+                    *secondsleft = 11;
+                }
                 else
 #endif
                 {
+                    ((QTimer*)QObject::sender())->stop();
+                    ((QTimer*)QObject::sender())->deleteLater();
+                    delete secondsleft;
                     panic();
                 }
-                delete secondsleft;
-                ((QTimer*)QObject::sender())->stop();
-                ((QTimer*)QObject::sender())->deleteLater();
             }
-            else
+            else if (*secondsleft < 10)
             {
                 emit info(i18n("Could not find a running jack server. Will retry to connect to server in %1 seconds.", *secondsleft));
             }
@@ -472,7 +474,7 @@ void SetlistModel::updateProgress(int p)
         break;
     case AbstractPatchBackend::JACK_OPEN_FAILED:
         qDebug() << "failed to create a jack client.";
-        emit error(i18n("Could not create a client on the existing jack server. Can't load Carla patches."));
+        emit info(i18n("Could not create a client on the existing jack server. Can't load Carla patches."));
         break;
     }
 
