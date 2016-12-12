@@ -1,28 +1,6 @@
    
 # add_subdirectory(configwidgets)
 
-find_package ( PkgConfig  )
-if(PkgConfig_FOUND)
-pkg_check_modules ( JACK jack )
-if(JACK_FOUND)
-    add_definitions(-DWITH_JACK)
-	set(WITH_JACK 1)
-endif(JACK_FOUND)
-else(PkgConfig_FOUND)
-if(DEFINED JACK_LIBRARIES)
-	add_definitions(-DWITH_JACK)
-	message("looking for jack headers in ${JACK_INCLUDEDIR}")
-	message("using jack lib ${JACK_LIBRARIES}")
-	set(WITH_JACK 1)
-else()
-MESSAGE("pkgconfig not found. please set JACK_INCLUDEDIR and JACK_LIBRARIES.")
-endif()
-endif(PkgConfig_FOUND)
-
-if(NOT WITH_JACK)
-message( FATAL_ERROR "Jack could not be found. Performer will noch work without Jack." )
-endif()
-
 set(CMAKE_AUTOMOC ON)
 
 include_directories ( ${JACK_INCLUDEDIR} ${JACK_INCLUDE_DIRS} )
@@ -50,10 +28,17 @@ else(WITH_KF5)
 endif(WITH_KF5)
 
     
-
+if(ANDROID)
+add_library(performer ${PERFORMER_SRCS} ${PERFORMER_UI})
+elseif(WIN32)
+add_executable(performer WIN32 ${PERFORMER_SRCS} ${PERFORMER_UI})
+else()
 add_executable(performer ${PERFORMER_SRCS} ${PERFORMER_UI})
+endif()
 
 target_compile_definitions(performer PRIVATE -DPROJECT_VERSION="${PROJECT_VERSION}")
+
+#target_compile_features(performer PRIVATE cxx_auto_type)
 
 target_link_libraries(performer
     Qt5::Widgets

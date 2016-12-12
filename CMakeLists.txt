@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 set(PROJECT_VERSION "0.1.0")
 set(QT_MIN_VERSION "0.1.0")
 
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
+
 find_package(Qt5 ${QT_MIN_VERSION} 
     CONFIG REQUIRED COMPONENTS 
     Core 
@@ -69,6 +71,30 @@ if(NOT WITH_KPARTS)
             Message("Building with QWebEngine")
         endif()
     endif()
+endif()
+
+find_package ( PkgConfig  )
+if(PkgConfig_FOUND)
+    pkg_check_modules ( JACK jack )
+else(PkgConfig_FOUND)
+    if(DEFINED JACK_LIBRARIES)
+        set(JACK_FOUND 1)
+        message("looking for jack headers in ${JACK_INCLUDEDIR}")
+        message("using jack lib ${JACK_LIBRARIES}")
+    else()
+        MESSAGE("pkgconfig not found. please set JACK_INCLUDEDIR and JACK_LIBRARIES.")
+    endif()
+endif(PkgConfig_FOUND)
+if(JACK_FOUND)
+    option(WITH_JACK "Build with Jack (enable Carla backend)" ON)
+    if(WITH_JACK)
+        add_definitions(-DWITH_JACK)
+        Message("Building with Jack")
+    endif()
+endif(JACK_FOUND)
+
+if(NOT WITH_JACK)
+    message( "Building without Jack. Carla backend will not work." )
 endif()
 
 set(QML_IMPORT_PATH "${QML_DIRS}" CACHE STRING "Qt Creator 4.1 extra qml import paths")

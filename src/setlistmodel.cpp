@@ -66,8 +66,10 @@ SetlistModel::SetlistModel(QObject *parent)
     
     reset();
 
+#ifdef WITH_JACK
     if(!CarlaPatchBackend::jackClient())
         emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
+#endif
 
 }
 
@@ -76,7 +78,9 @@ SetlistModel::~SetlistModel()
     removeBackend(m_activebackend);
     removeBackend(m_previousbackend);
     removeBackend(m_nextbackend);
+#ifdef WITH_JACK
     while(!CarlaPatchBackend::freeJackClient());
+#endif
 }
 
 void SetlistModel::createBackend(AbstractPatchBackend*& backend, int index)
@@ -431,7 +435,9 @@ void SetlistModel::updateProgress(int p)
         removeBackend(m_previousbackend);
         removeBackend(m_nextbackend);
         removeBackend(m_activebackend);
+#ifdef WITH_JACK
         while(!CarlaPatchBackend::freeJackClient());
+#endif
         emit info(i18n("Could not find a running jack server. Will retry to connect to server in %1 seconds.", 10));
         QTimer *timer;
         timer = new QTimer(this);
@@ -445,9 +451,11 @@ void SetlistModel::updateProgress(int p)
             {
                 emit info("");
                     
+#ifdef WITH_JACK
                 if(!CarlaPatchBackend::jackClient())
                     emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
                 else
+#endif
                 {
                     panic();
                 }
