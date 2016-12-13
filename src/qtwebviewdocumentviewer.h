@@ -1,5 +1,8 @@
-#ifndef QWEBENGINEDOCUMENTVIEWER_H
-#define QWEBENGINEDOCUMENTVIEWER_H
+#ifdef WITH_QTWEBVIEW
+
+
+#ifndef QTWEBVIEWDOCUMENTVIEWER_H
+#define QTWEBVIEWDOCUMENTVIEWER_H
 
 #include "abstractdocumentviewer.h"
 
@@ -42,3 +45,4 @@ private:
 
 #endif
 
+#endif
