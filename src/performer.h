@@ -43,6 +43,8 @@
 #include "qtwebviewdocumentviewer.h"
 #endif
 
+#include "abstractdocumentviewer.h"
+
 #include <QDockWidget>
 
 #include <QPointer>
