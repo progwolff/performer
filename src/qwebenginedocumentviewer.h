@@ -4,6 +4,7 @@
 #include "abstractdocumentviewer.h"
 
 #include <QMainWindow>
+#include <QObject>
 
 class QWebEngineView;
 class QScrollArea;

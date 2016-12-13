@@ -1,5 +1,7 @@
 #ifdef WITH_QTWEBVIEW
 
+#define TRANSLATION_DOMAIN "performer"
+
 #include "qtwebviewdocumentviewer.h"
 
 #include <QQuickWidget>
@@ -28,6 +30,7 @@ QtWebViewDocumentViewer::QtWebViewDocumentViewer(QMainWindow* parent)
     if(!m_webview->source().isValid())
     {
         const QString qmlPath = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/webview.qml");
+        m_webview->setContentsMargins(0,0,0,0);
         m_webview->setSource(QUrl::fromLocalFile(qmlPath));
         m_webview->show();
         m_webview->updateGeometry();
@@ -51,7 +54,7 @@ QtWebViewDocumentViewer::QtWebViewDocumentViewer(QMainWindow* parent)
     connect(m_zoombox, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, [this](int index){
         QObject *view = m_webview->rootObject()->findChild<QObject*>("webView");
         QMetaObject::invokeMethod(view, "runJavaScript",
-            Q_ARG(QVariant, "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
+            Q_ARG(QString, "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
                 "scaleSelect.options.selectedIndex = "+QString::number(index)+";")
         );
     });
@@ -91,63 +94,44 @@ void QtWebViewDocumentViewer::load(QUrl url)
     {
         m_webview->rootObject()->setProperty("currenturl", url);
     }
+    
+    QSize areasize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
+    m_webview->rootObject()->setProperty("currentwidth", areasize.width());
+    m_webview->rootObject()->setProperty("currentheight", areasize.height());
+    //m_webview->page()->view()->resize(m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height()));
 }
+
+
+void QtWebViewDocumentViewer::resizeView(QVariant result)
+{
+    //qDebug() << "resizeView" << result;
+    QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
+    if(result.canConvert<QVariantList>())
+    {
+        QVariantList size = result.toList();
+        if(size.size() > 1)
+        {
+            m_webview->resize(
+                qMax(size[0].toInt(),viewportsize.width()-5), 
+                qMax(size[1].toInt(),viewportsize.height()-5)
+            );
+            m_webview->rootObject()->setProperty("currentwidth", qMax(size[0].toInt(),viewportsize.width()-5));
+            m_webview->rootObject()->setProperty("currentheight", qMax(size[1].toInt(),viewportsize.height()-5));
+        }
+    }
+}
+
 
 QAbstractScrollArea * QtWebViewDocumentViewer::scrollArea()
 {
     if(!m_webview)
         return nullptr;
-            
-    auto innerresizefunct = [this](QVariant result){
-                if(result.canConvert<QVariantList>())
-                {
-                    QVariantList size = result.toList();
-                    if(size.size() > 2)
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
-                            m_webview->resize(
-                                qMax(size[0].toInt(),viewportsize.width()-5), 
-                                qMax(size[1].toInt(),viewportsize.height()-5)
-                            );
-                        }
-                        if(size[2].toInt() >= 0)
-                        {
-                            m_zoombox->setCurrentIndex(size[2].toInt());
-                        }
-                    }
-                    else
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            m_webview->resize(
-                                size[0].toInt(), 
-                                size[1].toInt()
-                            );
-                        }
-                    }
-                }
-            };
+                
     
-    auto resizefunct = [this](){
-        QObject *view = m_webview->rootObject()->findChild<QObject*>("webView");
-        QMetaObject::invokeMethod(view, "runJavaScript",
-            //"document.getElementById('toolbarContainer').parentElement.style.position='fixed';"
-            Q_ARG(QVariant,"try {"
-            "document.getElementById('viewerContainer').style.overflow='visible';"
-            "document.body.style.overflow='hidden';"
-            "document.getElementById('toolbarViewerMiddle').style.display='none';"
-            "new Array(document.getElementById('viewer').firstChild.firstChild.offsetWidth, document.getElementById('viewer').offsetHeight, document.getElementById('scaleSelect').options.selectedIndex);"
-            "} catch (err){"
-            "document.body.style.overflow='hidden';"
-            "document.body.firstChild.style.width='100%';"
-            "document.body.firstChild.style.height='auto';"
-            "new Array(document.body.firstChild.offsetWidth, document.body.firstChild.offsetHeight);"
-            "}")
-        );
-    };
-    
+    QObject *item = m_webview->rootObject();
+
+    connect(item, SIGNAL(sizeChanged(QVariant)), (QtWebViewDocumentViewer*)this, SLOT(resizeView(QVariant)));
+
     //connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
     //connect(m_webview->page(), &QWebEnginePage::geometryChangeRequested, this, resizefunct);
     //connect(m_webview->page(), &QWebEnginePage::contentsSizeChanged, this, resizefunct);

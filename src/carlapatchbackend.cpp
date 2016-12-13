@@ -416,7 +416,7 @@ void CarlaPatchBackend::activate()
         return;
     if(clientName.isEmpty())
     {
-        qDebug() << "cannot activate. clientName is empty";
+        //qDebug() << "cannot activate. clientName is empty";
         QTimer::singleShot(200, this, SLOT(activate()));
         return;
     }

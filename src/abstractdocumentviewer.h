@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QAbstractScrollArea>
 
+#include <QUrl>
+
 class AbstractDocumentViewer : public QWidget
 {
 public:

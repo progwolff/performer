@@ -23,6 +23,8 @@
 #include "performer.h"
 #include "midi.h"
 
+#include "setlistmodel.h"
+#include "setlistview.h"
 
 #ifdef WITH_KF5
 #include "ui_setlist.h"
@@ -44,17 +46,6 @@
 #include <QStyledItemDelegate>
 #include <QStandardPaths>
 #include <QMenu>
-
-#include "setlistmodel.h"
-#include "setlistview.h"
-
-#ifdef WITH_QTWEBVIEW
-#ifdef QT_WEBVIEW_WEBENGINE_BACKEND
-#include <QtWebEngine>
-#endif
-#include <QMimeDatabase>
-#include <QQuickItem>
-#endif
 
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS

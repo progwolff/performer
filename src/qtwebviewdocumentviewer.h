@@ -13,6 +13,7 @@ class QQuickWidget;
 
 class QtWebViewDocumentViewer : public AbstractDocumentViewer
 {
+    Q_OBJECT
 public:
     
     QtWebViewDocumentViewer(QMainWindow* parent=nullptr);
@@ -29,6 +30,9 @@ public:
     
 public slots:
     void load(QUrl url) override;
+    
+private slots:
+    void resizeView(QVariant result);
     
 private:
     QScrollArea *m_webviewarea;

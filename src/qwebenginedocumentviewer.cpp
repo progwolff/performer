@@ -1,5 +1,7 @@
 #ifdef WITH_QWEBENGINE
 
+#define TRANSLATION_DOMAIN "performer"
+
 #include "qwebenginedocumentviewer.h"
 
 #include <QWebEngineView>
