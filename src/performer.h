@@ -39,6 +39,9 @@
 #ifdef WITH_QWEBENGINE
 #include "qwebenginedocumentviewer.h"
 #endif
+#ifdef WITH_QTWEBVIEW
+#include "qtwebviewdocumentviewer.h"
+#endif
 
 #include <QDockWidget>
 

@@ -3,6 +3,8 @@
 
 #include "abstractdocumentviewer.h"
 
+#include <QtWebView/QtWebView>
+
 #include <QMainWindow>
 
 class QScrollArea;

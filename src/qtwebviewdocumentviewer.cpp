@@ -1,12 +1,14 @@
 #ifdef WITH_QTWEBVIEW
 
-#include "qwebenginedocumentviewer.h"
+#include "qtwebviewdocumentviewer.h"
 
-#include <QtWebView/QtWebView>
 #include <QQuickWidget>
 #include <QScrollArea>
 #include <QComboBox>
 #include <QMimeDatabase>
+#include <QScrollBar>
+
+#include <QQuickItem>
 
 #include <QStandardPaths>
 
@@ -66,12 +68,12 @@ void QtWebViewDocumentViewer::load(QUrl url)
 {
     m_zoombox->setEnabled(false);
     QMimeDatabase db;
-    QMimeType type = db.mimeTypeForFile(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+    QMimeType type = db.mimeTypeForFile(url.toLocalFile());
     
     if(type.name() == "application/pdf")
     {
         QUrl pdfurl = QUrl::fromLocalFile(QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/pdf.js/web/viewer.html"));
-        pdfurl.setQuery(QString("file=")+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+        pdfurl.setQuery(QString("file=")+url.toLocalFile());
         qDebug() << pdfurl;
         m_webview->rootObject()->setProperty("currenturl", pdfurl);
         m_zoombox->setEnabled(true);
@@ -87,14 +89,14 @@ void QtWebViewDocumentViewer::load(QUrl url)
     }*/
     else
     {
-        m_webview->rootObject()->setProperty("currenturl", ind.data(SetlistModel::NotesRole).toUrl());
+        m_webview->rootObject()->setProperty("currenturl", url);
     }
 }
 
 QAbstractScrollArea * QtWebViewDocumentViewer::scrollArea()
 {
     if(!m_webview)
-        return;
+        return nullptr;
             
     auto innerresizefunct = [this](QVariant result){
                 if(result.canConvert<QVariantList>())
