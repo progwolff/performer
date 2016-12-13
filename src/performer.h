@@ -33,21 +33,11 @@
 
 #endif
 
-#ifdef WITH_QWEBENGINE
-
-#include <QWebEngineView>
-#include <QScrollArea>
-#include <QComboBox>
-
+#ifdef WITH_KPARTS
+#include "okulardocumentviewer.h"
 #endif
-
-#ifdef WITH_QTWEBVIEW
-
-#include <QtWebView/QtWebView>
-#include <QQuickWidget>
-#include <QScrollArea>
-#include <QComboBox>
-
+#ifdef WITH_QWEBENGINE
+#include "qwebenginedocumentviewer.h"
 #endif
 
 #include <QDockWidget>
@@ -114,19 +104,6 @@ private:
     void prepareUi();
     void setupPageViewActions();
     
-#ifdef WITH_KPARTS
-    KParts::ReadOnlyPart *m_part;
-#endif
-#ifdef WITH_QWEBENGINE
-    QWebEngineView *m_webview;
-    QScrollArea *m_webviewarea;
-    QComboBox *m_zoombox;
-#endif
-#ifdef WITH_QTWEBVIEW
-    QScrollArea *m_webviewarea;
-    QComboBox *m_zoombox;
-    QQuickWidget *m_webview;
-#endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
     
@@ -144,6 +121,8 @@ private:
     QAction* alwaysontopaction;
     
     QPointer<QAbstractScrollArea> pageView;
+    
+    AbstractDocumentViewer* m_viewer;
     
     bool alwaysontop;
     

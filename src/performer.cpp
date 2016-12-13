@@ -23,12 +23,12 @@
 #include "performer.h"
 #include "midi.h"
 
+
 #ifdef WITH_KF5
 #include "ui_setlist.h"
 #include <KAboutData>
 #include <KLocalizedString>
 #include <KMessageBox>
-#include <kservice.h>
 #include <kdeclarative.h>
 #include <KToolBar>
 #include <KSharedConfig>
@@ -48,10 +48,6 @@
 #include "setlistmodel.h"
 #include "setlistview.h"
 
-#ifdef WITH_QWEBENGINE
-#include <QWebEngineSettings>
-#include <QMimeDatabase>
-#endif
 #ifdef WITH_QTWEBVIEW
 #ifdef QT_WEBVIEW_WEBENGINE_BACKEND
 #include <QtWebEngine>
@@ -68,12 +64,10 @@ Performer::Performer(QWidget *parent) :
 #else
     QMainWindow(parent)
 #endif
-#ifdef WITH_QTWEBVIEW
-    ,m_webview(nullptr)
-#endif
     ,m_setlist(new Ui::Setlist)
     ,midi_learn_action(nullptr)
     ,pageView(nullptr)
+    ,m_viewer(nullptr)
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
@@ -198,31 +192,20 @@ Performer::~Performer()
     for(QAction* action : midi_cc_actions)
         delete action;
     
+#ifndef WITH_KF5
+    delete toolbar;
+    toolbar = nullptr;
+#endif
+    
     delete model;
     model = nullptr;
-#ifdef WITH_KPARTS
-    delete m_part;
-    m_part = nullptr;
-#endif
-#ifdef WITH_QWEBENGINE
-	m_webview->close();
-    delete m_webview;
-    m_webview = nullptr;
-    delete m_webviewarea;
-    m_webviewarea = nullptr;
-    delete m_zoombox;
-    m_zoombox = nullptr;
-#endif
-#ifdef WITH_QTWEBVIEW
-    delete m_webview;
-    m_webview = nullptr;
-    delete m_webviewarea;
-    m_webviewarea = nullptr;
-    delete m_zoombox;
-    m_zoombox = nullptr;
-#endif
+    
+    delete m_viewer;
+    m_viewer = nullptr;
+
     delete m_dock;
     m_dock = nullptr;
+
     delete m_setlist;
     m_setlist = nullptr;
 }
@@ -496,6 +479,179 @@ void Performer::addSong()
     songSelected(model->index(index,0));
 }
 
+void Performer::songSelected(const QModelIndex& index)
+{
+    QModelIndex ind = index;
+    if(!ind.isValid())
+        ind = model->activeIndex();
+    
+    if(!ind.isValid())
+        return;
+    
+    m_setlist->setupBox->setVisible(true);
+    m_setlist->setupBox->setTitle(i18n("Set up %1", ind.data(SetlistModel::NameRole).toString()));
+    m_setlist->nameEdit->setText(ind.data(SetlistModel::NameRole).toString());
+    //m_setlist->patchrequester->clear();
+#ifdef WITH_KF5
+    m_setlist->patchrequester->setUrl(ind.data(SetlistModel::PatchRole).toUrl());
+    qDebug() << "patch: " << ind.data(SetlistModel::PatchRole).toUrl().toLocalFile();
+    //m_setlist->patchrequester->clear();
+    m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
+    m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
+#else
+    m_setlist->patchrequestedit->setText(ind.data(SetlistModel::PatchRole).toUrl().toLocalFile());
+    m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+#endif
+    
+    if(m_viewer && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+    {
+        m_viewer->load(ind.data(SetlistModel::NotesRole).toUrl());
+    }
+
+}
+
+void Performer::prepareUi()
+{
+    
+    m_dock = new QDockWidget(this);
+    m_setlist->setupUi(m_dock);
+    addDockWidget(Qt::LeftDockWidgetArea, m_dock);
+    
+#ifdef WITH_KPARTS
+    m_viewer = new OkularDocumentViewer(this);
+    
+    if(!((OkularDocumentViewer*)m_viewer)->part())
+    {
+        KMessageBox::error(this, i18n("Okular KPart not found"));
+        setupGUI(ToolBar | Keys | StatusBar | Save);
+        KXmlGuiWindow::createGUI();
+    }
+    else
+    {
+        setWindowTitleHandling(false);
+        // tell the KParts::MainWindow that this is indeed
+        // the main widget
+        setCentralWidget(m_viewer->widget());
+        setupGUI(ToolBar | Keys | StatusBar | Save);
+        // and integrate the part's GUI with the shell's
+        createGUI(((OkularDocumentViewer*)m_viewer)->part());
+    }
+#endif
+
+#ifdef WITH_QWEBENGINE
+    m_viewer = new QWebEngineDocumentViewer(this);
+    setCentralWidget(m_viewer->widget());
+    toolBar()->addWidget(((QWebEngineDocumentViewer*)m_viewer)->zoombox());
+#endif
+    
+#ifdef WITH_QTWEBVIEW
+    m_viewer = new QtWebViewDocumentViewer(this);
+    setCentralWidget(m_viewer->widget());
+    toolBar()->addWidget(((QtWebViewDocumentViewer*)m_viewer)->zoombox());
+#endif
+
+    if(!pageView)
+    {
+        setupPageViewActions();
+    }
+    
+    QMenu *filemenu = new QMenu(i18n("File"));
+    
+    QAction* action = new QAction(this);
+    action->setText(i18n("&New"));
+    action->setIcon(QIcon::fromTheme("document-new", QApplication::style()->standardIcon(QStyle::SP_FileIcon)));
+    connect(action, SIGNAL(triggered(bool)), model, SLOT(reset()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Open"));
+    action->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Save"));
+    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Save as"));
+    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
+    filemenu->addAction(action);
+    
+    menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
+    
+    toolBar()->setWindowTitle(i18n("Performer Toolbar"));
+    
+    
+    
+}
+
+void Performer::setupPageViewActions()
+{
+    pageView = m_viewer->scrollArea();
+
+    if(!pageView)
+        return;
+    QScrollBar* scrollBar = pageView->verticalScrollBar();
+    if(scrollBar)
+    {
+        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+    
+        QAction *action = new QAction(i18n("Scroll vertical"), this);
+        action->setObjectName("ScrollV");
+        connect(action, &QAction::triggered, this, [scrollBar,action](){
+            qDebug() << "scrollV: " << action->data().toInt(); 
+            scrollBar->setSliderPosition(
+                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
+            );
+        });
+        midi_cc_actions << action;
+        scrollBar->addAction(action);
+    }
+    scrollBar = pageView->horizontalScrollBar();
+    if(scrollBar)
+    {
+        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+        
+        QAction *action = new QAction(i18n("Scroll horizontal"), this);
+        action->setObjectName("ScrollH");
+        connect(action, &QAction::triggered, this, [scrollBar,action](){
+            qDebug() << "scrollH: " << action->data().toInt(); 
+            scrollBar->setSliderPosition(
+                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
+            );
+        });
+        midi_cc_actions << action;
+        scrollBar->addAction(action);
+    }
+}
+
+void Performer::setAlwaysOnTop(bool ontop)
+{
+    if(ontop != alwaysontop)
+    {
+        alwaysontop = ontop;
+        if(alwaysontop)
+        {
+            setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+            alwaysontopaction->setChecked(true);
+            show();
+        }
+        else
+        {
+            setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+            alwaysontopaction->setChecked(false);
+            show();
+        }
+    }
+}
+
+
 void Performer::loadConfig()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
@@ -750,446 +906,6 @@ void Performer::saveConfig()
 #endif
     loadConfig();
 }
-
-void Performer::songSelected(const QModelIndex& index)
-{
-    QModelIndex ind = index;
-    if(!ind.isValid())
-        ind = model->activeIndex();
-    
-    if(!ind.isValid())
-        return;
-    
-    m_setlist->setupBox->setVisible(true);
-    m_setlist->setupBox->setTitle(i18n("Set up %1", ind.data(SetlistModel::NameRole).toString()));
-    m_setlist->nameEdit->setText(ind.data(SetlistModel::NameRole).toString());
-    //m_setlist->patchrequester->clear();
-#ifdef WITH_KF5
-    m_setlist->patchrequester->setUrl(ind.data(SetlistModel::PatchRole).toUrl());
-    qDebug() << "patch: " << ind.data(SetlistModel::PatchRole).toUrl().toLocalFile();
-    //m_setlist->patchrequester->clear();
-    m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
-    m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
-#else
-    m_setlist->patchrequestedit->setText(ind.data(SetlistModel::PatchRole).toUrl().toLocalFile());
-    m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
-#endif
-#ifdef WITH_KPARTS
-if(m_part && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
-{
-    m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
-}
-#endif
-#ifdef WITH_QWEBENGINE
-m_zoombox->setEnabled(false);
-if(m_webview && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
-{
-    QMimeDatabase db;
-    QMimeType type = db.mimeTypeForFile(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
-    
-    if(type.name() == "application/pdf")
-    {
-        QUrl pdfurl = QUrl::fromLocalFile(QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/pdf.js/web/viewer.html"));
-        pdfurl.setQuery(QString("file=")+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
-        qDebug() << pdfurl;
-        m_webview->load(pdfurl);
-        m_zoombox->setEnabled(true);
-    }
-    /*else if(type.name().startsWith("image/"))
-    {
-        m_webview->setHtml(
-            //"<!DOCTYPE html><html><head><title>"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"</title></head><body>"
-            "<img src='"+ind.data(SetlistModel::NotesRole).toUrl().toString()+"' width='100' height='100' alt='"+i18n("This image can not be displayed.")+"'>"
-            //"<embed width='100%' data='"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"' type='"+type.name()+"' src='"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"'>" 
-            //"</body></html>"
-        );
-    }*/
-    else
-    {
-        m_webview->load(ind.data(SetlistModel::NotesRole).toUrl());
-    }
-    
-    m_webview->page()->view()->resize(m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height()));
-    
-}
-#endif
-#ifdef WITH_QTWEBVIEW
-if(m_webview && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
-{
-    QMimeDatabase db;
-    QMimeType type = db.mimeTypeForFile(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
-    
-    if(type.name() == "application/pdf")
-    {
-        QUrl pdfurl = QUrl::fromLocalFile(QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/pdf.js/web/viewer.html"));
-        pdfurl.setQuery(QString("file=")+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
-        qDebug() << pdfurl;
-        m_webview->rootObject()->setProperty("currenturl", pdfurl);
-        m_zoombox->setEnabled(true);
-    }
-    /*else if(type.name().startsWith("image/"))
-    {
-        m_webview->setHtml(
-            //"<!DOCTYPE html><html><head><title>"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"</title></head><body>"
-            "<img src='"+ind.data(SetlistModel::NotesRole).toUrl().toString()+"' width='100' height='100' alt='"+i18n("This image can not be displayed.")+"'>"
-            //"<embed width='100%' data='"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"' type='"+type.name()+"' src='"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"'>" 
-            //"</body></html>"
-        );
-    }*/
-    else
-    {
-        m_webview->rootObject()->setProperty("currenturl", ind.data(SetlistModel::NotesRole).toUrl());
-    }
-    
-}
-#endif
-    /*m_setlist->deferButton->setEnabled(false);
-    m_setlist->preferButton->setEnabled(false);
-    if(index.row() < m_setlist->setListView->model()->rowCount()-1)
-        m_setlist->deferButton->setEnabled(true);
-    if(index.row() > 0)
-        m_setlist->preferButton->setEnabled(true);*/
-}
-
-void Performer::prepareUi()
-{
-    
-    m_dock = new QDockWidget(this);
-    m_setlist->setupUi(m_dock);
-    addDockWidget(Qt::LeftDockWidgetArea, m_dock);
-#ifdef WITH_KPARTS
-    //query the .desktop file to load the requested Part
-    KService::Ptr service = KService::serviceByDesktopPath("okular_part.desktop");
-
-    if (service)
-    {
-        m_part = service->createInstance<KParts::ReadOnlyPart>(this, QVariantList() << "Print/Preview");
-
-        if (m_part)
-        {
-            
-            QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/okularui.rc");
-            
-            m_part->replaceXMLFile(file, "performer/okularui.rc", false);
-            setWindowTitleHandling(false);
-
-            
-            // tell the KParts::MainWindow that this is indeed
-            // the main widget
-            setCentralWidget(m_part->widget());
-            
-            setupGUI(ToolBar | Keys | StatusBar | Save);
-
-            // and integrate the part's GUI with the shell's
-            createGUI(m_part);
-            
-        }
-        else
-        {
-            
-            m_part = nullptr;
-        }
-    }
-    if(!service || !m_part)
-    {
-        KMessageBox::error(this, i18n("Okular KPart not found"));
-        setupGUI(ToolBar | Keys | StatusBar | Save);
-        KXmlGuiWindow::createGUI();
-    }
-#endif
-
-#ifdef WITH_QWEBENGINE
-    m_webview = new QWebEngineView(this);
-    m_webviewarea = new QScrollArea(this);
-    setCentralWidget(m_webviewarea);
-    m_webviewarea->setWidget(m_webview);
-    QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
-    QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
-    m_zoombox = new QComboBox(this);
-    m_zoombox->addItem(i18n("Automatic zoom"));
-    m_zoombox->addItem(i18n("Original size"));
-    m_zoombox->addItem(i18n("Page size"));
-    m_zoombox->addItem(i18n("Page width"));
-    m_zoombox->addItem("50%");
-    m_zoombox->addItem("75%");
-    m_zoombox->addItem("100%");
-    m_zoombox->addItem("125%");
-    m_zoombox->addItem("150%");
-    m_zoombox->addItem("200%");
-    m_zoombox->addItem("300%");
-    m_zoombox->addItem("400%");
-    m_zoombox->setEnabled(false);
-    toolBar()->addWidget(m_zoombox);
-    
-    connect(m_zoombox, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, [this](int index){
-        m_webview->page()->runJavaScript(
-            "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
-            "scaleSelect.options.selectedIndex = "+QString::number(index)+";"
-        );
-    });
-#endif
-#ifdef WITH_QTWEBVIEW
-    m_webviewarea = new QScrollArea(this);
-    setCentralWidget(m_webviewarea);
-    m_webview = new QQuickWidget(this);
-    m_webviewarea->setWidget(m_webview);
-    if(!m_webview->source().isValid())
-    {
-        const QString qmlPath = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/webview.qml");
-        m_webview->setSource(QUrl::fromLocalFile(qmlPath));
-        m_webview->show();
-        m_webview->updateGeometry();
-    }
-    m_webview->setEnabled(true);
-    m_zoombox = new QComboBox(this);
-    m_zoombox->addItem(i18n("Automatic zoom"));
-    m_zoombox->addItem(i18n("Original size"));
-    m_zoombox->addItem(i18n("Page size"));
-    m_zoombox->addItem(i18n("Page width"));
-    m_zoombox->addItem("50%");
-    m_zoombox->addItem("75%");
-    m_zoombox->addItem("100%");
-    m_zoombox->addItem("125%");
-    m_zoombox->addItem("150%");
-    m_zoombox->addItem("200%");
-    m_zoombox->addItem("300%");
-    m_zoombox->addItem("400%");
-    m_zoombox->setEnabled(false);
-    toolBar()->addWidget(m_zoombox);
-    
-    connect(m_zoombox, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, [this](int index){
-        QObject *view = m_webview->rootObject()->findChild<QObject*>("webView");
-        QMetaObject::invokeMethod(view, "runJavaScript",
-            Q_ARG(QVariant, "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
-                "scaleSelect.options.selectedIndex = "+QString::number(index)+";")
-        );
-    });
-#endif
-
-    if(!pageView)
-    {
-        setupPageViewActions();
-    }
-    
-    QMenu *filemenu = new QMenu(i18n("File"));
-    
-    QAction* action = new QAction(this);
-    action->setText(i18n("&New"));
-    action->setIcon(QIcon::fromTheme("document-new", QApplication::style()->standardIcon(QStyle::SP_FileIcon)));
-    connect(action, SIGNAL(triggered(bool)), model, SLOT(reset()));
-    filemenu->addAction(action);
-    
-    action = new QAction(this);
-    action->setText(i18n("&Open"));
-    action->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
-    filemenu->addAction(action);
-    
-    action = new QAction(this);
-    action->setText(i18n("&Save"));
-    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
-    filemenu->addAction(action);
-    
-    action = new QAction(this);
-    action->setText(i18n("&Save as"));
-    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
-    filemenu->addAction(action);
-    
-    menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
-    
-    toolBar()->setWindowTitle(i18n("Performer Toolbar"));
-    
-    
-    
-}
-
-void Performer::setupPageViewActions()
-{
-#ifdef WITH_KPARTS
-    if(!m_part || !m_part->widget())
-        return;
-    pageView = m_part->widget()->findChild<QAbstractScrollArea*>("okular::pageView");
-#endif
-#ifdef WITH_QWEBENGINE
-    if(!m_webview)
-        return;
-            
-    auto resizefunct = [this](){
-        m_webview->page()->runJavaScript(
-            //"document.getElementById('toolbarContainer').parentElement.style.position='fixed';"
-            "try {"
-            "document.getElementById('viewerContainer').style.overflow='visible';"
-            "document.body.style.overflow='hidden';"
-            "document.getElementById('toolbarViewerMiddle').style.display='none';"
-            "new Array(document.getElementById('viewer').firstChild.firstChild.offsetWidth, document.getElementById('viewer').offsetHeight, document.getElementById('scaleSelect').options.selectedIndex);"
-            "} catch (err){"
-            "document.body.style.overflow='hidden';"
-            "document.body.firstChild.style.width='100%';"
-            "document.body.firstChild.style.height='auto';"
-            "new Array(document.body.firstChild.offsetWidth, document.body.firstChild.offsetHeight);"
-            "}",
-            [this](QVariant result){
-                if(result.canConvert<QVariantList>())
-                {
-                    QVariantList size = result.toList();
-                    if(size.size() > 2)
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
-                            m_webview->page()->view()->resize(
-                                qMax(size[0].toInt(),viewportsize.width()-5), 
-                                qMax(size[1].toInt(),viewportsize.height()-5)
-                            );
-                        }
-                        if(size[2].toInt() >= 0)
-                        {
-                            m_zoombox->setCurrentIndex(size[2].toInt());
-                        }
-                    }
-                    else
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            m_webview->page()->view()->resize(
-                                size[0].toInt(), 
-                                size[1].toInt()
-                            );
-                        }
-                    }
-                }
-            }
-        );
-    };
-    
-    connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
-    connect(m_webview->page(), &QWebEnginePage::geometryChangeRequested, this, resizefunct);
-    connect(m_webview->page(), &QWebEnginePage::contentsSizeChanged, this, resizefunct);
-    
-    
-    pageView = m_webviewarea;
-#endif
-#ifdef WITH_QTWEBVIEW
-    if(!m_webview)
-        return;
-            
-    auto innerresizefunct = [this](QVariant result){
-                if(result.canConvert<QVariantList>())
-                {
-                    QVariantList size = result.toList();
-                    if(size.size() > 2)
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
-                            m_webview->resize(
-                                qMax(size[0].toInt(),viewportsize.width()-5), 
-                                qMax(size[1].toInt(),viewportsize.height()-5)
-                            );
-                        }
-                        if(size[2].toInt() >= 0)
-                        {
-                            m_zoombox->setCurrentIndex(size[2].toInt());
-                        }
-                    }
-                    else
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            m_webview->resize(
-                                size[0].toInt(), 
-                                size[1].toInt()
-                            );
-                        }
-                    }
-                }
-            };
-    
-    auto resizefunct = [this](){
-        QObject *view = m_webview->rootObject()->findChild<QObject*>("webView");
-        QMetaObject::invokeMethod(view, "runJavaScript",
-            //"document.getElementById('toolbarContainer').parentElement.style.position='fixed';"
-            Q_ARG(QVariant,"try {"
-            "document.getElementById('viewerContainer').style.overflow='visible';"
-            "document.body.style.overflow='hidden';"
-            "document.getElementById('toolbarViewerMiddle').style.display='none';"
-            "new Array(document.getElementById('viewer').firstChild.firstChild.offsetWidth, document.getElementById('viewer').offsetHeight, document.getElementById('scaleSelect').options.selectedIndex);"
-            "} catch (err){"
-            "document.body.style.overflow='hidden';"
-            "document.body.firstChild.style.width='100%';"
-            "document.body.firstChild.style.height='auto';"
-            "new Array(document.body.firstChild.offsetWidth, document.body.firstChild.offsetHeight);"
-            "}")
-        );
-    };
-    
-    //connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
-    //connect(m_webview->page(), &QWebEnginePage::geometryChangeRequested, this, resizefunct);
-    //connect(m_webview->page(), &QWebEnginePage::contentsSizeChanged, this, resizefunct);
-    
-    
-    pageView = m_webviewarea;
-#endif
-    if(!pageView)
-        return;
-    QScrollBar* scrollBar = pageView->verticalScrollBar();
-    if(scrollBar)
-    {
-        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    
-        QAction *action = new QAction(i18n("Scroll vertical"), this);
-        action->setObjectName("ScrollV");
-        connect(action, &QAction::triggered, this, [scrollBar,action](){
-            qDebug() << "scrollV: " << action->data().toInt(); 
-            scrollBar->setSliderPosition(
-                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
-            );
-        });
-        midi_cc_actions << action;
-        scrollBar->addAction(action);
-    }
-    scrollBar = pageView->horizontalScrollBar();
-    if(scrollBar)
-    {
-        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-        
-        QAction *action = new QAction(i18n("Scroll horizontal"), this);
-        action->setObjectName("ScrollH");
-        connect(action, &QAction::triggered, this, [scrollBar,action](){
-            qDebug() << "scrollH: " << action->data().toInt(); 
-            scrollBar->setSliderPosition(
-                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
-            );
-        });
-        midi_cc_actions << action;
-        scrollBar->addAction(action);
-    }
-}
-
-void Performer::setAlwaysOnTop(bool ontop)
-{
-    if(ontop != alwaysontop)
-    {
-        alwaysontop = ontop;
-        if(alwaysontop)
-        {
-            setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-            alwaysontopaction->setChecked(true);
-            show();
-        }
-        else
-        {
-            setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
-            alwaysontopaction->setChecked(false);
-            show();
-        }
-    }
-}
-
 
 #ifndef WITH_KF5
 QToolBar* Performer::toolBar()

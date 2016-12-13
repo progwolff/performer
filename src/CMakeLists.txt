@@ -15,6 +15,9 @@ set(PERFORMER_SRCS
     abstractpatchbackend.hpp
     carlapatchbackend.cpp
     setlistview.cpp
+    okulardocumentviewer.cpp
+    qwebenginedocumentviewer.cpp
+    qtwebviewdocumentviewer.cpp
 )
 
 if(WITH_KF5)
@@ -36,6 +39,8 @@ add_qt_android_apk(performer_apk performer
 	PACKAGE_NAME "de.julianwolff.performer"
 	DEPENDS performer
 )
+
+
 elseif(WIN32)
 add_executable(performer WIN32 ${PERFORMER_SRCS} ${PERFORMER_UI})
 else()
