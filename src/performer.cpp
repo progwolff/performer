@@ -183,11 +183,6 @@ Performer::~Performer()
     for(QAction* action : midi_cc_actions)
         delete action;
     
-#ifndef WITH_KF5
-    delete toolbar;
-    toolbar = nullptr;
-#endif
-    
     delete model;
     model = nullptr;
     
