@@ -180,8 +180,8 @@ Performer::~Performer()
 {
     saveConfig();
     
-    for(QAction* action : midi_cc_actions)
-        delete action;
+    //for(QAction* action : midi_cc_actions)
+    //    delete action;
     
     delete model;
     model = nullptr;
@@ -320,9 +320,9 @@ void Performer::midiContextMenuRequested(const QPoint& pos)
             myMenu.exec(globalPos);
         }
     }
-    else if(QObject::sender()->inherits("QScrollBar"))
+    else if(QObject::sender()->inherits("QScrollBar") || QObject::sender()->inherits("QComboBox"))
     {
-        QScrollBar *sender = (QScrollBar*)QObject::sender();
+        QWidget *sender = (QWidget*)QObject::sender();
         if(sender)
         {
             QPoint globalPos = sender->mapToGlobal(pos);
@@ -531,12 +531,47 @@ void Performer::prepareUi()
             QAction *action = new QAction(text[i], this);
             action->setObjectName(name[i]);
             action->setIcon(buttons[i]->icon());
-            connect(action, SIGNAL(triggered()), buttons[i], SLOT(clicked()));
+            action->setData("button");
+            connect(action, SIGNAL(triggered()), buttons[i], SLOT(click()));
             buttons[i]->setDefaultAction(action);
             buttons[i]->setEnabled(true);
             buttons[i]->setContextMenuPolicy(Qt::CustomContextMenu);
             midi_cc_actions << action;
             connect(buttons[i], SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+        }
+        
+        QWidget* okularToolBar = findChild<QWidget*>("okularToolBar");
+        if(okularToolBar)
+        {
+            qDebug() << "found okularToolBar";
+            for(QToolButton* button : okularToolBar->findChildren<QToolButton*>())
+            {
+                qDebug() << "found a toolbutton";
+                for(QAction* action : button->actions())
+                {
+                    midi_cc_actions << action;
+                    action->setData("button");
+                }
+                
+                button->setContextMenuPolicy(Qt::CustomContextMenu);
+                connect(button, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+            }
+            QComboBox* box = okularToolBar->findChild<QComboBox*>();
+            if(box)
+            {
+                qDebug() << "found a combobox";
+                QAction *action = new QAction(i18n("Zoom"), this);
+                action->setObjectName("zoom");
+                //action->setData("button");
+                connect(action, &QAction::triggered, this, [box,action](){
+                    qDebug() << "combobox: " << action->data().toInt();
+                    box->setCurrentIndex((box->count()-1)*action->data().toInt()/128.);
+                });
+                box->addAction(action);
+                box->setContextMenuPolicy(Qt::CustomContextMenu);
+                midi_cc_actions << action;
+                connect(box, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+            }
         }
 
     }
@@ -616,7 +651,7 @@ void Performer::setupPageViewActions()
         connect(action, &QAction::triggered, this, [scrollBar,action](){
             qDebug() << "scrollV: " << action->data().toInt(); 
             scrollBar->setSliderPosition(
-                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
+                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/128.+scrollBar->minimum()
             );
         });
         midi_cc_actions << action;
@@ -633,7 +668,7 @@ void Performer::setupPageViewActions()
         connect(action, &QAction::triggered, this, [scrollBar,action](){
             qDebug() << "scrollH: " << action->data().toInt(); 
             scrollBar->setSliderPosition(
-                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
+                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/128.+scrollBar->minimum()
             );
         });
         midi_cc_actions << action;
