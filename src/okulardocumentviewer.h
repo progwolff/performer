@@ -6,6 +6,9 @@
 #include <kparts/mainwindow.h>
 #include <kparts/readwritepart.h>
 
+#include <QToolButton>
+#include <QList>
+
 class OkularDocumentViewer : public AbstractDocumentViewer
 {
 public:
@@ -14,6 +17,10 @@ public:
     
     QAbstractScrollArea* scrollArea() override;
     QWidget* widget() override;
+    
+    QList<QWidget*> toolbarWidgets() override;
+    
+    QList<QToolButton*> pageButtons(); 
     
     /**
      * Returns the DocumentViewer's KPart instance.

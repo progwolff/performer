@@ -144,9 +144,10 @@ QWidget * QtWebViewDocumentViewer::widget()
     return m_webviewarea;
 }
 
-QWidget * QtWebViewDocumentViewer::zoombox()
+
+QList<QWidget*> QtWebViewDocumentViewer::toolbarWidgets()
 {
-    return m_zoombox;
+    return QList<QWidget*>() << m_zoombox;
 }
 
 

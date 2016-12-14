@@ -25,11 +25,7 @@ public:
     QAbstractScrollArea* scrollArea() override;
     QWidget* widget() override;
     
-    /**
-     * Returns the DocumentViewer's zoom toolbar widget.
-     * @return the DocumentViewer's zoom toolbar widget
-     */
-    QWidget* zoombox();
+    QList<QWidget*> toolbarWidgets() override;
     
 public slots:
     void load(QUrl url) override;

@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QAbstractScrollArea>
 
+#include <QList>
 #include <QUrl>
 
 class AbstractDocumentViewer : public QWidget
@@ -20,6 +21,12 @@ public:
      * @return the widget of the DocumentViewer
      */
     virtual QWidget* widget() = 0;
+    
+    /**
+     * Returns widgets that should be added to the parents toolbar
+     * @return a list of widgets to add to the toolbar
+     */
+    virtual QList<QWidget*> toolbarWidgets() = 0;
     
 public slots:
     /**

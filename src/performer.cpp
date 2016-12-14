@@ -521,24 +521,48 @@ void Performer::prepareUi()
         setupGUI(ToolBar | Keys | StatusBar | Save);
         // and integrate the part's GUI with the shell's
         createGUI(((OkularDocumentViewer*)m_viewer)->part());
+        
+        QList<QToolButton*> buttons = ((OkularDocumentViewer*)m_viewer)->pageButtons();
+        
+        QStringList text = {i18n("Previous page"), i18n("Next page")};
+        QStringList name = {"PreviousPage", "NextPage"};
+        for(int i=0; i<buttons.size(); ++i)
+        {
+            QAction *action = new QAction(text[i], this);
+            action->setObjectName(name[i]);
+            action->setIcon(buttons[i]->icon());
+            connect(action, SIGNAL(triggered()), buttons[i], SLOT(clicked()));
+            buttons[i]->setDefaultAction(action);
+            buttons[i]->setEnabled(true);
+            buttons[i]->setContextMenuPolicy(Qt::CustomContextMenu);
+            midi_cc_actions << action;
+            connect(buttons[i], SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+        }
+
     }
 #endif
 
 #ifdef WITH_QWEBENGINE
     m_viewer = new QWebEngineDocumentViewer(this);
     setCentralWidget(m_viewer->widget());
-    toolBar()->addWidget(((QWebEngineDocumentViewer*)m_viewer)->zoombox());
 #endif
     
 #ifdef WITH_QTWEBVIEW
     m_viewer = new QtWebViewDocumentViewer(this);
     setCentralWidget(m_viewer->widget());
-    toolBar()->addWidget(((QtWebViewDocumentViewer*)m_viewer)->zoombox());
 #endif
-
-    if(!pageView)
+    
+    if(m_viewer)
     {
-        setupPageViewActions();
+        for(QWidget* widget : m_viewer->toolbarWidgets())
+        {
+            toolBar()->addWidget(widget);
+        }
+
+        if(!pageView)
+        {
+            setupPageViewActions();
+        }
     }
     
     QMenu *filemenu = new QMenu(i18n("File"));
