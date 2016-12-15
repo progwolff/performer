@@ -83,12 +83,12 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
     m_setlist->addButton->setIcon(QIcon::fromTheme("list-add"));//, QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     
-    QAction *action = addMidiAction(m_setlist->previousButton, i18n("Previous"), "Previous");
-    connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});  
-    m_setlist->nextButton->setEnabled(true);  
+    addMidiAction(m_setlist->previousButton, i18n("Previous"), "Previous");
+    connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){model->playPrevious(); songSelected(QModelIndex());});  
+    m_setlist->previousButton->setEnabled(true);  
     
-    action = addMidiAction(m_setlist->nextButton, i18n("Next"), "Next");
-    connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});    
+    addMidiAction(m_setlist->nextButton, i18n("Next"), "Next");
+    connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){model->playNext(); songSelected(QModelIndex());});    
     m_setlist->nextButton->setEnabled(true);
    
     alwaysontopbutton = new QToolButton(toolBar());
@@ -96,7 +96,7 @@ Performer::Performer(QWidget *parent) :
     toolBar()->addWidget(alwaysontopbutton);
     alwaysontopbutton->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
     alwaysontopbutton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    action = addMidiAction(alwaysontopbutton, i18n("Always on top"), "Alwaysontop");
+    addMidiAction(alwaysontopbutton, i18n("Always on top"), "Alwaysontop");
     connect(alwaysontopbutton, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));  
     
     QToolButton *toolButton = new QToolButton(toolBar());
@@ -317,9 +317,9 @@ QAction* Performer::addMidiAction(QWidget* widget, const QString& name, const QS
         action->setStatusTip(button->statusTip());
         action->setToolTip(button->toolTip());
         action->setWhatsThis(button->whatsThis());
-        connect(action, SIGNAL(triggered(bool)), button, SLOT(clicked(bool)));
         button->addAction(action);
         button->setDefaultAction(action);
+        connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
     }
     else if(widget->inherits("QScrollBar"))
     {

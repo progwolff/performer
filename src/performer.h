@@ -129,6 +129,14 @@ private:
     
     AbstractDocumentViewer* m_viewer;
     
+    /**
+     * Adds midi learn functionality to a QWidget.\n
+     * On right click on the widget a midi learn context menu will be shown.\n
+     * Once learned, a MIDI CC message will trigger the default action of the widget.
+     * @param widget the widget to add midi learn functionality to
+     * @param name a locale independent identifier of the corresponding action
+     * @param text a human readable (possibly localized) identifier of the corresponding action
+     */
     QAction* addMidiAction(QWidget* widget, const QString& name, const QString& text);
     
     bool alwaysontop;
