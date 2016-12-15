@@ -301,7 +301,7 @@ void Performer::midiContextMenuRequested(const QPoint& pos)
         qDebug() << "MIDI context menu not implemented for this type of object.";
 }
 
-QAction* Performer::addMidiAction(QWidget* widget, const QString& name, const QString& text)
+QAction* Performer::addMidiAction(QWidget* widget, const QString& text, const QString& name)
 {
     QAction *action = new QAction(text, this);
     action->setObjectName(name);

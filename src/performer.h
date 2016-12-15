@@ -137,7 +137,7 @@ private:
      * @param name a locale independent identifier of the corresponding action
      * @param text a human readable (possibly localized) identifier of the corresponding action
      */
-    QAction* addMidiAction(QWidget* widget, const QString& name, const QString& text);
+    QAction* addMidiAction(QWidget* widget, const QString& text, const QString& name);
     
     bool alwaysontop;
     
