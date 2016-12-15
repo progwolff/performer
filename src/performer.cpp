@@ -83,52 +83,29 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
     m_setlist->addButton->setIcon(QIcon::fromTheme("list-add"));//, QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     
-    QAction *action = new QAction(i18n("Previous"), this); //no translation to make config translation invariant
-    action->setData("button");
-    midi_cc_actions << action;
-    connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});
-    m_setlist->previousButton->setDefaultAction(action);
-    action->setObjectName("Previous");
-    m_setlist->previousButton->setEnabled(true);
-    action = new QAction(i18n("Next"), this); //no translation to make config translation invariant
-    action->setData("button");
-    midi_cc_actions << action;
-    connect(action, &QAction::triggered, this, [this](){model->playNext(); songSelected(QModelIndex());});
-    m_setlist->nextButton->setDefaultAction(action);
-    action->setObjectName("Next");
+    QAction *action = addMidiAction(m_setlist->previousButton, i18n("Previous"), "Previous");
+    connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});  
+    m_setlist->nextButton->setEnabled(true);  
+    
+    action = addMidiAction(m_setlist->nextButton, i18n("Next"), "Next");
+    connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});    
     m_setlist->nextButton->setEnabled(true);
    
-    alwaysontopaction = new QAction(i18n("Always on top"),this);
-    alwaysontopaction->setCheckable(true);
-    alwaysontopaction->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
-    alwaysontopaction->setData("button");
-    connect(alwaysontopaction, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));
-    connect(alwaysontopaction, SIGNAL(triggered(bool)), this, SLOT(setAlwaysOnTop(bool)));
-    midi_cc_actions << alwaysontopaction;
-    QToolButton* toolButton = new QToolButton(toolBar());
-    toolBar()->addWidget(toolButton);
-    toolButton->setDefaultAction(alwaysontopaction);
-    toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(toolButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    alwaysontopaction->setObjectName("Alwaysontop");
+    alwaysontopbutton = new QToolButton(toolBar());
+    alwaysontopbutton->setCheckable(true); 
+    toolBar()->addWidget(alwaysontopbutton);
+    alwaysontopbutton->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
+    alwaysontopbutton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    action = addMidiAction(alwaysontopbutton, i18n("Always on top"), "Alwaysontop");
+    connect(alwaysontopbutton, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));  
     
-    action = new QAction(i18n("Panic!"),this);
-    action->setIcon(QIcon::fromTheme("dialog-warning", QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning)));
-    action->setData("button");
-    action->setToolTip(i18n("Terminate and reload all Carla instances."));
-    connect(action, SIGNAL(triggered(bool)), model, SLOT(panic()));
-    midi_cc_actions << action;
-    toolButton = new QToolButton(toolBar());
+    QToolButton *toolButton = new QToolButton(toolBar());
     toolBar()->addWidget(toolButton);
-    toolButton->setDefaultAction(action);
     toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(toolButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    action->setObjectName("Panic");
-    
-    connect(m_setlist->previousButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    connect(m_setlist->nextButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+    toolButton->setIcon(QIcon::fromTheme("dialog-warning", QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning)));
+    toolButton->setToolTip(i18n("Terminate and reload all Carla instances."));
+    addMidiAction(toolButton, i18n("Panic!"), "Panic");
+    connect(toolButton, SIGNAL(clicked()), model, SLOT(panic()));
     
     m_setlist->setupBox->setVisible(false);
 #ifdef WITH_KF5
@@ -285,42 +262,7 @@ void Performer::showContextMenu(QPoint pos)
 
 void Performer::midiContextMenuRequested(const QPoint& pos)
 {
-    if(QObject::sender()->inherits("QToolButton"))
-    {
-        QToolButton *sender = (QToolButton*)QObject::sender();
-        if(sender)
-        {
-            QPoint globalPos = sender->mapToGlobal(pos);
-            QMenu myMenu;
-            QAction *action;
-            
-            unsigned char cc = 128;
-            QMapIterator<unsigned char, QAction*> i(midi_cc_map);
-            while (i.hasNext()) {
-                i.next();
-                if(i.value() == sender->defaultAction())
-                {
-                    cc = i.key();
-                    break;
-                }
-            }
-            
-            if(cc <= 127)
-            {
-                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc), this, [](){});
-                action->setEnabled(false);
-                myMenu.addSeparator();
-            }
-            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction()); midiLearn(sender->defaultAction());});
-            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction());});
-            if(cc > 127) 
-                action->setEnabled(false);
-            
-            // Show context menu at handling position
-            myMenu.exec(globalPos);
-        }
-    }
-    else if(QObject::sender()->inherits("QScrollBar") || QObject::sender()->inherits("QComboBox"))
+    if(QObject::sender()->inherits("QToolButton") || QObject::sender()->inherits("QScrollBar") || QObject::sender()->inherits("QComboBox"))
     {
         QWidget *sender = (QWidget*)QObject::sender();
         if(sender)
@@ -357,6 +299,51 @@ void Performer::midiContextMenuRequested(const QPoint& pos)
     }
     else
         qDebug() << "MIDI context menu not implemented for this type of object.";
+}
+
+QAction* Performer::addMidiAction(QWidget* widget, const QString& name, const QString& text)
+{
+    QAction *action = new QAction(text, this);
+    action->setObjectName(name);
+    midi_cc_actions << action;
+    widget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(widget, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+    if(widget->inherits("QToolButton"))
+    {
+        QToolButton *button = static_cast<QToolButton*>(widget);
+        action->setIcon(button->icon());
+        action->setData("button");
+        action->setCheckable(button->isCheckable());
+        action->setStatusTip(button->statusTip());
+        action->setToolTip(button->toolTip());
+        action->setWhatsThis(button->whatsThis());
+        connect(action, SIGNAL(triggered(bool)), button, SLOT(clicked(bool)));
+        button->addAction(action);
+        button->setDefaultAction(action);
+    }
+    else if(widget->inherits("QScrollBar"))
+    {
+        QScrollBar *scrollBar = static_cast<QScrollBar*>(widget);
+        connect(action, &QAction::triggered, this, [scrollBar,action](){
+            scrollBar->setSliderPosition(
+                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/128.+scrollBar->minimum()
+            );
+        });
+        scrollBar->addAction(action);
+    }
+    else if(widget->inherits("QComboBox"))
+    {
+        QComboBox *box = static_cast<QComboBox*>(widget);
+        connect(action, &QAction::triggered, this, [box,action](){
+            qDebug() << "combobox: " << action->data().toInt();
+            box->setCurrentIndex((box->count()-1)*action->data().toInt()/128.);
+        });
+        box->addAction(action);
+    }
+    else
+        qDebug() << "MIDI Actions are not implemented for this type of object." << name << text;
+    
+    return action;
 }
 
 void Performer::midiLearn(QAction* action)
@@ -528,16 +515,7 @@ void Performer::prepareUi()
         QStringList name = {"PreviousPage", "NextPage"};
         for(int i=0; i<buttons.size(); ++i)
         {
-            QAction *action = new QAction(text[i], this);
-            action->setObjectName(name[i]);
-            action->setIcon(buttons[i]->icon());
-            action->setData("button");
-            connect(action, SIGNAL(triggered()), buttons[i], SLOT(click()));
-            buttons[i]->setDefaultAction(action);
-            buttons[i]->setEnabled(true);
-            buttons[i]->setContextMenuPolicy(Qt::CustomContextMenu);
-            midi_cc_actions << action;
-            connect(buttons[i], SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+            addMidiAction(buttons[i], text[i], name[i]);
         }
         
         QWidget* okularToolBar = findChild<QWidget*>("okularToolBar");
@@ -560,17 +538,7 @@ void Performer::prepareUi()
             if(box)
             {
                 qDebug() << "found a combobox";
-                QAction *action = new QAction(i18n("Zoom"), this);
-                action->setObjectName("zoom");
-                //action->setData("button");
-                connect(action, &QAction::triggered, this, [box,action](){
-                    qDebug() << "combobox: " << action->data().toInt();
-                    box->setCurrentIndex((box->count()-1)*action->data().toInt()/128.);
-                });
-                box->addAction(action);
-                box->setContextMenuPolicy(Qt::CustomContextMenu);
-                midi_cc_actions << action;
-                connect(box, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+                addMidiAction(box, i18n("Zoom"), "zoom");
             }
         }
 
@@ -640,40 +608,14 @@ void Performer::setupPageViewActions()
 
     if(!pageView)
         return;
+    
     QScrollBar* scrollBar = pageView->verticalScrollBar();
     if(scrollBar)
-    {
-        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+        addMidiAction(scrollBar, i18n("Scroll vertical"), "ScrollV");
     
-        QAction *action = new QAction(i18n("Scroll vertical"), this);
-        action->setObjectName("ScrollV");
-        connect(action, &QAction::triggered, this, [scrollBar,action](){
-            qDebug() << "scrollV: " << action->data().toInt(); 
-            scrollBar->setSliderPosition(
-                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/128.+scrollBar->minimum()
-            );
-        });
-        midi_cc_actions << action;
-        scrollBar->addAction(action);
-    }
     scrollBar = pageView->horizontalScrollBar();
     if(scrollBar)
-    {
-        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-        
-        QAction *action = new QAction(i18n("Scroll horizontal"), this);
-        action->setObjectName("ScrollH");
-        connect(action, &QAction::triggered, this, [scrollBar,action](){
-            qDebug() << "scrollH: " << action->data().toInt(); 
-            scrollBar->setSliderPosition(
-                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/128.+scrollBar->minimum()
-            );
-        });
-        midi_cc_actions << action;
-        scrollBar->addAction(action);
-    }
+        addMidiAction(scrollBar, i18n("Scroll horizontal"), "ScrollH");
 }
 
 void Performer::setAlwaysOnTop(bool ontop)
@@ -684,13 +626,13 @@ void Performer::setAlwaysOnTop(bool ontop)
         if(alwaysontop)
         {
             setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-            alwaysontopaction->setChecked(true);
+            alwaysontopbutton->setChecked(true);
             show();
         }
         else
         {
             setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
-            alwaysontopaction->setChecked(false);
+            alwaysontopbutton->setChecked(false);
             show();
         }
     }

@@ -123,11 +123,13 @@ private:
     QMap<unsigned char, QAction*> midi_cc_map;
     QMap<unsigned char, unsigned char> midi_cc_value_map;
     QAction* midi_learn_action;
-    QAction* alwaysontopaction;
+    QToolButton* alwaysontopbutton;
     
     QPointer<QAbstractScrollArea> pageView;
     
     AbstractDocumentViewer* m_viewer;
+    
+    QAction* addMidiAction(QWidget* widget, const QString& name, const QString& text);
     
     bool alwaysontop;
     
