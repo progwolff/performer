@@ -49,6 +49,8 @@
 
 #include <QPointer>
 
+#include "midi.h"
+
 class SetlistModel;
 class QStyledItemDelegate;
 class QAbstractScrollArea;

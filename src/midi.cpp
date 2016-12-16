@@ -49,7 +49,7 @@ QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString&
         box->addAction(action);
     }
     else
-        qDebug() << "MIDI Actions are not implemented for parent type of object." << name << text;
+        qDebug() << "MIDI Actions are not implemented for this type of object." << name << text;
     
     return action;
 }

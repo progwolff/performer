@@ -11,6 +11,7 @@
 #include <QList>
 #include <QAction>
 
+
 class MIDI : public QObject
 {
     Q_OBJECT
@@ -19,7 +20,7 @@ public:
      * Adds midi learn functionality to a QWidget.\n
      * On right click on the widget a midi learn context menu will be shown.\n
      * Once learned, a MIDI CC message will trigger the default action of the widget.
-     * @param parent the parent object of the new action
+     * @param parent the parent object of the new action. This Object should implement the slot midiContextMenuRequested(const QPoint&).
      * @param widget the widget to add midi learn functionality to
      * @param name a locale independent identifier of the corresponding action
      * @param text a human readable (possibly localized) identifier of the corresponding action
@@ -70,6 +71,7 @@ private:
     static QMap<unsigned char, QAction*> midi_cc_map;
     static QList<QAction*> midi_cc_actions;
 };
+
 
 
 #endif //PERFORMER_MIDI_H

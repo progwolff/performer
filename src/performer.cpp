@@ -21,7 +21,6 @@
 
 
 #include "performer.h"
-#include "midi.h"
 
 #include "setlistmodel.h"
 #include "setlistview.h"

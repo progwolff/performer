@@ -65,3 +65,50 @@ TEST_CASE ( "Constructor, getters and update of SetlistMetadata are working", "[
     REQUIRE( testmetadata.preload() == true );
     
 }
+
+#include "midi.h"
+#include <QToolButton>
+#include <QApplication>
+
+TEST_CASE ( "MIDI actions can be added and returned" )
+{
+    QAction action("Test");
+    action.setObjectName("TestAction");
+    QAction action2("Test2");
+    action2.setObjectName("TestAction2");
+    MIDI::addAction(&action);
+    MIDI::addAction(&action2);
+    
+    REQUIRE( MIDI::actions().size() == 2 );
+    REQUIRE( MIDI::actions()[0]->objectName() == "TestAction" );
+    REQUIRE( MIDI::actions()[1]->objectName() == "TestAction2" );
+}
+
+TEST_CASE ( "MIDI CCs can be assigned to actions" )
+{
+    QAction action("Test");
+    action.setObjectName("TestAction");
+    QAction action2("Test2");
+    action2.setObjectName("TestAction2");
+    MIDI::addAction(&action);
+    MIDI::addAction(&action2);
+    
+    MIDI::setCc(&action, 4);
+    MIDI::setCc(&action2, 64);
+    
+    REQUIRE( MIDI::cc(&action) == 4 );
+    REQUIRE( MIDI::cc(&action2) == 64 );
+}
+
+TEST_CASE ( "MIDI learn for QWidgets" )
+{
+    int argc = 0;
+    QApplication app(argc, nullptr);
+    QToolButton button;
+    
+    QAction *action = MIDI::setLearnable(&button, "Test", "Test");
+    
+    REQUIRE( button.actions()[0] == action );
+    
+    delete action;
+}
