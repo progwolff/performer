@@ -12,6 +12,8 @@
 #include <jack/midiport.h>
 #endif
 
+#include "util.h"
+
 #define MAX_INSTANCES 3
 
 #ifdef WITH_JACK
@@ -468,19 +470,7 @@ bool CarlaPatchBackend::portBelongsToClient(const char* port, const QString &cli
 {
     return QString::fromLatin1(port).startsWith(client+":");
 }
-#endif
 
-QByteArray CarlaPatchBackend::replace(const char* str, const char* a, const char* b)
-{
-    return replace(str, QString::fromLatin1(a), QString::fromLatin1(b));
-}
-
-QByteArray CarlaPatchBackend::replace(const char* str, const QString& a, const QString& b)
-{
-    return QString::fromLatin1(str).replace(a, b).toLatin1();
-}
-
-#ifdef WITH_JACK
 int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
 {
     Q_UNUSED(arg);
@@ -508,16 +498,3 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
 #endif
 
 
-template<typename T>
-void CarlaPatchBackend::try_run(int timeout, T function, const char* name)
-{
-    QTime timer;
-    timer.start();
-    QFuture<void> funct = QtConcurrent::run(function);
-    while(timer.elapsed() < timeout && funct.isRunning());
-    if(funct.isRunning())
-    {
-        qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms" << name;
-        funct.cancel();
-    }
-}

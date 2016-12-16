@@ -6,10 +6,11 @@ set(CMAKE_AUTOMOC ON)
 include_directories ( ${JACK_INCLUDEDIR} ${JACK_INCLUDE_DIRS} )
 link_directories ( ${JACK_LIBDIR} ${JACK_LIBRARY_DIRS} )
 
+
 #include_directories(configwidgets)
 set(PERFORMER_SRCS
     performer.cpp
-    main.cpp
+    util.cpp
     setlistmodel.cpp
     setlistmetadata.cpp
     abstractpatchbackend.hpp
@@ -31,7 +32,7 @@ endif(WITH_KF5)
 
     
 if(ANDROID)
-add_library(performer SHARED ${PERFORMER_SRCS} ${PERFORMER_UI})
+add_library(performer SHARED main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
 include(../cmake/AddQtAndroidApk.cmake)
 add_qt_android_apk(performer_apk performer
 	NAME "Performer"
@@ -42,16 +43,15 @@ add_qt_android_apk(performer_apk performer
 
 
 elseif(WIN32)
-add_executable(performer WIN32 ${PERFORMER_SRCS} ${PERFORMER_UI})
+add_executable(performer WIN32 main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
 else()
-add_executable(performer ${PERFORMER_SRCS} ${PERFORMER_UI})
+add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
 endif()
 
 target_compile_definitions(performer PRIVATE -DPROJECT_VERSION="${PROJECT_VERSION}")
 
 #target_compile_features(performer PRIVATE cxx_auto_type)
-
-target_link_libraries(performer
+list(APPEND _LINK_LIBRARIES 
     Qt5::Widgets
     #Qt5::X11Extras
     Qt5::Quick
@@ -60,32 +60,35 @@ target_link_libraries(performer
 )
 
 
+
+
 if(WITH_KF5)
     kde_enable_exceptions()
 
-    target_link_libraries(performer
+    list(APPEND _LINK_LIBRARIES 
         #KF5::ConfigWidgets
         KF5::KIOWidgets
         KF5::I18n
         #KF5::XmlGui
         KF5::CoreAddons
     )
+    
 endif(WITH_KF5)
 
 if(NOT WITH_KPARTS AND WITH_KF5)
-    target_link_libraries(performer
+    list(APPEND _LINK_LIBRARIES 
         KF5::XmlGui
     )
 endif(NOT WITH_KPARTS AND WITH_KF5)
 
 if(WITH_KPARTS)
-    target_link_libraries(performer
+    list(APPEND _LINK_LIBRARIES 
         KF5::Parts
     )
 endif(WITH_KPARTS)
 
 if(WITH_QWEBENGINE)
-    target_link_libraries(performer 
+    list(APPEND _LINK_LIBRARIES  
         Qt5::WebEngineWidgets
     )
     if(NOT DEFINED CMAKE_INSTALL_DATADIR)
@@ -95,7 +98,7 @@ if(WITH_QWEBENGINE)
 endif(WITH_QWEBENGINE)
 
 if(WITH_QTWEBVIEW)
-    target_link_libraries(performer 
+    list(APPEND _LINK_LIBRARIES 
         Qt5::WebView
     )
     if(NOT DEFINED CMAKE_INSTALL_DATADIR)
@@ -105,10 +108,26 @@ if(WITH_QTWEBVIEW)
 endif(WITH_QTWEBVIEW)
 
 if(WITH_JACK)
-    target_link_libraries(performer
+    list(APPEND _LINK_LIBRARIES 
         ${JACK_LIBRARIES}
     )
 endif(WITH_JACK)
+
+
+target_link_libraries(performer ${_LINK_LIBRARIES})
+
+
+option(WITH_TESTS "unit tests" ON)
+if(WITH_TESTS)
+    option(BUILD_TESTING "Build the testing tree." ON)
+	add_subdirectory(tests)
+	include_directories(${CATCH_INCLUDE_DIR} ${COMMON_INCLUDES})
+	enable_testing()
+    add_executable(test_performer tests.cpp ${PERFORMER_SRCS}  ${PERFORMER_UI}) 
+    target_link_libraries(test_performer ${_LINK_LIBRARIES})
+    add_test(NAME "test_performer" COMMAND test_performer)
+endif()
+
 
 if(NOT DEFINED CMAKE_INSTALL_BINDIR)
   set(CMAKE_INSTALL_BINDIR "bin" CACHE PATH "user executables (bin)")
@@ -129,5 +148,4 @@ endif(ECM_FOUND)
 if(WITH_QTWEBVIEW)
     install(FILES qml/webview.qml DESTINATION ${CMAKE_INSTALL_DATADIR}/performer)
 endif()
-
 

@@ -23,6 +23,7 @@ find_package(Qt5 ${QT_MIN_VESION}
     WebView
 )
 
+
 find_package(ECM NO_MODULE)
 if(ECM_FOUND)
     set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})

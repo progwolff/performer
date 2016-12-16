@@ -63,8 +63,6 @@ private:
     static bool portBelongsToClient(const char* port, const char *client);
     static bool portBelongsToClient(const char* port, const QString &client);
 #endif
-    QByteArray replace(const char* str, const char* a, const char* b); 
-    QByteArray replace(const char* str, const QString& a, const QString& b);
     
     QProcess *exec;
     QString clientName;
@@ -74,13 +72,6 @@ private:
     static const char portlist[6][11];
     static const char allportlist[7][15];
     
-    /**
-     * calls a function and cancels execution after timeout milliseconds.
-     * @param timeout timeout in ms
-     * @param function the function to execute
-     */
-    template<typename T>
-    static void try_run(int timeout, T function, const char* name="");
 };
 
 #endif
