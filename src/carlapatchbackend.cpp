@@ -486,7 +486,7 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
         for(unsigned int i=0; i<event_count; i++)
         {
             jack_midi_event_get(&in_event, port_buf, i);
-            if(activeBackend && IS_MIDICC(in_event.buffer[0]))
+            if(activeBackend && (IS_MIDICC(in_event.buffer[0]) || IS_MIDIPC(in_event.buffer[0])))
             {
                 activeBackend->emit midiEvent(in_event.buffer[0], in_event.buffer[1], in_event.buffer[2]);
             }

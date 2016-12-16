@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-18 16:16+0100\n"
+"POT-Creation-Date: 2016-12-16 17:51+0100\n"
 "PO-Revision-Date: 2016-11-13 19:33+0100\n"
 "Last-Translator: Julian Wolff <wolff@julianwolff.de>\n"
 "Language-Team: DE <wolff@julianwolff.de>\n"
@@ -16,162 +16,219 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: main.cpp:21
-msgid "Performer"
-msgstr "Performer"
-
-#: main.cpp:25
-msgid "Live performance audio session manager"
-msgstr "Audio-Sessionmanager für Liveauftritte"
-
-#: main.cpp:29
-msgid "(c) 2016"
-msgstr ""
-
-#: main.cpp:32 main.cpp:38
-msgid " "
-msgstr ""
-
-#: main.cpp:38
-msgid "Julian Wolff"
-msgstr ""
-
-#: main.cpp:45
+#: main.cpp:33
 msgid "[file]"
 msgstr "[Datei]"
 
-#: main.cpp:45
+#: main.cpp:33
 msgid "Setlist to load"
 msgstr "Lade gegebene Se&tliste"
 
+#: main.cpp:43
+msgid "Performer"
+msgstr "Performer"
+
+#: main.cpp:47
+msgid "Live performance audio session manager"
+msgstr "Audio-Sessionmanager für Liveauftritte"
+
+#: main.cpp:51
+msgid "(c) 2016"
+msgstr ""
+
+#: main.cpp:54 main.cpp:60
+msgid " "
+msgstr ""
+
+#: main.cpp:60
+msgid "Julian Wolff"
+msgstr ""
+
 #. i18n: file: ui/setlist.ui:109
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
-#: performer.cpp:75 rc.cpp:18
+#. i18n: file: ui/setlist_without_kde.ui:109
+#. i18n: ectx: property (text), widget (QToolButton, previousButton)
+#: performer.cpp:85 rc.cpp:18 rc.cpp:48
 msgid "Previous"
 msgstr "Zurück"
 
 #. i18n: file: ui/setlist.ui:128
 #. i18n: ectx: property (text), widget (QToolButton, nextButton)
-#: performer.cpp:82 rc.cpp:21
+#. i18n: file: ui/setlist_without_kde.ui:128
+#. i18n: ectx: property (text), widget (QToolButton, nextButton)
+#: performer.cpp:89 rc.cpp:21 rc.cpp:51
 msgid "Next"
 msgstr "Vor"
 
-#: performer.cpp:90
+#: performer.cpp:98
 msgid "Always on top"
 msgstr "Immer im Vordergrund"
 
 #: performer.cpp:105
-msgid "Panic!"
-msgstr "Panik!"
-
-#: performer.cpp:108
 msgid "Terminate and reload all Carla instances."
 msgstr "Beende alle Carla-Instanzen und lade sie neu."
 
-#: performer.cpp:212
+#: performer.cpp:106
+msgid "Panic!"
+msgstr "Panik!"
+
+#: performer.cpp:114 performer.cpp:129
+msgid ""
+"Performer was built without Jack. Rebuild Performer with Jack to enable "
+"loading Carla patches."
+msgstr ""
+
+#: performer.cpp:118 performer.cpp:134
+msgid ""
+"Performer was built without KParts or QWebEngine. Rebuild Performer with "
+"KParts or QWebEngine to enable displaying notes."
+msgstr ""
+
+#: performer.cpp:237
 msgid "Play now"
 msgstr "Jetzt spielen"
 
-#: performer.cpp:220
+#: performer.cpp:245
 msgid "Prefer"
 msgstr "Vorziehen"
 
-#: performer.cpp:224
+#: performer.cpp:249
 msgid "Defer"
 msgstr "Zurückstellen"
 
-#: performer.cpp:230
+#: performer.cpp:255
 msgid "Remove entry"
 msgstr "Eintrag löschen"
 
-#: performer.cpp:261 performer.cpp:296
+#: performer.cpp:277
 msgid "CC %1 Assigned"
 msgstr "CC %1 zugewiesen"
 
-#: performer.cpp:265 performer.cpp:300
+#: performer.cpp:281
 msgid "Learn MIDI CC"
 msgstr "Lerne MIDI CC"
 
-#: performer.cpp:266 performer.cpp:301
+#: performer.cpp:282
 msgid "Clear MIDI CC"
 msgstr "Lösche MIDI CC"
 
-#: performer.cpp:319
+#: performer.cpp:301
 msgid "Learning MIDI CC for action %1"
 msgstr "Lerne MIDI CC für Aktion %1"
 
-#: performer.cpp:334
+#: performer.cpp:307
 msgid "MIDI CC cleared for action %1"
 msgstr "MIDI CC für Aktion %1 gelöscht"
 
-#: performer.cpp:347
+#: performer.cpp:320
 msgid "MIDI CC %1 assigned to action %2"
 msgstr "MIDI CC %1 auf Aktion %2 zugewiesen"
 
-#: performer.cpp:391
+#: performer.cpp:374
+#, fuzzy
+msgid "Carla Patch (*.carxp)"
+msgstr "Carla Patch"
+
+#: performer.cpp:387
 msgid "New Song"
 msgstr "Neuer Song"
 
-#: performer.cpp:434
-msgid "Setlists (*.pfm)"
-msgstr "Setlisten (*.pfm)"
-
-#: performer.cpp:474
-msgid "Save File As..."
-msgstr "Speichern unter..."
-
-#: performer.cpp:545
+#: performer.cpp:402
 msgid "Set up %1"
 msgstr "%1 einrichten"
 
-#: performer.cpp:613
+#: performer.cpp:435
 msgid "Okular KPart not found"
 msgstr "Okular KPart wurde nicht gefunden"
 
-#: performer.cpp:620
+#: performer.cpp:451
+#, fuzzy
+msgid "Previous page"
+msgstr "Zurück"
+
+#: performer.cpp:451
+#, fuzzy
+msgid "Next page"
+msgstr "Vor"
+
+#: performer.cpp:478
+msgid "Zoom"
+msgstr ""
+
+#: performer.cpp:508
 msgid "File"
 msgstr "Datei"
 
-#: performer.cpp:623
+#: performer.cpp:511
 msgid "&New"
 msgstr "&Neu"
 
-#: performer.cpp:629
+#: performer.cpp:517
 msgid "&Open"
 msgstr "&Öffnen"
 
-#: performer.cpp:635
+#: performer.cpp:523
 msgid "&Save"
 msgstr "&Speichern"
 
-#: performer.cpp:641
+#: performer.cpp:529
 msgid "&Save as"
 msgstr "&Speichern unter"
 
-#: performer.cpp:648
+#: performer.cpp:536
 msgid "Performer Toolbar"
 msgstr "Performer-Werkzeugleiste"
 
-#: performer.cpp:683
+#: performer.cpp:551
 msgid "Scroll vertical"
 msgstr "Vertikal scrollen"
 
-#: performer.cpp:698
+#: performer.cpp:555
 msgid "Scroll horizontal"
 msgstr "Horizontal scrollen"
 
-#: setlistmodel.cpp:424
-msgid "Could not find a running jack server. Can't load Carla patches."
-msgstr ""
-"Konnte keinen laufenden Jack-Server finden. Kann Carla Patches nicht laden."
+#: performer.cpp:655
+msgid "Setlists (*.pfm)"
+msgstr "Setlisten (*.pfm)"
 
-#: setlistmodel.cpp:432
+#: performer.cpp:723
+msgid "Save File As..."
+msgstr "Speichern unter..."
+
+#: qtwebviewdocumentviewer.cpp:40 qwebenginedocumentviewer.cpp:32
+msgid "Automatic zoom"
+msgstr "Automatischer Zoom"
+
+#: qtwebviewdocumentviewer.cpp:41 qwebenginedocumentviewer.cpp:33
+msgid "Original size"
+msgstr "Originalgröße"
+
+#: qtwebviewdocumentviewer.cpp:42 qwebenginedocumentviewer.cpp:34
+msgid "Page size"
+msgstr "Seitengröße"
+
+#: qtwebviewdocumentviewer.cpp:43 qwebenginedocumentviewer.cpp:35
+msgid "Page width"
+msgstr "Seitenbreite"
+
+#: setlistmodel.cpp:421
+msgid "Failed to start Carla process."
+msgstr "Konnte Carla nicht starten."
+
+#: setlistmodel.cpp:441 setlistmodel.cpp:470
+msgid ""
+"Could not find a running jack server. Will retry to connect to server in %1 "
+"seconds."
+msgstr ""
+"Konnte keinen laufenden Jack-Server finden. Versuche es in %1 nocheinmal."
+
+#: setlistmodel.cpp:477
 msgid ""
 "Could not create a client on the existing jack server. Can't load Carla "
 "patches."
 msgstr ""
-"Konnte keinen Client unter dem laufenden Jack Server erzeugen. Kann Carla Patches "
-"nicht laden."
+"Konnte keinen Client unter dem laufenden Jack Server erzeugen. Kann Carla "
+"Patches nicht laden."
 
 #. i18n: file: okularui.rc:11
 #. i18n: ectx: ToolBar (okularToolBar)
@@ -181,7 +238,9 @@ msgstr "Hauptwerkzeugleiste"
 
 #. i18n: file: ui/setlist.ui:20
 #. i18n: ectx: property (windowTitle), widget (QDockWidget, Setlist)
-#: rc.cpp:6
+#. i18n: file: ui/setlist_without_kde.ui:20
+#. i18n: ectx: property (windowTitle), widget (QDockWidget, Setlist)
+#: rc.cpp:6 rc.cpp:36
 msgid "Se&tlist"
 msgstr "Se&tliste"
 
@@ -189,46 +248,68 @@ msgstr "Se&tliste"
 #. i18n: ectx: property (toolTip), widget (QListView, setListView)
 #. i18n: file: ui/setlist.ui:39
 #. i18n: ectx: property (whatsThis), widget (QListView, setListView)
-#: rc.cpp:9 rc.cpp:12
+#. i18n: file: ui/setlist_without_kde.ui:36
+#. i18n: ectx: property (toolTip), widget (QListView, setListView)
+#. i18n: file: ui/setlist_without_kde.ui:39
+#. i18n: ectx: property (whatsThis), widget (QListView, setListView)
+#: rc.cpp:9 rc.cpp:12 rc.cpp:39 rc.cpp:42
 msgid "A list of songs"
 msgstr "Eine Liste von Songs"
 
 #. i18n: file: ui/setlist.ui:86
 #. i18n: ectx: property (text), widget (QToolButton, addButton)
-#: rc.cpp:15
+#. i18n: file: ui/setlist_without_kde.ui:86
+#. i18n: ectx: property (text), widget (QToolButton, addButton)
+#: rc.cpp:15 rc.cpp:45
 msgid "Add"
 msgstr "Hinzufügen"
 
 #. i18n: file: ui/setlist.ui:150
 #. i18n: ectx: property (title), widget (QGroupBox, setupBox)
-#: rc.cpp:24
+#. i18n: file: ui/setlist_without_kde.ui:150
+#. i18n: ectx: property (title), widget (QGroupBox, setupBox)
+#: rc.cpp:24 rc.cpp:54
 msgid "Song Setup"
 msgstr "Song einrichten"
 
 #. i18n: file: ui/setlist.ui:171
 #. i18n: ectx: property (text), widget (QCheckBox, preloadBox)
-#: rc.cpp:27
+#. i18n: file: ui/setlist_without_kde.ui:171
+#. i18n: ectx: property (text), widget (QCheckBox, preloadBox)
+#: rc.cpp:27 rc.cpp:57
 msgid "Preload"
 msgstr "Vorladen"
 
-#. i18n: file: ui/setlist.ui:195
+#. i18n: file: ui/setlist.ui:181
 #. i18n: ectx: property (text), widget (QLabel, label)
-#: rc.cpp:30
+#. i18n: file: ui/setlist_without_kde.ui:181
+#. i18n: ectx: property (text), widget (QLabel, label)
+#: rc.cpp:30 rc.cpp:60
 msgid "Carla Patch"
 msgstr "Carla Patch"
 
-#. i18n: file: ui/setlist.ui:202
+#. i18n: file: ui/setlist.ui:198
 #. i18n: ectx: property (text), widget (QLabel, label_2)
-#: rc.cpp:33
+#. i18n: file: ui/setlist_without_kde.ui:230
+#. i18n: ectx: property (text), widget (QLabel, label_2)
+#: rc.cpp:33 rc.cpp:66
 msgid "Notes"
 msgstr "Notizen"
 
-#: rc.cpp:34
+#. i18n: file: ui/setlist_without_kde.ui:216
+#. i18n: ectx: property (text), widget (QToolButton, patchrequestbutton)
+#. i18n: file: ui/setlist_without_kde.ui:261
+#. i18n: ectx: property (text), widget (QToolButton, notesrequestbutton)
+#: rc.cpp:63 rc.cpp:69
+msgid "..."
+msgstr "..."
+
+#: rc.cpp:70
 msgctxt "NAME OF TRANSLATORS"
 msgid "Your names"
 msgstr "Julian Wolff"
 
-#: rc.cpp:35
+#: rc.cpp:71
 msgctxt "EMAIL OF TRANSLATORS"
 msgid "Your emails"
 msgstr "wolff@julianwolff.de"

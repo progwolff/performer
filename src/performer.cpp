@@ -58,14 +58,12 @@ Performer::Performer(QWidget *parent) :
     ,midi_learn_action(nullptr)
     ,pageView(nullptr)
     ,m_viewer(nullptr)
+    ,alwaysontop(false)
+    ,handleProgramChange(true)
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
-#endif
-    
-    
-    setWindowIcon(QIcon::fromTheme("performer"));
-   
+#endif   
     
     model = new SetlistModel(this);
     
@@ -339,6 +337,14 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
                 action->setData(data2); // jack midi is normalized (0 to 100)
                 action->trigger();
             }
+        }
+    }
+    else if(IS_MIDIPC(status))
+    {
+        if(handleProgramChange)
+        {
+            if(m_setlist->setListView->model()->rowCount() > data1)
+                model->playNow(model->index(data1,0));
         }
     }
 }

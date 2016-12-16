@@ -131,6 +131,7 @@ private:
     AbstractDocumentViewer* m_viewer;
     
     bool alwaysontop;
+    bool handleProgramChange;
     
 #ifndef WITH_KF5
     QToolBar* toolBar();

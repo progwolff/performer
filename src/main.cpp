@@ -18,6 +18,8 @@ int main (int argc, char *argv[])
 {
     QApplication app(argc, argv);
     
+    app.setWindowIcon(QIcon::fromTheme("performer"));
+    
 #ifdef WITH_QTWEBVIEW
 #ifdef QT_WEBVIEW_WEBENGINE_BACKEND
     QtWebEngine::initalize();
@@ -42,7 +44,7 @@ int main (int argc, char *argv[])
                          // A displayable program name string. (displayName)
                          i18n("Performer"),
                          // The program version string. (version)
-                         QStringLiteral("0.1"),
+                         QStringLiteral("1.0"),
                          // Short description of what the app does. (shortDescription)
                          i18n("Live performance audio session manager"),
                          // The license this code is released under
@@ -57,7 +59,7 @@ int main (int argc, char *argv[])
                          // The bug report email address
                          // (bugsEmailAddress = QLatin1String("submit@bugs.kde.org")
                          QStringLiteral("wolff@julianwolff.de"));
-    aboutData.addAuthor(i18n("Julian Wolff"), i18n(" "), QStringLiteral("wolff@julianwolff.de"),
+    aboutData.addAuthor(QStringLiteral("Julian Wolff"), i18n(" "), QStringLiteral("wolff@julianwolff.de"),
                          QStringLiteral("http://github.com/progwolff"), QStringLiteral(""));
     KAboutData::setApplicationData(aboutData);
     
