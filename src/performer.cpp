@@ -621,10 +621,10 @@ void Performer::loadConfig()
     for(QString cc: config.allKeys())
     {
         qDebug() << cc;
-        for(QAction* action : midi_cc_actions)
+        for(QAction* action : MIDI::actions())
         {
             if(config.value(cc, QString()).toString() == action->objectName())
-                midi_cc_map[cc.toInt()]= action;
+                MIDI::setCc(action, cc.toInt());
         }
     }
     config.endGroup();
@@ -805,10 +805,10 @@ void Performer::saveConfig()
     QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
     
     config.beginGroup("midi");
-    for(unsigned char cc: midi_cc_map.keys())
+    for(QAction *action : MIDI::actions())
     {
-        if(midi_cc_map[cc])
-            config.setValue(QString::number(cc), midi_cc_map[cc]->objectName());
+        if(MIDI::cc(action) <= 127)
+            config.setValue(QString::number(MIDI::cc(action)), action->objectName());
     }
     config.endGroup();
     
