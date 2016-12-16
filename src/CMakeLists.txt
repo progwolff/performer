@@ -11,6 +11,7 @@ link_directories ( ${JACK_LIBDIR} ${JACK_LIBRARY_DIRS} )
 set(PERFORMER_SRCS
     performer.cpp
     util.cpp
+    midi.cpp
     setlistmodel.cpp
     setlistmetadata.cpp
     abstractpatchbackend.hpp

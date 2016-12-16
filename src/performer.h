@@ -112,7 +112,9 @@ private:
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
     
-    QList<QAction*> midi_cc_actions;
+    QAction* midi_learn_action;
+    
+    QMap<unsigned char, unsigned char> midi_cc_value_map;
     
     SetlistModel *model;
     
@@ -120,24 +122,11 @@ private:
     QString notesdefaultpath;
     QString patchdefaultpath;
     
-    QMap<unsigned char, QAction*> midi_cc_map;
-    QMap<unsigned char, unsigned char> midi_cc_value_map;
-    QAction* midi_learn_action;
     QToolButton* alwaysontopbutton;
     
     QPointer<QAbstractScrollArea> pageView;
     
     AbstractDocumentViewer* m_viewer;
-    
-    /**
-     * Adds midi learn functionality to a QWidget.\n
-     * On right click on the widget a midi learn context menu will be shown.\n
-     * Once learned, a MIDI CC message will trigger the default action of the widget.
-     * @param widget the widget to add midi learn functionality to
-     * @param name a locale independent identifier of the corresponding action
-     * @param text a human readable (possibly localized) identifier of the corresponding action
-     */
-    QAction* addMidiAction(QWidget* widget, const QString& text, const QString& name);
     
     bool alwaysontop;
     
