@@ -314,9 +314,13 @@ void CarlaPatchBackend::preload()
         });
         
 		QString carlaPath = QStandardPaths::findExecutable("carla-patchbay");
-		qDebug() << "carlaPath: " << carlaPath;
 		if(carlaPath.isEmpty())
+			carlaPath = QStandardPaths::findExecutable("carla-patchbay", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) +"/Carla");
+		if (carlaPath.isEmpty())
 			carlaPath = QStandardPaths::findExecutable("Carla");
+		if (carlaPath.isEmpty())
+			carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla");
+		qDebug() << "searching in PATH and " + QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla";
 		qDebug() << "carlaPath: " << carlaPath;
 		if (carlaPath.isEmpty())
 			emit progress(PROCESS_FAILEDTOSTART);
