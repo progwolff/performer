@@ -50,6 +50,7 @@ cmake --build . --target install
 Start Performer.
 
 Using command line tools or a jack patchbay like [Catia](http://kxstudio.linuxaudio.org/Applications:Catia) connect the ports of Performer to the appropriate system ports.
+
 ![Patchbay](./.images/connect.png "Patchbay")
 
 The Carla instances created by Performer will connect to the same ports Performer is connected to. 
@@ -59,6 +60,7 @@ Connect the events-in port to a MIDI input device. Ports connected to events-in 
 Connect the control_gui-in port to a MIDI input device that you want to use to control the GUI of Performer.
 
 Click the "Add" button. Change the name of the song to the name of a song you want to have in your setlist. Add a Carla patch file (.carxp) for this song. Add notes or chords (.pdf, .txt, .png, ...) for this song. They will be displayed when the song is active or when you click on it's entry in the setlist.
+
 ![Add](./.images/add.png "Add song")
 
 Right click on the song's entry in the setlist. Choose "Play now". If you assigned a Carla patch to this song, a new instance of Carla will be created, loading the patch file. It's ports will be connected to the same ports Performer is connected to, allowing you to play this song.
