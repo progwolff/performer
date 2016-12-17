@@ -25,22 +25,21 @@ Additionally Performer uses [Okular](https://github.com/KDE/okular) or QWebEngin
 Install performer-git from AUR
 
 ### Other Linux Distros
-``
+```
 $ mkdir build && cd build
 $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 $ make
-\# make install
-``
-
+# make install
+```
 ### Windows
 
 Install [JACK2](http://jackaudio.org/downloads/)
 Install [Qt5](https://www.qt.io/download-open-source/)
 In cmd.exe type:
-``
+```
 mkdir build
 cd build
 cmake -DQt5_DIR="C:\Qt\5.7\msvc2015\lib\cmake\Qt5" -DJACK_INCLUDEDIR="C:\Program Files (x86)\Jack\includes" -DJACK_LIBRARIES="C:\Program Files (x86)\Jack\lib\libjack.lib" -DWITH_TESTS=0 ..
 cmake --build .
 cmake --build . --target install
-``
+```
