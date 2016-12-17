@@ -33,8 +33,10 @@ $ make
 ```
 ### Windows
 
-Install [JACK2](http://jackaudio.org/downloads/)
-Install [Qt5](https://www.qt.io/download-open-source/)
+Install [JACK2](http://jackaudio.org/downloads/).
+
+Install [Qt5](https://www.qt.io/download-open-source/).
+
 In cmd.exe type:
 ```
 mkdir build
