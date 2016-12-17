@@ -115,11 +115,12 @@ add_definitions(-DTRANSLATION_DOMAIN=\"performer\")
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
 FIND_PROGRAM(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
+FIND_PROGRAM(BASH_EXECUTABLE bash)
 
-IF(NOT GETTEXT_MSGFMT_EXECUTABLE)
+IF(NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 	MESSAGE(
 "------
-                 NOTE: msgfmt not found. Translations will *not* be installed
+                 NOTE: msgfmt or bash not found. Translations will *not* be installed
 ------")
 ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE)
 
