@@ -63,7 +63,7 @@ Click the "Add" button. Change the name of the song to the name of a song you wa
 
 ![Add](./.images/add.png "Add song")
 
-Right click on the song's entry in the setlist. Choose "Play now". If you assigned a Carla patch to this song, a new instance of Carla will be created, loading the patch file. It's ports will be connected to the same ports Performer is connected to, allowing you to play this song.
+Right click the song's entry in the setlist. Choose "Play now". If you assigned a Carla patch to this song, a new instance of Carla will be created, loading the patch file. It's ports will be connected to the same ports Performer is connected to, allowing you to play this song.
 
 Add some more songs to your setlist. 
 
@@ -71,4 +71,5 @@ Save the setlist (File -> Save).
 
 Click "Next". A Carla instance for the next song in your setlist will be created. The Carla instances of the previous and of the next song are still preloaded, allowing you to quickly go back to this song, but only the active song is connected to your system ports.
 
-Rightclick a GUI element like the "Next" button or the document viewer's scrollbar. In the shown MIDI learn context menu choose "Learn MIDI CC". Move a control of a MIDI device connected to the control_gui-in port. This control will be assigned to the GUI element, allowing to control Performer's GUI with your MIDI device.
+Right click a GUI element like the "Next" button or the document viewer's scrollbar. In the shown MIDI learn context menu choose "Learn MIDI CC". Move a control of a MIDI device connected to the control_gui-in port. This control will be 
+assigned to the GUI element, allowing to control Performer's GUI with your MIDI device.
