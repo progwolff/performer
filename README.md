@@ -8,7 +8,7 @@ Live performance audio session manager using [Carla](https://github.com/falktx/C
 Performer lets you manage all the songs in your setlist as individual carla patches and loads each of them when you need it.
 Additionally Performer uses [Okular](https://github.com/KDE/okular) or QWebEngine to display notes and chords of your songs.
 
-Dependencies:
+## Dependencies
 * Carla
 * qt5-base
 * qt5-declarative
@@ -19,3 +19,56 @@ Dependencies:
 * kparts (optional: display notes or chords with okular)
 * okular-git (optional: display notes or chords)
 * qt5-webengine (optional: display notes or chords without okular)
+
+## Install
+### Arch Linux
+Install performer-git from AUR
+
+### Other Linux Distros
+```
+$ mkdir build && cd build
+$ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+$ make
+# make install
+```
+### Windows
+
+Install [JACK2](http://jackaudio.org/downloads/).
+
+Install [Qt5](https://www.qt.io/download-open-source/).
+
+In cmd.exe type:
+```
+mkdir build
+cd build
+cmake -DQt5_DIR="C:\Qt\5.7\msvc2015\lib\cmake\Qt5" -DJACK_INCLUDEDIR="C:\Program Files (x86)\Jack\includes" -DJACK_LIBRARIES="C:\Program Files (x86)\Jack\lib\libjack.lib" -DWITH_TESTS=0 ..
+cmake --build .
+cmake --build . --target install
+```
+
+## Usage
+Start Performer.
+
+Using command line tools or a jack patchbay like [Catia](http://kxstudio.linuxaudio.org/Applications:Catia) connect the ports of Performer to the appropriate system ports.
+
+![Patchbay](./.images/connect.png "Patchbay")
+
+The Carla instances created by Performer will connect to the same ports Performer is connected to. 
+
+Connect the events-in port to a MIDI input device. Ports connected to events-in will act as MIDI input for Carla instances created by Performer. 
+
+Connect the control_gui-in port to a MIDI input device that you want to use to control the GUI of Performer.
+
+Click the "Add" button. Change the name of the song to the name of a song you want to have in your setlist. Add a Carla patch file (.carxp) for this song. Add notes or chords (.pdf, .txt, .png, ...) for this song. They will be displayed when the song is active or when you click on it's entry in the setlist.
+
+![Add](./.images/add.png "Add song")
+
+Right click on the song's entry in the setlist. Choose "Play now". If you assigned a Carla patch to this song, a new instance of Carla will be created, loading the patch file. It's ports will be connected to the same ports Performer is connected to, allowing you to play this song.
+
+Add some more songs to your setlist. 
+
+Save the setlist (File -> Save).
+
+Click "Next". A Carla instance for the next song in your setlist will be created. The Carla instances of the previous and of the next song are still preloaded, allowing you to quickly go back to this song, but only the active song is connected to your system ports.
+
+Rightclick a GUI element like the "Next" button or the document viewer's scrollbar. In the shown MIDI learn context menu choose "Learn MIDI CC". Move a control of a MIDI device connected to the control_gui-in port. This control will be assigned to the GUI element, allowing to control Performer's GUI with your MIDI device.
