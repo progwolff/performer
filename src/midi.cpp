@@ -14,9 +14,6 @@ QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString&
 {
     QAction *action = new QAction(text, parent);
     action->setObjectName(name);
-    midi_cc_actions << action;
-    widget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(widget, SIGNAL(customContextMenuRequested(const QPoint&)), parent, SLOT(midiContextMenuRequested(const QPoint&)));
     if(widget->inherits("QToolButton"))
     {
         QToolButton *button = static_cast<QToolButton*>(widget);
@@ -26,9 +23,7 @@ QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString&
         action->setStatusTip(button->statusTip());
         action->setToolTip(button->toolTip());
         action->setWhatsThis(button->whatsThis());
-        //button->addAction(action);
         button->setDefaultAction(action);
-        //connect(button, &QToolButton::triggered, parent, [button,action](QAction* caller){if(caller == action) button->emit clicked();});
     }
     else if(widget->inherits("QScrollBar"))
     {
@@ -50,7 +45,16 @@ QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString&
         box->addAction(action);
     }
     else
+    {
         qDebug() << "MIDI Actions are not implemented for this type of object." << name << text;
+        delete action;
+        action = nullptr;
+        return action;
+    }
+    
+    midi_cc_actions << action;
+    widget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(widget, SIGNAL(customContextMenuRequested(const QPoint&)), parent, SLOT(midiContextMenuRequested(const QPoint&)));
     
     return action;
 }
@@ -130,7 +134,7 @@ void MIDI::trigger(unsigned char cc, unsigned char value)
     }
     else if(action)
     {
-        action->setData(value); // jack midi is normalized (0 to 100)
+        action->setData(value);
         action->trigger();
     }
 }

@@ -12,8 +12,8 @@
 #define IS_MIDIPC(a) ((0xC0 & (a)) == 0xC0)
 
 
-#define MIDI_BUTTON_THRESHOLD_UPPER (55)
-#define MIDI_BUTTON_THRESHOLD_LOWER (45)
+#define MIDI_BUTTON_THRESHOLD_UPPER (128/2+2)
+#define MIDI_BUTTON_THRESHOLD_LOWER (128/2-2)
 
 #include <QList>
 #include <QAction>
