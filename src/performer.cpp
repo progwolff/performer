@@ -541,8 +541,6 @@ void Performer::prepareUi()
     
     toolBar()->setWindowTitle(i18n("Performer Toolbar"));
     
-    
-    
 }
 
 void Performer::setupPageViewActions()

@@ -47,6 +47,8 @@
 
 #include <QDockWidget>
 
+#include <QToolButton>
+
 #include <QPointer>
 
 #include "midi.h"
