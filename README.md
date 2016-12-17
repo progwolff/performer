@@ -72,4 +72,4 @@ Save the setlist (File -> Save).
 Click "Next". A Carla instance for the next song in your setlist will be created. The Carla instances of the previous and of the next song are still preloaded, allowing you to quickly go back to this song, but only the active song is connected to your system ports.
 
 Right click a GUI element like the "Next" button or the document viewer's scrollbar. In the shown MIDI learn context menu choose "Learn MIDI CC". Move a control of a MIDI device connected to the control_gui-in port. This control will be 
-assigned to the GUI element, allowing to control Performer's GUI with your MIDI device.
+assigned to the GUI element, allowing you to control Performer's GUI with your MIDI device.
