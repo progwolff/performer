@@ -25,9 +25,9 @@ QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString&
         action->setStatusTip(button->statusTip());
         action->setToolTip(button->toolTip());
         action->setWhatsThis(button->whatsThis());
-        button->addAction(action);
+        //button->addAction(action);
         button->setDefaultAction(action);
-        connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
+        //connect(button, &QToolButton::triggered, parent, [button,action](QAction* caller){if(caller == action) button->emit clicked();});
     }
     else if(widget->inherits("QScrollBar"))
     {

@@ -329,7 +329,9 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
                     midi_cc_value_map[data1] = data2;
                 if(olddata2 < MIDI_BUTTON_THRESHOLD_LOWER && data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
                 {
-                    action->trigger();
+                    for(QWidget *widget : action->associatedWidgets())
+                        if(widget->inherits("QToolButton"))
+                            ((QToolButton*)widget)->emit clicked();
                 }
             }
             else if(action)
