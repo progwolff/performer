@@ -118,8 +118,6 @@ private:
     
     QAction* midi_learn_action;
     
-    QMap<unsigned char, unsigned char> midi_cc_value_map;
-    
     SetlistModel *model;
     
     QString m_path;

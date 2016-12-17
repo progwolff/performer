@@ -317,28 +317,11 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
             MIDI::setCc(midi_learn_action, data1);
             statusBar()->showMessage(i18n("MIDI CC %1 assigned to action %2", QString::number(data1), midi_learn_action->text()), 2000);
             midi_learn_action = nullptr;
-            midi_cc_value_map[data1] = data2;
+            MIDI::setValue(data1, data2);
         }
         else
         {
-            QAction* action = MIDI::action(data1);
-            if(action && action->data().toString() == "button")
-            {
-                unsigned char olddata2 = midi_cc_value_map[data1];
-                if(data2 < MIDI_BUTTON_THRESHOLD_LOWER || data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
-                    midi_cc_value_map[data1] = data2;
-                if(olddata2 < MIDI_BUTTON_THRESHOLD_LOWER && data2 >= MIDI_BUTTON_THRESHOLD_UPPER)
-                {
-                    for(QWidget *widget : action->associatedWidgets())
-                        if(widget->inherits("QToolButton"))
-                            ((QToolButton*)widget)->emit clicked();
-                }
-            }
-            else if(action)
-            {
-                action->setData(data2); // jack midi is normalized (0 to 100)
-                action->trigger();
-            }
+            MIDI::trigger(data1, data2);
         }
     }
     else if(IS_MIDIPC(status))

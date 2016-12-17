@@ -8,6 +8,7 @@
 
 QMap<unsigned char, QAction*> MIDI::midi_cc_map = QMap<unsigned char, QAction*>();
 QList<QAction*> MIDI::midi_cc_actions = QList<QAction*>();
+QMap<unsigned char, unsigned char> MIDI::midi_cc_value_map = QMap<unsigned char, unsigned char>();
 
 QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString& name, QObject* parent)
 {
@@ -54,7 +55,7 @@ QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString&
     return action;
 }
 
-unsigned int MIDI::cc(QAction* action) 
+unsigned char MIDI::cc(QAction* action) 
 {
     unsigned char cc = 128;
     QMapIterator<unsigned char, QAction*> i(midi_cc_map);
@@ -69,7 +70,7 @@ unsigned int MIDI::cc(QAction* action)
     return cc;
 }
 
-void MIDI::setCc(QAction* action, unsigned int cc)
+void MIDI::setCc(QAction* action, unsigned char cc)
 {
     midi_cc_map[cc] = action;
 }
@@ -87,7 +88,7 @@ void MIDI::resetCc(QAction* action)
     }
 }
 
-QAction* MIDI::action(unsigned int cc)
+QAction* MIDI::action(unsigned char cc)
 {
     return midi_cc_map[cc];
 }
@@ -100,4 +101,36 @@ void MIDI::addAction(QAction* action)
 const QList<QAction*>& MIDI::actions()
 {
     return midi_cc_actions;
+}
+
+unsigned char MIDI::value(unsigned char cc)
+{
+    return midi_cc_value_map[cc];
+}
+
+void MIDI::setValue(unsigned char cc, unsigned char value)
+{
+    midi_cc_value_map[cc] = value;
+}
+
+void MIDI::trigger(unsigned char cc, unsigned char value)
+{
+    QAction* action = MIDI::action(cc);
+    if(action && action->data().toString() == "button")
+    {
+        unsigned char olddata2 = MIDI::value(cc);
+        if(value < MIDI_BUTTON_THRESHOLD_LOWER || value >= MIDI_BUTTON_THRESHOLD_UPPER)
+            setValue(cc, value);
+        if(olddata2 < MIDI_BUTTON_THRESHOLD_LOWER && value >= MIDI_BUTTON_THRESHOLD_UPPER)
+        {
+            for(QWidget *widget : action->associatedWidgets())
+                if(widget->inherits("QToolButton"))
+                    ((QToolButton*)widget)->emit clicked();
+        }
+    }
+    else if(action)
+    {
+        action->setData(value); // jack midi is normalized (0 to 100)
+        action->trigger();
+    }
 }
