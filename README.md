@@ -43,6 +43,9 @@ mkdir build
 cd build
 cmake -DQt5_DIR="C:\Qt\5.7\msvc2015\lib\cmake\Qt5" -DJACK_INCLUDEDIR="C:\Program Files (x86)\Jack\includes" -DJACK_LIBRARIES="C:\Program Files (x86)\Jack\lib\libjack.lib" -DWITH_TESTS=0 ..
 cmake --build .
+```
+In cmd.exe with admin privileges:
+```
 cmake --build . --target install
 ```
 
