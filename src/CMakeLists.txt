@@ -1,44 +1,26 @@
    
 # add_subdirectory(configwidgets)
 
-find_package ( PkgConfig  )
-if(PkgConfig_FOUND)
-pkg_check_modules ( JACK jack )
-if(JACK_FOUND)
-    add_definitions(-DWITH_JACK)
-	set(WITH_JACK 1)
-endif(JACK_FOUND)
-else(PkgConfig_FOUND)
-if(DEFINED JACK_LIBRARIES)
-	add_definitions(-DWITH_JACK)
-	message("looking for jack headers in ${JACK_INCLUDEDIR}")
-	message("using jack lib ${JACK_LIBRARIES}")
-	set(WITH_JACK 1)
-else()
-MESSAGE("pkgconfig not found. please set JACK_INCLUDEDIR and JACK_LIBRARIES.")
-endif()
-endif(PkgConfig_FOUND)
-
-if(NOT WITH_JACK)
-message( FATAL_ERROR "Jack could not be found. Performer will noch work without Jack." )
-endif()
-
 set(CMAKE_AUTOMOC ON)
 
 include_directories ( ${JACK_INCLUDEDIR} ${JACK_INCLUDE_DIRS} )
 link_directories ( ${JACK_LIBDIR} ${JACK_LIBRARY_DIRS} )
 
+
 #include_directories(configwidgets)
 set(PERFORMER_SRCS
     performer.cpp
-    main.cpp
+    util.cpp
+    midi.cpp
     setlistmodel.cpp
     setlistmetadata.cpp
     abstractpatchbackend.hpp
     carlapatchbackend.cpp
     setlistview.cpp
+    okulardocumentviewer.cpp
+    qwebenginedocumentviewer.cpp
+    qtwebviewdocumentviewer.cpp
 )
-
 
 if(WITH_KF5)
     set(PERFORMER_UI ui/setlist.ui)
@@ -50,12 +32,27 @@ else(WITH_KF5)
 endif(WITH_KF5)
 
     
+if(ANDROID)
+add_library(performer SHARED main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
+include(../cmake/AddQtAndroidApk.cmake)
+add_qt_android_apk(performer_apk performer
+	NAME "Performer"
+	VERSION_CODE 1
+	PACKAGE_NAME "de.julianwolff.performer"
+	DEPENDS performer
+)
 
-add_executable(performer ${PERFORMER_SRCS} ${PERFORMER_UI})
+
+elseif(WIN32)
+add_executable(performer WIN32 main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
+else()
+add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
+endif()
 
 target_compile_definitions(performer PRIVATE -DPROJECT_VERSION="${PROJECT_VERSION}")
 
-target_link_libraries(performer
+#target_compile_features(performer PRIVATE cxx_auto_type)
+list(APPEND _LINK_LIBRARIES 
     Qt5::Widgets
     #Qt5::X11Extras
     Qt5::Quick
@@ -64,45 +61,79 @@ target_link_libraries(performer
 )
 
 
+
+
 if(WITH_KF5)
     kde_enable_exceptions()
 
-    target_link_libraries(performer
+    list(APPEND _LINK_LIBRARIES 
         #KF5::ConfigWidgets
         KF5::KIOWidgets
         KF5::I18n
         #KF5::XmlGui
         KF5::CoreAddons
     )
+    
 endif(WITH_KF5)
 
 if(NOT WITH_KPARTS AND WITH_KF5)
-    target_link_libraries(performer
+    list(APPEND _LINK_LIBRARIES 
         KF5::XmlGui
     )
 endif(NOT WITH_KPARTS AND WITH_KF5)
 
 if(WITH_KPARTS)
-    target_link_libraries(performer
+    list(APPEND _LINK_LIBRARIES 
         KF5::Parts
     )
-else(WITH_KPARTS)
-    if(WITH_QWEBENGINE)
-        target_link_libraries(performer 
-            Qt5::WebEngineWidgets
-        )
-		if(NOT DEFINED CMAKE_INSTALL_DATADIR)
-		    set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_BINDIR}/data)
-		endif()
-        install( DIRECTORY pdf.js DESTINATION ${CMAKE_INSTALL_DATADIR}/performer )
-    endif(WITH_QWEBENGINE)
 endif(WITH_KPARTS)
 
+if(WITH_QWEBENGINE)
+    list(APPEND _LINK_LIBRARIES  
+        Qt5::WebEngineWidgets
+    )
+    if(NOT DEFINED CMAKE_INSTALL_DATADIR)
+        set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_BINDIR}/data)
+    endif()
+    install( DIRECTORY pdf.js DESTINATION ${CMAKE_INSTALL_DATADIR}/performer )
+endif(WITH_QWEBENGINE)
+
+if(WITH_QTWEBVIEW)
+    list(APPEND _LINK_LIBRARIES 
+        Qt5::WebView
+    )
+    if(NOT DEFINED CMAKE_INSTALL_DATADIR)
+        set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_BINDIR}/data)
+    endif()
+    install( DIRECTORY pdf.js DESTINATION ${CMAKE_INSTALL_DATADIR}/performer )
+endif(WITH_QTWEBVIEW)
+
 if(WITH_JACK)
-    target_link_libraries(performer
+    list(APPEND _LINK_LIBRARIES 
         ${JACK_LIBRARIES}
     )
 endif(WITH_JACK)
+
+
+target_link_libraries(performer ${_LINK_LIBRARIES})
+
+
+option(WITH_TESTS "unit tests" ON)
+if(WITH_TESTS)
+    option(BUILD_TESTING "Build the testing tree." ON)
+	add_subdirectory(tests)
+	if (EXISTS ${CATCH_INCLUDE_DIR}/catch.hpp)
+        include_directories(${CATCH_INCLUDE_DIR} ${COMMON_INCLUDES})
+        enable_testing()
+        add_executable(test_performer tests.cpp ${PERFORMER_SRCS}  ${PERFORMER_UI})
+        add_dependencies(test_performer catch) 
+        target_link_libraries(test_performer ${_LINK_LIBRARIES})
+        add_test(NAME "test_performer" COMMAND test_performer)
+    else()
+        set(WITH_TESTS 0)
+    endif()
+endif()
+
 
 if(NOT DEFINED CMAKE_INSTALL_BINDIR)
   set(CMAKE_INSTALL_BINDIR "bin" CACHE PATH "user executables (bin)")
@@ -120,4 +151,7 @@ if(ECM_FOUND)
 endif(ECM_FOUND)
 #kcoreaddons_desktop_to_json(performer ../performer.desktop)
 
+if(WITH_QTWEBVIEW)
+    install(FILES qml/webview.qml DESTINATION ${CMAKE_INSTALL_DATADIR}/performer)
+endif()
 

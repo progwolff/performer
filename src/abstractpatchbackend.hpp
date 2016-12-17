@@ -12,7 +12,9 @@
 #define int8_t
 #endif
 
+#ifdef WITH_JACK
 #include <jack/jack.h>
+#endif
 
 /**
  * Base class of backends used for loading patches
@@ -32,7 +34,9 @@ public:
         :patchfile(patchfile)
     {};
     
+#ifdef WITH_JACK
     static jack_client_t *jackClient();
+#endif
     
     /**
      * return the active connections of Performer

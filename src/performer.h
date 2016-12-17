@@ -33,17 +33,23 @@
 
 #endif
 
-#ifdef WITH_QWEBENGINE
-
-#include <QWebEngineView>
-#include <QScrollArea>
-#include <QComboBox>
-
+#ifdef WITH_KPARTS
+#include "okulardocumentviewer.h"
 #endif
+#ifdef WITH_QWEBENGINE
+#include "qwebenginedocumentviewer.h"
+#endif
+#ifdef WITH_QTWEBVIEW
+#include "qtwebviewdocumentviewer.h"
+#endif
+
+#include "abstractdocumentviewer.h"
 
 #include <QDockWidget>
 
 #include <QPointer>
+
+#include "midi.h"
 
 class SetlistModel;
 class QStyledItemDelegate;
@@ -105,18 +111,12 @@ private:
     void prepareUi();
     void setupPageViewActions();
     
-#ifdef WITH_KPARTS
-    KParts::ReadOnlyPart *m_part;
-#endif
-#ifdef WITH_QWEBENGINE
-    QWebEngineView *m_webview;
-    QScrollArea *m_webviewarea;
-    QComboBox *m_zoombox;
-#endif
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
     
-    QList<QAction*> midi_cc_actions;
+    QAction* midi_learn_action;
+    
+    QMap<unsigned char, unsigned char> midi_cc_value_map;
     
     SetlistModel *model;
     
@@ -124,14 +124,14 @@ private:
     QString notesdefaultpath;
     QString patchdefaultpath;
     
-    QMap<unsigned char, QAction*> midi_cc_map;
-    QMap<unsigned char, unsigned char> midi_cc_value_map;
-    QAction* midi_learn_action;
-    QAction* alwaysontopaction;
+    QToolButton* alwaysontopbutton;
     
     QPointer<QAbstractScrollArea> pageView;
     
+    AbstractDocumentViewer* m_viewer;
+    
     bool alwaysontop;
+    bool handleProgramChange;
     
 #ifndef WITH_KF5
     QToolBar* toolBar();

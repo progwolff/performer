@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 set(PROJECT_VERSION "0.1.0")
 set(QT_MIN_VERSION "0.1.0")
 
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
+
 find_package(Qt5 ${QT_MIN_VERSION} 
     CONFIG REQUIRED COMPONENTS 
     Core 
@@ -18,7 +20,9 @@ find_package(Qt5 ${QT_MIN_VERSION}
 find_package(Qt5 ${QT_MIN_VESION}
     OPTIONAL_COMPONENTS
     WebEngineWidgets
+    WebView
 )
+
 
 find_package(ECM NO_MODULE)
 if(ECM_FOUND)
@@ -71,17 +75,52 @@ if(NOT WITH_KPARTS)
     endif()
 endif()
 
+if(NOT WITH_KPARTS AND NOT WITH_QWEBENGINE)
+    if(Qt5WebView_FOUND)
+        option(WITH_QTWEBVIEW "Build with QtWebView (View files without Okular or QWebEngineView)" ON)
+        if(WITH_QTWEBVIEW)
+            add_definitions(-DWITH_QTWEBVIEW)
+            Message("Building with QtWebView")
+        endif()
+    endif()
+endif()
+
+find_package ( PkgConfig  )
+if(PkgConfig_FOUND)
+    pkg_check_modules ( JACK jack )
+else(PkgConfig_FOUND)
+    if(DEFINED JACK_LIBRARIES)
+        set(JACK_FOUND 1)
+        message("looking for jack headers in ${JACK_INCLUDEDIR}")
+        message("using jack lib ${JACK_LIBRARIES}")
+    else()
+        MESSAGE("pkgconfig not found. please set JACK_INCLUDEDIR and JACK_LIBRARIES.")
+    endif()
+endif(PkgConfig_FOUND)
+if(JACK_FOUND)
+    option(WITH_JACK "Build with Jack (enable Carla backend)" ON)
+    if(WITH_JACK)
+        add_definitions(-DWITH_JACK)
+        Message("Building with Jack")
+    endif()
+endif(JACK_FOUND)
+
+if(NOT WITH_JACK)
+    message( "Building without Jack. Carla backend will not work." )
+endif()
+
 set(QML_IMPORT_PATH "${QML_DIRS}" CACHE STRING "Qt Creator 4.1 extra qml import paths")
 
 add_definitions(-DTRANSLATION_DOMAIN=\"performer\")
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
 FIND_PROGRAM(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
+FIND_PROGRAM(BASH_EXECUTABLE bash)
 
-IF(NOT GETTEXT_MSGFMT_EXECUTABLE)
+IF(NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 	MESSAGE(
 "------
-                 NOTE: msgfmt not found. Translations will *not* be installed
+                 NOTE: msgfmt or bash not found. Translations will *not* be installed
 ------")
 ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE)
 

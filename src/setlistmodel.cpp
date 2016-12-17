@@ -66,8 +66,10 @@ SetlistModel::SetlistModel(QObject *parent)
     
     reset();
 
+#ifdef WITH_JACK
     if(!CarlaPatchBackend::jackClient())
         emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
+#endif
 
 }
 
@@ -76,7 +78,9 @@ SetlistModel::~SetlistModel()
     removeBackend(m_activebackend);
     removeBackend(m_previousbackend);
     removeBackend(m_nextbackend);
+#ifdef WITH_JACK
     while(!CarlaPatchBackend::freeJackClient());
+#endif
 }
 
 void SetlistModel::createBackend(AbstractPatchBackend*& backend, int index)
@@ -431,7 +435,9 @@ void SetlistModel::updateProgress(int p)
         removeBackend(m_previousbackend);
         removeBackend(m_nextbackend);
         removeBackend(m_activebackend);
+#ifdef WITH_JACK
         while(!CarlaPatchBackend::freeJackClient());
+#endif
         emit info(i18n("Could not find a running jack server. Will retry to connect to server in %1 seconds.", 10));
         QTimer *timer;
         timer = new QTimer(this);
@@ -445,17 +451,21 @@ void SetlistModel::updateProgress(int p)
             {
                 emit info("");
                     
+#ifdef WITH_JACK
                 if(!CarlaPatchBackend::jackClient())
-                    emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
-                else
                 {
+                    *secondsleft = 11;
+                }
+                else
+#endif
+                {
+                    ((QTimer*)QObject::sender())->stop();
+                    ((QTimer*)QObject::sender())->deleteLater();
+                    delete secondsleft;
                     panic();
                 }
-                delete secondsleft;
-                ((QTimer*)QObject::sender())->stop();
-                ((QTimer*)QObject::sender())->deleteLater();
             }
-            else
+            else if (*secondsleft < 10)
             {
                 emit info(i18n("Could not find a running jack server. Will retry to connect to server in %1 seconds.", *secondsleft));
             }
@@ -464,7 +474,7 @@ void SetlistModel::updateProgress(int p)
         break;
     case AbstractPatchBackend::JACK_OPEN_FAILED:
         qDebug() << "failed to create a jack client.";
-        emit error(i18n("Could not create a client on the existing jack server. Can't load Carla patches."));
+        emit info(i18n("Could not create a client on the existing jack server. Can't load Carla patches."));
         break;
     }
 

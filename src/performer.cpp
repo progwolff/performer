@@ -21,14 +21,15 @@
 
 
 #include "performer.h"
-#include "midi.h"
+
+#include "setlistmodel.h"
+#include "setlistview.h"
 
 #ifdef WITH_KF5
 #include "ui_setlist.h"
 #include <KAboutData>
 #include <KLocalizedString>
 #include <KMessageBox>
-#include <kservice.h>
 #include <kdeclarative.h>
 #include <KToolBar>
 #include <KSharedConfig>
@@ -45,14 +46,6 @@
 #include <QStandardPaths>
 #include <QMenu>
 
-#include "setlistmodel.h"
-#include "setlistview.h"
-
-#ifdef WITH_QWEBENGINE
-#include <QWebEngineSettings>
-#include <QMimeDatabase>
-#endif
-
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent)
@@ -64,14 +57,13 @@ Performer::Performer(QWidget *parent) :
     ,m_setlist(new Ui::Setlist)
     ,midi_learn_action(nullptr)
     ,pageView(nullptr)
+    ,m_viewer(nullptr)
+    ,alwaysontop(false)
+    ,handleProgramChange(true)
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
-#endif
-
-    
-    setWindowIcon(QIcon::fromTheme("performer"));
-   
+#endif   
     
     model = new SetlistModel(this);
     
@@ -88,62 +80,57 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
     m_setlist->addButton->setIcon(QIcon::fromTheme("list-add"));//, QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     
-    QAction *action = new QAction(i18n("Previous"), this); //no translation to make config translation invariant
-    action->setData("button");
-    midi_cc_actions << action;
-    connect(action, &QAction::triggered, this, [this](){model->playPrevious(); songSelected(QModelIndex());});
-    m_setlist->previousButton->setDefaultAction(action);
-    action->setObjectName("Previous");
-    m_setlist->previousButton->setEnabled(true);
-    action = new QAction(i18n("Next"), this); //no translation to make config translation invariant
-    action->setData("button");
-    midi_cc_actions << action;
-    connect(action, &QAction::triggered, this, [this](){model->playNext(); songSelected(QModelIndex());});
-    m_setlist->nextButton->setDefaultAction(action);
-    action->setObjectName("Next");
+    MIDI::setLearnable(m_setlist->previousButton, i18n("Previous"), "Previous", this);
+    connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){model->playPrevious(); songSelected(QModelIndex());});  
+    m_setlist->previousButton->setEnabled(true);  
+    
+    MIDI::setLearnable(m_setlist->nextButton, i18n("Next"), "Next", this);
+    connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){model->playNext(); songSelected(QModelIndex());});    
     m_setlist->nextButton->setEnabled(true);
    
-    alwaysontopaction = new QAction(i18n("Always on top"),this);
-    alwaysontopaction->setCheckable(true);
-    alwaysontopaction->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
-    alwaysontopaction->setData("button");
-    connect(alwaysontopaction, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));
-    connect(alwaysontopaction, SIGNAL(triggered(bool)), this, SLOT(setAlwaysOnTop(bool)));
-    midi_cc_actions << alwaysontopaction;
-    QToolButton* toolButton = new QToolButton(toolBar());
-    toolBar()->addWidget(toolButton);
-    toolButton->setDefaultAction(alwaysontopaction);
-    toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(toolButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    alwaysontopaction->setObjectName("Alwaysontop");
+    alwaysontopbutton = new QToolButton(toolBar());
+    alwaysontopbutton->setCheckable(true); 
+    toolBar()->addWidget(alwaysontopbutton);
+    alwaysontopbutton->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
+    alwaysontopbutton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    MIDI::setLearnable(alwaysontopbutton, i18n("Always on top"), "Alwaysontop", this);
+    connect(alwaysontopbutton, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));  
     
-    action = new QAction(i18n("Panic!"),this);
-    action->setIcon(QIcon::fromTheme("dialog-warning", QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning)));
-    action->setData("button");
-    action->setToolTip(i18n("Terminate and reload all Carla instances."));
-    connect(action, SIGNAL(triggered(bool)), model, SLOT(panic()));
-    midi_cc_actions << action;
-    toolButton = new QToolButton(toolBar());
+    QToolButton *toolButton = new QToolButton(toolBar());
     toolBar()->addWidget(toolButton);
-    toolButton->setDefaultAction(action);
     toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    toolButton->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(toolButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    action->setObjectName("Panic");
-    
-    connect(m_setlist->previousButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    connect(m_setlist->nextButton, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+    toolButton->setIcon(QIcon::fromTheme("dialog-warning", QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning)));
+    toolButton->setToolTip(i18n("Terminate and reload all Carla instances."));
+    MIDI::setLearnable(toolButton, i18n("Panic!"), "Panic", this);
+    connect(toolButton, SIGNAL(clicked()), model, SLOT(panic()));
     
     m_setlist->setupBox->setVisible(false);
 #ifdef WITH_KF5
     connect(m_setlist->patchrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
     connect(m_setlist->notesrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
+#ifndef WITH_JACK
+    m_setlist->patchrequester->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
+    m_setlist->patchrequester->setEnabled(false);
+#endif
+#if !defined(WITH_KPARTS) && !defined(WITH_QWEBENGINE) && !defined(WITH_QTWEBVIEW)
+    m_setlist->notesrequester->setToolTip(i18n("Performer was built without KParts or QWebEngine. Rebuild Performer with KParts or QWebEngine to enable displaying notes."));
+    m_setlist->notesrequester->setEnabled(false);
+#endif
 #else
     connect(m_setlist->patchrequestbutton, SIGNAL(clicked()), SLOT(requestPatch()));
     connect(m_setlist->notesrequestbutton, SIGNAL(clicked()), SLOT(requestNotes()));
     m_setlist->patchrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     m_setlist->notesrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
+#ifndef WITH_JACK
+    m_setlist->patchrequestbutton->setEnabled(false);
+    m_setlist->patchrequestedit->setEnabled(false);
+    m_setlist->patchrequestbutton->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
+#endif
+#if !defined(WITH_KPARTS) && !defined(WITH_QWEBENGINE) && !defined(WITH_QTWEBVIEW)
+    m_setlist->notesrequestbutton->setEnabled(false);
+    m_setlist->notesrequestedit->setEnabled(false);
+    m_setlist->patchrequestbutton->setToolTip(i18n("Performer was built without KParts or QWebEngine. Rebuild Performer with KParts or QWebEngine to enable displaying notes."));
+#endif
 #endif
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
     connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
@@ -167,26 +154,18 @@ Performer::~Performer()
 {
     saveConfig();
     
-    for(QAction* action : midi_cc_actions)
-        delete action;
+    //for(QAction* action : midi_cc_actions)
+    //    delete action;
     
     delete model;
     model = nullptr;
-#ifdef WITH_KPARTS
-    delete m_part;
-    m_part = nullptr;
-#endif
-#ifdef WITH_QWEBENGINE
-	m_webview->close();
-    delete m_webview;
-    m_webview = nullptr;
-    delete m_webviewarea;
-    m_webviewarea = nullptr;
-    delete m_zoombox;
-    m_zoombox = nullptr;
-#endif
+    
+    delete m_viewer;
+    m_viewer = nullptr;
+
     delete m_dock;
     m_dock = nullptr;
+
     delete m_setlist;
     m_setlist = nullptr;
 }
@@ -280,60 +259,16 @@ void Performer::showContextMenu(QPoint pos)
 
 void Performer::midiContextMenuRequested(const QPoint& pos)
 {
-    if(QObject::sender()->inherits("QToolButton"))
+    if(QObject::sender()->inherits("QToolButton") || QObject::sender()->inherits("QScrollBar") || QObject::sender()->inherits("QComboBox"))
     {
-        QToolButton *sender = (QToolButton*)QObject::sender();
+        QWidget *sender = (QWidget*)QObject::sender();
         if(sender)
         {
             QPoint globalPos = sender->mapToGlobal(pos);
             QMenu myMenu;
             QAction *action;
             
-            unsigned char cc = 128;
-            QMapIterator<unsigned char, QAction*> i(midi_cc_map);
-            while (i.hasNext()) {
-                i.next();
-                if(i.value() == sender->defaultAction())
-                {
-                    cc = i.key();
-                    break;
-                }
-            }
-            
-            if(cc <= 127)
-            {
-                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc), this, [](){});
-                action->setEnabled(false);
-                myMenu.addSeparator();
-            }
-            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction()); midiLearn(sender->defaultAction());});
-            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->defaultAction());});
-            if(cc > 127) 
-                action->setEnabled(false);
-            
-            // Show context menu at handling position
-            myMenu.exec(globalPos);
-        }
-    }
-    else if(QObject::sender()->inherits("QScrollBar"))
-    {
-        QScrollBar *sender = (QScrollBar*)QObject::sender();
-        if(sender)
-        {
-            QPoint globalPos = sender->mapToGlobal(pos);
-            QMenu myMenu;
-            QAction *action;
-            
-            unsigned char cc = 128;
-            QMapIterator<unsigned char, QAction*> i(midi_cc_map);
-            while (i.hasNext()) {
-                i.next();
-                if(i.value() == sender->actions()[0])
-                {
-                    cc = i.key();
-                    break;
-                }
-            }
+            unsigned int cc = MIDI::cc(sender->actions()[0]);
             
             if(cc <= 127)
             {
@@ -354,6 +289,7 @@ void Performer::midiContextMenuRequested(const QPoint& pos)
         qDebug() << "MIDI context menu not implemented for this type of object.";
 }
 
+
 void Performer::midiLearn(QAction* action)
 {
     if(!action)
@@ -365,16 +301,7 @@ void Performer::midiLearn(QAction* action)
 
 void Performer::midiClear(QAction* action)
 {
-    if(!action)
-        return;
-    
-    QMapIterator<unsigned char, QAction*> i(midi_cc_map);
-    while (i.hasNext()) {
-        i.next();
-        if(i.value() == action)
-            midi_cc_map[i.key()] = nullptr;
-    }
-    
+    MIDI::resetCc(action);
     statusBar()->showMessage(i18n("MIDI CC cleared for action %1", action->text()), 2000);
 }
 
@@ -387,14 +314,14 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
         //qDebug() << "received MIDI event" << QString::number(status) << QString::number(data1) << QString::number(data2);
         if(midi_learn_action)
         {
-            midi_cc_map[data1] = midi_learn_action;
+            MIDI::setCc(midi_learn_action, data1);
             statusBar()->showMessage(i18n("MIDI CC %1 assigned to action %2", QString::number(data1), midi_learn_action->text()), 2000);
             midi_learn_action = nullptr;
             midi_cc_value_map[data1] = data2;
         }
         else
         {
-            QAction* action = midi_cc_map[data1];
+            QAction* action = MIDI::action(data1);
             if(action && action->data().toString() == "button")
             {
                 unsigned char olddata2 = midi_cc_value_map[data1];
@@ -410,6 +337,14 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
                 action->setData(data2); // jack midi is normalized (0 to 100)
                 action->trigger();
             }
+        }
+    }
+    else if(IS_MIDIPC(status))
+    {
+        if(handleProgramChange)
+        {
+            if(m_setlist->setListView->model()->rowCount() > data1)
+                model->playNow(model->index(data1,0));
         }
     }
 }
@@ -460,6 +395,193 @@ void Performer::addSong()
     songSelected(model->index(index,0));
 }
 
+void Performer::songSelected(const QModelIndex& index)
+{
+    QModelIndex ind = index;
+    if(!ind.isValid())
+        ind = model->activeIndex();
+    
+    if(!ind.isValid())
+        return;
+    
+    m_setlist->setupBox->setVisible(true);
+    m_setlist->setupBox->setTitle(i18n("Set up %1", ind.data(SetlistModel::NameRole).toString()));
+    m_setlist->nameEdit->setText(ind.data(SetlistModel::NameRole).toString());
+    //m_setlist->patchrequester->clear();
+#ifdef WITH_KF5
+    m_setlist->patchrequester->setUrl(ind.data(SetlistModel::PatchRole).toUrl());
+    qDebug() << "patch: " << ind.data(SetlistModel::PatchRole).toUrl().toLocalFile();
+    //m_setlist->patchrequester->clear();
+    m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
+    m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
+#else
+    m_setlist->patchrequestedit->setText(ind.data(SetlistModel::PatchRole).toUrl().toLocalFile());
+    m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
+#endif
+    
+    if(m_viewer && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+    {
+        m_viewer->load(ind.data(SetlistModel::NotesRole).toUrl());
+    }
+
+}
+
+void Performer::prepareUi()
+{
+    
+    m_dock = new QDockWidget(this);
+    m_setlist->setupUi(m_dock);
+    addDockWidget(Qt::LeftDockWidgetArea, m_dock);
+    
+#ifdef WITH_KPARTS
+    m_viewer = new OkularDocumentViewer(this);
+    
+    if(!((OkularDocumentViewer*)m_viewer)->part())
+    {
+        KMessageBox::error(this, i18n("Okular KPart not found"));
+        setupGUI(ToolBar | Keys | StatusBar | Save);
+        KXmlGuiWindow::createGUI();
+    }
+    else
+    {
+        setWindowTitleHandling(false);
+        // tell the KParts::MainWindow that this is indeed
+        // the main widget
+        setCentralWidget(m_viewer->widget());
+        setupGUI(ToolBar | Keys | StatusBar | Save);
+        // and integrate the part's GUI with the shell's
+        createGUI(((OkularDocumentViewer*)m_viewer)->part());
+        
+        QList<QToolButton*> buttons = ((OkularDocumentViewer*)m_viewer)->pageButtons();
+        
+        QStringList text = {i18n("Previous page"), i18n("Next page")};
+        QStringList name = {"PreviousPage", "NextPage"};
+        for(int i=0; i<buttons.size(); ++i)
+        {
+            MIDI::setLearnable(buttons[i], text[i], name[i], this);
+        }
+        
+        QWidget* okularToolBar = findChild<QWidget*>("okularToolBar");
+        if(okularToolBar)
+        {
+            qDebug() << "found okularToolBar";
+            for(QToolButton* button : okularToolBar->findChildren<QToolButton*>())
+            {
+                qDebug() << "found a toolbutton";
+                for(QAction* action : button->actions())
+                {
+                    MIDI::addAction(action);
+                    action->setData("button");
+                }
+                
+                button->setContextMenuPolicy(Qt::CustomContextMenu);
+                connect(button, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
+            }
+            QComboBox* box = okularToolBar->findChild<QComboBox*>();
+            if(box)
+            {
+                qDebug() << "found a combobox";
+                MIDI::setLearnable(box, i18n("Zoom"), "zoom", this);
+            }
+        }
+
+    }
+#endif
+
+#ifdef WITH_QWEBENGINE
+    m_viewer = new QWebEngineDocumentViewer(this);
+    setCentralWidget(m_viewer->widget());
+#endif
+    
+#ifdef WITH_QTWEBVIEW
+    m_viewer = new QtWebViewDocumentViewer(this);
+    setCentralWidget(m_viewer->widget());
+#endif
+    
+    if(m_viewer)
+    {
+        for(QWidget* widget : m_viewer->toolbarWidgets())
+        {
+            toolBar()->addWidget(widget);
+        }
+
+        if(!pageView)
+        {
+            setupPageViewActions();
+        }
+    }
+    
+    QMenu *filemenu = new QMenu(i18n("File"));
+    
+    QAction* action = new QAction(this);
+    action->setText(i18n("&New"));
+    action->setIcon(QIcon::fromTheme("document-new", QApplication::style()->standardIcon(QStyle::SP_FileIcon)));
+    connect(action, SIGNAL(triggered(bool)), model, SLOT(reset()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Open"));
+    action->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Save"));
+    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
+    filemenu->addAction(action);
+    
+    action = new QAction(this);
+    action->setText(i18n("&Save as"));
+    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
+    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
+    filemenu->addAction(action);
+    
+    menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
+    
+    toolBar()->setWindowTitle(i18n("Performer Toolbar"));
+    
+    
+    
+}
+
+void Performer::setupPageViewActions()
+{
+    pageView = m_viewer->scrollArea();
+
+    if(!pageView)
+        return;
+    
+    QScrollBar* scrollBar = pageView->verticalScrollBar();
+    if(scrollBar)
+        MIDI::setLearnable(scrollBar, i18n("Scroll vertical"), "ScrollV", this);
+    
+    scrollBar = pageView->horizontalScrollBar();
+    if(scrollBar)
+        MIDI::setLearnable(scrollBar, i18n("Scroll horizontal"), "ScrollH", this);
+}
+
+void Performer::setAlwaysOnTop(bool ontop)
+{
+    if(ontop != alwaysontop)
+    {
+        alwaysontop = ontop;
+        if(alwaysontop)
+        {
+            setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
+            alwaysontopbutton->setChecked(true);
+            show();
+        }
+        else
+        {
+            setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
+            alwaysontopbutton->setChecked(false);
+            show();
+        }
+    }
+}
+
+
 void Performer::loadConfig()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
@@ -474,10 +596,11 @@ void Performer::loadConfig()
     
     for(QString cc: config->group("midi").keyList())
     {
-        for(QAction* action : midi_cc_actions)
+        
+        for(QAction* action : MIDI::actions())
         {
             if(config->group("midi").readEntry(cc, QString()) == action->objectName())
-                midi_cc_map[cc.toInt()]= action;
+                MIDI::setCc(action, cc.toInt());
         }
     }
     
@@ -504,10 +627,10 @@ void Performer::loadConfig()
     for(QString cc: config.allKeys())
     {
         qDebug() << cc;
-        for(QAction* action : midi_cc_actions)
+        for(QAction* action : MIDI::actions())
         {
             if(config.value(cc, QString()).toString() == action->objectName())
-                midi_cc_map[cc.toInt()]= action;
+                MIDI::setCc(action, cc.toInt());
         }
     }
     config.endGroup();
@@ -667,10 +790,10 @@ void Performer::saveConfig()
 #ifdef WITH_KF5
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
-    for(unsigned char cc: midi_cc_map.keys())
+    for(QAction* action: MIDI::actions())
     {
-        if(midi_cc_map[cc])
-            config->group("midi").writeEntry(QString::number(cc), midi_cc_map[cc]->objectName());
+        if(MIDI::cc(action) <= 127)
+            config->group("midi").writeEntry(QString::number(MIDI::cc(action)), action->objectName());
     }
     
     config->deleteGroup("connections");
@@ -688,10 +811,10 @@ void Performer::saveConfig()
     QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
     
     config.beginGroup("midi");
-    for(unsigned char cc: midi_cc_map.keys())
+    for(QAction *action : MIDI::actions())
     {
-        if(midi_cc_map[cc])
-            config.setValue(QString::number(cc), midi_cc_map[cc]->objectName());
+        if(MIDI::cc(action) <= 127)
+            config.setValue(QString::number(MIDI::cc(action)), action->objectName());
     }
     config.endGroup();
     
@@ -714,318 +837,6 @@ void Performer::saveConfig()
 #endif
     loadConfig();
 }
-
-void Performer::songSelected(const QModelIndex& index)
-{
-    QModelIndex ind = index;
-    if(!ind.isValid())
-        ind = model->activeIndex();
-    
-    if(!ind.isValid())
-        return;
-    
-    m_setlist->setupBox->setVisible(true);
-    m_setlist->setupBox->setTitle(i18n("Set up %1", ind.data(SetlistModel::NameRole).toString()));
-    m_setlist->nameEdit->setText(ind.data(SetlistModel::NameRole).toString());
-    //m_setlist->patchrequester->clear();
-#ifdef WITH_KF5
-    m_setlist->patchrequester->setUrl(ind.data(SetlistModel::PatchRole).toUrl());
-    qDebug() << "patch: " << ind.data(SetlistModel::PatchRole).toUrl().toLocalFile();
-    //m_setlist->patchrequester->clear();
-    m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
-    m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
-#else
-    m_setlist->patchrequestedit->setText(ind.data(SetlistModel::PatchRole).toUrl().toLocalFile());
-    m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
-#endif
-#ifdef WITH_KPARTS
-if(m_part && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
-{
-    m_part->openUrl(ind.data(SetlistModel::NotesRole).toUrl());
-}
-#endif
-#ifdef WITH_QWEBENGINE
-m_zoombox->setEnabled(false);
-if(m_webview && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
-{
-    QMimeDatabase db;
-    QMimeType type = db.mimeTypeForFile(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
-    
-    if(type.name() == "application/pdf")
-    {
-        QUrl pdfurl = QUrl::fromLocalFile(QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/pdf.js/web/viewer.html"));
-        pdfurl.setQuery(QString("file=")+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
-        qDebug() << pdfurl;
-        m_webview->load(pdfurl);
-        m_zoombox->setEnabled(true);
-    }
-    /*else if(type.name().startsWith("image/"))
-    {
-        m_webview->setHtml(
-            //"<!DOCTYPE html><html><head><title>"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"</title></head><body>"
-            "<img src='"+ind.data(SetlistModel::NotesRole).toUrl().toString()+"' width='100' height='100' alt='"+i18n("This image can not be displayed.")+"'>"
-            //"<embed width='100%' data='"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"' type='"+type.name()+"' src='"+ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()+"'>" 
-            //"</body></html>"
-        );
-    }*/
-    else
-    {
-        m_webview->load(ind.data(SetlistModel::NotesRole).toUrl());
-    }
-    
-    m_webview->page()->view()->resize(m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height()));
-    
-}
-#endif
-    /*m_setlist->deferButton->setEnabled(false);
-    m_setlist->preferButton->setEnabled(false);
-    if(index.row() < m_setlist->setListView->model()->rowCount()-1)
-        m_setlist->deferButton->setEnabled(true);
-    if(index.row() > 0)
-        m_setlist->preferButton->setEnabled(true);*/
-}
-
-void Performer::prepareUi()
-{
-    
-    m_dock = new QDockWidget(this);
-    m_setlist->setupUi(m_dock);
-    addDockWidget(Qt::LeftDockWidgetArea, m_dock);
-#ifdef WITH_KPARTS
-    //query the .desktop file to load the requested Part
-    KService::Ptr service = KService::serviceByDesktopPath("okular_part.desktop");
-
-    if (service)
-    {
-        m_part = service->createInstance<KParts::ReadOnlyPart>(this, QVariantList() << "Print/Preview");
-
-        if (m_part)
-        {
-            
-            QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/okularui.rc");
-            
-            m_part->replaceXMLFile(file, "performer/okularui.rc", false);
-            setWindowTitleHandling(false);
-
-            
-            // tell the KParts::MainWindow that this is indeed
-            // the main widget
-            setCentralWidget(m_part->widget());
-            
-            setupGUI(ToolBar | Keys | StatusBar | Save);
-
-            // and integrate the part's GUI with the shell's
-            createGUI(m_part);
-            
-        }
-        else
-        {
-            
-            m_part = nullptr;
-        }
-    }
-    if(!service || !m_part)
-    {
-        KMessageBox::error(this, i18n("Okular KPart not found"));
-        setupGUI(ToolBar | Keys | StatusBar | Save);
-        KXmlGuiWindow::createGUI();
-    }
-#endif
-
-#ifdef WITH_QWEBENGINE
-    m_webview = new QWebEngineView(this);
-    m_webviewarea = new QScrollArea(this);
-    setCentralWidget(m_webviewarea);
-    m_webviewarea->setWidget(m_webview);
-    QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
-    QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
-    m_zoombox = new QComboBox(this);
-    m_zoombox->addItem(i18n("Automatic zoom"));
-    m_zoombox->addItem(i18n("Original size"));
-    m_zoombox->addItem(i18n("Page size"));
-    m_zoombox->addItem(i18n("Page width"));
-    m_zoombox->addItem("50%");
-    m_zoombox->addItem("75%");
-    m_zoombox->addItem("100%");
-    m_zoombox->addItem("125%");
-    m_zoombox->addItem("150%");
-    m_zoombox->addItem("200%");
-    m_zoombox->addItem("300%");
-    m_zoombox->addItem("400%");
-    m_zoombox->setEnabled(false);
-    toolBar()->addWidget(m_zoombox);
-    
-    connect(m_zoombox, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, [this](int index){
-        m_webview->page()->runJavaScript(
-            "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
-            "scaleSelect.options.selectedIndex = "+QString::number(index)+";"
-        );
-    });
-#endif
-
-    if(!pageView)
-    {
-        setupPageViewActions();
-    }
-    
-    QMenu *filemenu = new QMenu(i18n("File"));
-    
-    QAction* action = new QAction(this);
-    action->setText(i18n("&New"));
-    action->setIcon(QIcon::fromTheme("document-new", QApplication::style()->standardIcon(QStyle::SP_FileIcon)));
-    connect(action, SIGNAL(triggered(bool)), model, SLOT(reset()));
-    filemenu->addAction(action);
-    
-    action = new QAction(this);
-    action->setText(i18n("&Open"));
-    action->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
-    filemenu->addAction(action);
-    
-    action = new QAction(this);
-    action->setText(i18n("&Save"));
-    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
-    filemenu->addAction(action);
-    
-    action = new QAction(this);
-    action->setText(i18n("&Save as"));
-    action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
-    filemenu->addAction(action);
-    
-    menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
-    
-    toolBar()->setWindowTitle(i18n("Performer Toolbar"));
-    
-    
-    
-}
-
-void Performer::setupPageViewActions()
-{
-#ifdef WITH_KPARTS
-    if(!m_part || !m_part->widget())
-        return;
-    pageView = m_part->widget()->findChild<QAbstractScrollArea*>("okular::pageView");
-#endif
-#ifdef WITH_QWEBENGINE
-    if(!m_webview)
-        return;
-            
-    auto resizefunct = [this](){
-        m_webview->page()->runJavaScript(
-            //"document.getElementById('toolbarContainer').parentElement.style.position='fixed';"
-            "try {"
-            "document.getElementById('viewerContainer').style.overflow='visible';"
-            "document.body.style.overflow='hidden';"
-            "document.getElementById('toolbarViewerMiddle').style.display='none';"
-            "new Array(document.getElementById('viewer').firstChild.firstChild.offsetWidth, document.getElementById('viewer').offsetHeight, document.getElementById('scaleSelect').options.selectedIndex);"
-            "} catch (err){"
-            "document.body.style.overflow='hidden';"
-            "document.body.firstChild.style.width='100%';"
-            "document.body.firstChild.style.height='auto';"
-            "new Array(document.body.firstChild.offsetWidth, document.body.firstChild.offsetHeight);"
-            "}",
-            [this](QVariant result){
-                if(result.canConvert<QVariantList>())
-                {
-                    QVariantList size = result.toList();
-                    if(size.size() > 2)
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
-                            m_webview->page()->view()->resize(
-                                qMax(size[0].toInt(),viewportsize.width()-5), 
-                                qMax(size[1].toInt(),viewportsize.height()-5)
-                            );
-                        }
-                        if(size[2].toInt() >= 0)
-                        {
-                            m_zoombox->setCurrentIndex(size[2].toInt());
-                        }
-                    }
-                    else
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            m_webview->page()->view()->resize(
-                                size[0].toInt(), 
-                                size[1].toInt()
-                            );
-                        }
-                    }
-                }
-            }
-        );
-    };
-    
-    connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
-    connect(m_webview->page(), &QWebEnginePage::geometryChangeRequested, this, resizefunct);
-    connect(m_webview->page(), &QWebEnginePage::contentsSizeChanged, this, resizefunct);
-    
-    
-    pageView = m_webviewarea;
-#endif
-    if(!pageView)
-        return;
-    QScrollBar* scrollBar = pageView->verticalScrollBar();
-    if(scrollBar)
-    {
-        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-    
-        QAction *action = new QAction(i18n("Scroll vertical"), this);
-        action->setObjectName("ScrollV");
-        connect(action, &QAction::triggered, this, [scrollBar,action](){
-            qDebug() << "scrollV: " << action->data().toInt(); 
-            scrollBar->setSliderPosition(
-                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
-            );
-        });
-        midi_cc_actions << action;
-        scrollBar->addAction(action);
-    }
-    scrollBar = pageView->horizontalScrollBar();
-    if(scrollBar)
-    {
-        scrollBar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(scrollBar, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
-        
-        QAction *action = new QAction(i18n("Scroll horizontal"), this);
-        action->setObjectName("ScrollH");
-        connect(action, &QAction::triggered, this, [scrollBar,action](){
-            qDebug() << "scrollH: " << action->data().toInt(); 
-            scrollBar->setSliderPosition(
-                (scrollBar->maximum()-scrollBar->minimum())*action->data().toInt()/100.+scrollBar->minimum()
-            );
-        });
-        midi_cc_actions << action;
-        scrollBar->addAction(action);
-    }
-}
-
-void Performer::setAlwaysOnTop(bool ontop)
-{
-    if(ontop != alwaysontop)
-    {
-        alwaysontop = ontop;
-        if(alwaysontop)
-        {
-            setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-            alwaysontopaction->setChecked(true);
-            show();
-        }
-        else
-        {
-            setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
-            alwaysontopaction->setChecked(false);
-            show();
-        }
-    }
-}
-
 
 #ifndef WITH_KF5
 QToolBar* Performer::toolBar()
