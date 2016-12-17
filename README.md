@@ -52,7 +52,7 @@ cmake --build . --target install
 ## Usage
 Start Performer.
 
-Using command line tools or a jack patchbay like [Catia](http://kxstudio.linuxaudio.org/Applications:Catia) connect the ports of Performer to the appropriate system ports.
+Using command line tools or a jack patchbay like [Catia](http://kxstudio.linuxaudio.org/Applications:Catia) connect the ports of Performer to the appropriate system ports or to the ports of other jack clients.
 
 ![Patchbay](./.images/connect.png "Patchbay")
 
