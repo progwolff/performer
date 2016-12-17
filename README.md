@@ -29,10 +29,11 @@ Install performer-git from AUR
 $ mkdir build && cd build
 $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 $ make
-# make install
+\# make install
 ``
 
 ### Windows
+
 Install [JACK2](http://jackaudio.org/downloads/)
 Install [Qt5](https://www.qt.io/download-open-source/)
 In cmd.exe type:
