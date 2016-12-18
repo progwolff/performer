@@ -31,7 +31,7 @@ $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 $ make
 # make install
 ```
-### Windows
+### Windows [Experimental]
 
 Install [JACK2](http://jackaudio.org/downloads/).
 
