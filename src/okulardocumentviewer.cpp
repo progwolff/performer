@@ -6,6 +6,7 @@
 #include <kparts/mainwindow.h>
 
 #include <QDebug>
+#include <KActionCollection>
 
 OkularDocumentViewer::OkularDocumentViewer::OkularDocumentViewer(KParts::MainWindow* parent):
 m_part(nullptr)
@@ -28,6 +29,11 @@ m_part(nullptr)
         {
             m_part = nullptr;
         }
+    }
+    
+    for(QAction* action : m_part->actionCollection()->actions())
+    {
+        m_part->actionCollection()->setDefaultShortcut(action, QKeySequence());
     }
 }
 

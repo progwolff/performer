@@ -35,8 +35,11 @@
 #include <KSharedConfig>
 #include <KConfig>
 #include <KConfigGroup>
-#include <KAcceleratorManager>
 #include <KUrlRequesterDialog>
+#ifdef WITH_KPARTS
+#include <KActionCollection>
+#include <KAboutApplicationDialog>
+#endif
 #else
 #include "ui_setlist_without_kde.h"
 #endif //WITH_KF5
@@ -471,6 +474,12 @@ void Performer::prepareUi()
                 qDebug() << "found a combobox";
                 MIDI::setLearnable(box, i18n("Zoom"), "zoom", this);
             }
+        }
+        
+        QMenu *helpmenu = findChild<QMenu*>("help");
+        if(helpmenu)
+        {
+            helpmenu->addAction(((OkularDocumentViewer*)m_viewer)->part()->actionCollection()->action("help_about_backend"));
         }
 
     }
