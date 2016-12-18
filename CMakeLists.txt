@@ -35,6 +35,7 @@ if(ECM_FOUND)
         I18n
         #ConfigWidgets
         KIO
+        GlobalAccel
         #XmlGui
         OPTIONAL_COMPONENTS
         Parts

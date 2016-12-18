@@ -103,6 +103,7 @@ private slots:
     void info(const QString& message);
     
     void setAlwaysOnTop(bool ontop);
+    void setHandleProgramChanges(bool handle);
     
 #ifndef WITH_KF5
     void requestPatch();
@@ -125,6 +126,9 @@ private:
     QString patchdefaultpath;
     
     QToolButton* alwaysontopbutton;
+    QAction* alwaysontopaction;
+    
+    QAction* programchangeaction;
     
     QPointer<QAbstractScrollArea> pageView;
     

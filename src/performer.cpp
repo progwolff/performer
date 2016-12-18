@@ -35,6 +35,7 @@
 #include <KSharedConfig>
 #include <KConfig>
 #include <KConfigGroup>
+#include <KAcceleratorManager>
 #include <KUrlRequesterDialog>
 #else
 #include "ui_setlist_without_kde.h"
@@ -113,7 +114,7 @@ Performer::Performer(QWidget *parent) :
     m_setlist->patchrequester->setEnabled(false);
 #endif
 #if !defined(WITH_KPARTS) && !defined(WITH_QWEBENGINE) && !defined(WITH_QTWEBVIEW)
-    m_setlist->notesrequester->setToolTip(i18n("Performer was built without KParts or QWebEngine. Rebuild Performer with KParts or QWebEngine to enable displaying notes."));
+    m_setlist->notesrequester->setToolTip(i18n("Performer was built without KParts, QWebEngine or QtWebView. Rebuild Performer with one of these dependencies to enable displaying notes."));
     m_setlist->notesrequester->setEnabled(false);
 #endif
 #else
@@ -129,7 +130,7 @@ Performer::Performer(QWidget *parent) :
 #if !defined(WITH_KPARTS) && !defined(WITH_QWEBENGINE) && !defined(WITH_QTWEBVIEW)
     m_setlist->notesrequestbutton->setEnabled(false);
     m_setlist->notesrequestedit->setEnabled(false);
-    m_setlist->patchrequestbutton->setToolTip(i18n("Performer was built without KParts or QWebEngine. Rebuild Performer with KParts or QWebEngine to enable displaying notes."));
+    m_setlist->patchrequestbutton->setToolTip(i18n("Performer was built without KParts, QWebEngine or QtWebView. Rebuild Performer with one of these dependencies to enable displaying notes."));
 #endif
 #endif
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
@@ -147,6 +148,8 @@ Performer::Performer(QWidget *parent) :
     
     alwaysontop = !alwaysontop;
     setAlwaysOnTop(!alwaysontop);
+    
+    setHandleProgramChanges(handleProgramChange);
 }
 
 
@@ -496,33 +499,78 @@ void Performer::prepareUi()
         }
     }
     
-    QMenu *filemenu = new QMenu(i18n("File"));
+    QMenu *filemenu = new QMenu(i18n("File"), this);
     
     QAction* action = new QAction(this);
     action->setText(i18n("&New"));
     action->setIcon(QIcon::fromTheme("document-new", QApplication::style()->standardIcon(QStyle::SP_FileIcon)));
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_N));
     connect(action, SIGNAL(triggered(bool)), model, SLOT(reset()));
     filemenu->addAction(action);
     
     action = new QAction(this);
     action->setText(i18n("&Open"));
     action->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
     filemenu->addAction(action);
     
     action = new QAction(this);
     action->setText(i18n("&Save"));
     action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
     filemenu->addAction(action);
     
     action = new QAction(this);
     action->setText(i18n("&Save as"));
     action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
     connect(action, SIGNAL(triggered(bool)), this, SLOT(saveFileAs()));
     filemenu->addAction(action);
     
     menuBar()->insertMenu(menuBar()->actionAt({0,0}), filemenu);
+    
+    
+    QMenu *settingsmenu = nullptr;
+    bool existed = false;
+    for(QMenu *menu : findChildren<QMenu*>())
+    {
+        //qDebug() << menu->objectName() << menu->title();
+        if(menu->objectName() == "settings")
+        {
+            settingsmenu = menu;
+            existed = true;
+            break;
+        }
+    }
+    if(!settingsmenu)
+        settingsmenu = new QMenu(i18n("Settings"), this);
+    
+    alwaysontopaction = new QAction(this);
+    alwaysontopaction->setText(i18n("&Always on top"));
+    alwaysontopaction->setCheckable(true); 
+    alwaysontopaction->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
+    connect(alwaysontopaction, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));
+    
+    programchangeaction = new QAction(this);
+    programchangeaction->setText(i18n("&MIDI Program Changes"));
+    programchangeaction->setToolTip(i18n("If activated, the setlist will react to MIDI Program Change messages."));
+    programchangeaction->setCheckable(true);
+    connect(programchangeaction, SIGNAL(toggled(bool)), this, SLOT(setHandleProgramChanges(bool)));
+    
+    QAction *before = nullptr;
+    if(settingsmenu->actions().size() > 1)
+        before = settingsmenu->actions()[1];
+    settingsmenu->insertActions(before, QList<QAction*>() << programchangeaction << alwaysontopaction);
+    
+    if(existed)
+    {
+        before = settingsmenu->insertSeparator(programchangeaction);
+    }
+    
+    if(!existed)
+        menuBar()->addMenu(settingsmenu);
     
     toolBar()->setWindowTitle(i18n("Performer Toolbar"));
     
@@ -553,15 +601,23 @@ void Performer::setAlwaysOnTop(bool ontop)
         {
             setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
             alwaysontopbutton->setChecked(true);
+            alwaysontopaction->setChecked(true);
             show();
         }
         else
         {
             setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
             alwaysontopbutton->setChecked(false);
+            alwaysontopaction->setChecked(false);
             show();
         }
     }
+}
+
+void Performer::setHandleProgramChanges(bool handle)
+{
+    handleProgramChange = handle;
+    programchangeaction->setChecked(handle);
 }
 
 
@@ -596,6 +652,8 @@ void Performer::loadConfig()
     model->connections(connections);
     
     alwaysontop = config->group("window").readEntry("alwaysontop",false);
+    
+    handleProgramChange = config->group("setlist").readEntry("programchange",true);
 #else
     QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
     
@@ -630,6 +688,10 @@ void Performer::loadConfig()
     
     config.beginGroup("window");
     alwaysontop = config.value("alwaysontop",false).toBool();
+    config.endGroup();
+    
+    config.beginGroup("setlist");
+    handleProgramChange = config.value("programchange",true).toBool();
     config.endGroup();
 #endif
 }
@@ -787,6 +849,8 @@ void Performer::saveConfig()
     config->group("paths").writeEntry("patch", patchdefaultpath);
     
     config->group("window").writeEntry("alwaysontop", alwaysontop);
+    
+    config->group("setlist").writeEntry("programchange", handleProgramChange);
        
     config->sync();
 
@@ -814,6 +878,10 @@ void Performer::saveConfig()
     
     config.beginGroup("window");
     config.setValue("alwaysontop", alwaysontop);
+    config.endGroup();   
+    
+    config.beginGroup("setlist");
+    config.setValue("programchange", handleProgramChange);
     config.endGroup();   
     
     config.sync();

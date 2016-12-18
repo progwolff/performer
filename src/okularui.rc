@@ -1,6 +1,6 @@
 <!DOCTYPE kpartgui SYSTEM 'kpartgui.dtd'>
 <kpartgui version="100" name="okularplugin_okularui">
- <MenuBar noMerge="1">
+ <MenuBar>
   <!-- 
     Note: To ignore settings from ui_standards.rc the version number 
           of this file must be higher than that in ui_standards.rc 
