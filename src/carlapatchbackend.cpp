@@ -54,7 +54,7 @@ jack_client_t *CarlaPatchBackend::jackClient()
     {
         qDebug() << "creating jack client";
         jack_status_t status;
-        try_run(500,[&status](){
+        try_run(2000,[&status](){
             m_client = jack_client_open("Performer", JackNoStartServer, &status, NULL);
         }, "jack_client_open");
         if (m_client == NULL) {
@@ -147,7 +147,9 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
     try_run(500,[](){
         for(const char* port : allportlist)
         {
-            jack_port_disconnect(m_client, jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1())); 
+            jack_port_t* portid = jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
+            if(portid)
+                jack_port_disconnect(m_client, portid); 
         }
     },"connections(QMap) 1");
     
@@ -283,7 +285,9 @@ void CarlaPatchBackend::disconnectClient()
     try_run(1000,[this](){
         for(const char* port : portlist)
         {
-            jack_port_disconnect(m_client, jack_port_by_name(m_client, (clientName+":"+port).toLatin1())); 
+            jack_port_t* portid = jack_port_by_name(m_client, (clientName+":"+port).toLatin1());
+            if(portid)
+                jack_port_disconnect(m_client, portid); 
         }
     },"disconnectClient");
 }
@@ -291,6 +295,7 @@ void CarlaPatchBackend::disconnectClient()
 
 void CarlaPatchBackend::kill()
 {
+    disconnect(this, SIGNAL(jackconnection(const char*, const char*, bool)), this, SLOT(jackconnect(const char*, const char*, bool)));
     deactivate();
     instanceCounter.release();
     if(!clientName.isEmpty())
@@ -326,7 +331,9 @@ void CarlaPatchBackend::preload()
             QString client = port.section(':', 0, 0).trimmed();
             if(!client.isEmpty())
             try_run(500,[&preClients,&client](){
-                preClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
+                char* uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                if(uuid)
+                    preClients[client] = QString::fromLatin1(uuid);
             },"preload 1");
         }
         
