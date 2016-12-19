@@ -4,12 +4,12 @@
 /**
  * true if MIDI message with status byte a is a MiDI Control Change message
  */
-#define IS_MIDICC(a) ((0xB0 & (a)) == 0xB0)
+#define IS_MIDICC(a) ((0xF0 & (a)) == 0xB0)
 
 /**
  * true if MIDI message with status byte a is a MiDI Program Change message
  */
-#define IS_MIDIPC(a) ((0xC0 & (a)) == 0xC0)
+#define IS_MIDIPC(a) ((0xF0 & (a)) == 0xC0)
 
 
 #define MIDI_BUTTON_THRESHOLD_UPPER (128/2+2)
