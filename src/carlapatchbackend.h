@@ -51,6 +51,7 @@ private:
 #endif
     static QSemaphore instanceCounter;
     static QMutex clientInitMutex;
+    static QMutex activeBackendMutex;
     static CarlaPatchBackend *activeBackend;
     
 #ifdef WITH_JACK

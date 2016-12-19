@@ -866,6 +866,7 @@ void Performer::saveConfig()
 #ifdef WITH_KF5
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
+    config->deleteGroup("midi");
     for(QAction* action: MIDI::actions())
     {
         if(MIDI::cc(action) <= 127)

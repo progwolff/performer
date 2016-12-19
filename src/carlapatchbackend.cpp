@@ -24,6 +24,7 @@ bool AbstractPatchBackend::hideBackend = false;
 
 QSemaphore CarlaPatchBackend::instanceCounter(MAX_INSTANCES);
 QMutex CarlaPatchBackend::clientInitMutex;
+QMutex CarlaPatchBackend::activeBackendMutex;
 CarlaPatchBackend *CarlaPatchBackend::activeBackend = nullptr;
 QMap<QString,CarlaPatchBackend*> CarlaPatchBackend::clients;
 
@@ -59,13 +60,17 @@ jack_client_t *CarlaPatchBackend::jackClient()
         if (m_client == NULL) {
             if (status & JackServerFailed) {
                 fprintf (stderr, "JACK server not running\n");
+                activeBackendMutex.lock();
                 if(activeBackend)
                     activeBackend->emit progress(JACK_NO_SERVER);
+                activeBackendMutex.unlock();
             } else {
                 fprintf (stderr, "jack_client_open() failed, "
                 "status = 0x%2.0x\n", status);
+                activeBackendMutex.lock();
                 if(activeBackend)
                     activeBackend->emit progress(JACK_OPEN_FAILED);
+                activeBackendMutex.unlock();
             }
             return nullptr;
         }
@@ -104,8 +109,10 @@ void CarlaPatchBackend::serverLost(void* arg)
     Q_UNUSED(arg);
     
     m_client = nullptr; 
+    activeBackendMutex.lock();
     if(activeBackend)
         activeBackend->emit progress(JACK_NO_SERVER);
+    activeBackendMutex.unlock();
 }
 #endif
 
@@ -114,20 +121,21 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
     QMap<QString, QStringList> ret;
     #ifdef WITH_JACK
     if(m_client)
-    for(const char* port : allportlist)
-    {
-        QStringList conlist;
-        const char** cons = nullptr;
-        try_run(500,[&cons,&port](){
-            cons = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
-        });
-        while(cons && *cons)
+        
+    try_run(500,[&ret](){
+        for(const char* port : allportlist)
         {
-            conlist << *cons;
-            ++cons;
+            QStringList conlist;
+            const char** cons = nullptr;
+            cons = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
+            while(cons && *cons)
+            {
+                conlist << *cons;
+                ++cons;
+            }
+            ret[port] = conlist;
         }
-        ret[port] = conlist;
-    }
+    });
     #endif
     return ret;
 }
@@ -135,24 +143,26 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
 void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
 {
     #ifdef WITH_JACK
-    for(const char* port : allportlist)
-    {
-        try_run(500,[&port](){
-            jack_port_disconnect(m_client, jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1())); 
-        });
-    }
-    for(const QString& port : connections.keys())
-    {
-        for(const QString& con : connections[port])
+    
+    try_run(500,[](){
+        for(const char* port : allportlist)
         {
-            try_run(500,[&port,&con](){
+            jack_port_disconnect(m_client, jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1())); 
+        }
+    });
+    
+    try_run(500,[&connections](){
+        for(const QString& port : connections.keys())
+        {
+            for(const QString& con : connections[port])
+            {
                 if(jack_port_flags(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1())) & JackPortIsOutput)
                     jack_connect(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1(), con.toLatin1());
                 else
                     jack_connect(m_client, con.toLatin1(), (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
-            });
+            }
         }
-    }
+    });
     #endif
 }
 
@@ -167,6 +177,7 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
     
     if(!name_a || !name_b)
         return;
+    activeBackendMutex.lock();
     if(activeBackend && (portBelongsToClient(name_a, activeBackend->clientName) || portBelongsToClient(name_b, activeBackend->clientName)))
     {
         activeBackend->emit jackconnection(name_a, name_b, connect);
@@ -188,12 +199,14 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
             }
         }
     }
+    activeBackendMutex.unlock();
 }
 #endif
 
 #ifdef WITH_JACK
 void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
 {
+    activeBackendMutex.lock();
     if(this == activeBackend)
     {
         //qDebug() << "connect" << a << b << connect;
@@ -216,13 +229,16 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
         if(backend != activeBackend)
             backend->disconnectClient();
     }
+    activeBackendMutex.unlock();
 }
 #endif
 
 #ifdef WITH_JACK
 bool CarlaPatchBackend::freeJackClient()
 {
+    activeBackendMutex.lock();
     activeBackend = nullptr;
+    activeBackendMutex.unlock();
     if(instanceCounter.available() >= MAX_INSTANCES)
     {
         try_run(500, [](){
@@ -238,9 +254,9 @@ bool CarlaPatchBackend::freeJackClient()
 #ifdef WITH_JACK
 void CarlaPatchBackend::connectClient()
 {
-    for(const char* port : portlist)
-    {
-        try_run(200, [&port,this](){
+    try_run(500, [this](){
+        for(const char* port : portlist)
+        {
             const char** cons = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
             while(cons && *cons)
             {
@@ -254,8 +270,8 @@ void CarlaPatchBackend::connectClient()
                 }
                 ++cons;
             }
-        });
-    }
+        }
+    });
 }
 #endif
 
@@ -264,12 +280,12 @@ void CarlaPatchBackend::disconnectClient()
 {
     if(clientName.isEmpty())
         return;
-    for(const char* port : portlist)
-    {
-        try_run(200,[&port,this](){
+    try_run(500,[this](){
+        for(const char* port : portlist)
+        {
             jack_port_disconnect(m_client, jack_port_by_name(m_client, (clientName+":"+port).toLatin1())); 
-        });
-    }
+        }
+    });
 }
 #endif
 
@@ -286,6 +302,7 @@ void CarlaPatchBackend::kill()
         emit progress(PROGRESS_NONE);
         exec->terminate();
         connect(exec, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(deleteLater()));
+        QTimer::singleShot(3000, exec, SLOT(kill()));
     }
     else
         deleteLater();
@@ -337,8 +354,10 @@ void CarlaPatchBackend::preload()
                 if (err == QProcess::FailedToStart)
                 {
                     emit progress(PROCESS_FAILEDTOSTART);
+                    activeBackendMutex.lock();
                     if (this == activeBackend)
                         activeBackend = nullptr;
+                    activeBackendMutex.unlock();
                 }
                 else 
                     emit progress(PROCESS_ERROR);
@@ -409,8 +428,10 @@ void CarlaPatchBackend::preload()
                 }
                 stdoutstr = stdoutstr.section('\n', -1);
                 
+                activeBackendMutex.lock();
                 if (this != activeBackend)
                     disconnectClient();
+                activeBackendMutex.unlock();
                 
             };
             
@@ -431,7 +452,9 @@ void CarlaPatchBackend::activate()
     return;
     #else
     
+    activeBackendMutex.lock();
     activeBackend = this;
+    activeBackendMutex.unlock();
     
     if(patchfile.isEmpty())
         return;
@@ -454,8 +477,10 @@ void CarlaPatchBackend::activate()
 void CarlaPatchBackend::deactivate()
 {
     #ifdef WITH_JACK
+    activeBackendMutex.lock();
     if(this == activeBackend)
         activeBackend = nullptr;
+    activeBackendMutex.unlock();
     disconnectClient();
     #endif
 }
@@ -509,10 +534,12 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
         for(unsigned int i=0; i<event_count; i++)
         {
             jack_midi_event_get(&in_event, port_buf, i);
+            activeBackendMutex.lock();
             if(activeBackend && (IS_MIDICC(in_event.buffer[0]) || IS_MIDIPC(in_event.buffer[0])))
             {
                 activeBackend->emit midiEvent(in_event.buffer[0], in_event.buffer[1], in_event.buffer[2]);
             }
+            activeBackendMutex.unlock();
         }
     }
     
