@@ -158,10 +158,14 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
         {
             for(const QString& con : connections[port])
             {
-                if(jack_port_flags(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1())) & JackPortIsOutput)
-                    jack_connect(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1(), con.toLatin1());
-                else
-                    jack_connect(m_client, con.toLatin1(), (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
+                jack_port_t* portid = jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
+                if(portid)
+                {
+                    if(jack_port_flags(portid) & JackPortIsOutput)
+                        jack_connect(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1(), con.toLatin1());
+                    else
+                        jack_connect(m_client, con.toLatin1(), (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
+                }
             }
         }
     },"connections(QMap) 2");
@@ -215,12 +219,8 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
         if(connect && (QString::fromLatin1(a).contains(clientName+":") || QString::fromLatin1(b).contains(clientName+":")))
         {
             try_run(500,[a,b,this](){
-                if(!jack_port_connected_to
-                    (
-                        jack_port_by_name(m_client, replace(a, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")), 
-                     replace(b, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")
-                    )
-                )
+                jack_port_t* portid = jack_port_by_name(m_client, replace(a, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":"));
+                if(portid && !jack_port_connected_to(portid, replace(b, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")))
                     jack_disconnect(m_client, a, b);
             },"jackconnect");
         }
@@ -262,10 +262,11 @@ void CarlaPatchBackend::connectClient()
             const char** cons = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
             while(cons && *cons)
             {
+                jack_port_t* portid = jack_port_by_name(m_client, (clientName+":"+port).toLatin1());
                 //qDebug() << "connect" << (clientName+":"+port).toLatin1() << "to" << *cons;
-                if(!jack_port_connected_to(jack_port_by_name(m_client, (clientName+":"+port).toLatin1()), *cons))
+                if(portid && !jack_port_connected_to(portid, *cons))
                 {
-                    if(jack_port_flags(jack_port_by_name(m_client, (clientName+":"+port).toLatin1())) & JackPortIsOutput)
+                    if(jack_port_flags(portid) & JackPortIsOutput)
                         jack_connect(m_client, (clientName+":"+port).toLatin1(), *cons);
                     else
                         jack_connect(m_client, *cons, (clientName+":"+port).toLatin1());
