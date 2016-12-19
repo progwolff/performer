@@ -129,7 +129,16 @@ void MIDI::trigger(unsigned char cc, unsigned char value)
         {
             for(QWidget *widget : action->associatedWidgets())
                 if(widget->inherits("QToolButton"))
+                {
                     ((QToolButton*)widget)->emit clicked();
+                    ((QToolButton*)widget)->setDown(true);
+                }
+        }
+        if(olddata2 >= MIDI_BUTTON_THRESHOLD_UPPER && value < MIDI_BUTTON_THRESHOLD_LOWER)
+        {
+            for(QWidget *widget : action->associatedWidgets())
+                if(widget->inherits("QToolButton"))
+                    ((QToolButton*)widget)->setDown(false);
         }
     }
     else if(action)

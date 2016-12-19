@@ -262,7 +262,7 @@ void CarlaPatchBackend::connectClient()
 #ifdef WITH_JACK
 void CarlaPatchBackend::disconnectClient()
 {
-    if(!exec || clientName.isEmpty())
+    if(clientName.isEmpty())
         return;
     for(const char* port : portlist)
     {
