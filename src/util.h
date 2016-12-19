@@ -10,9 +10,10 @@
  * calls a function and cancels execution after timeout milliseconds.
  * @param timeout timeout in ms
  * @param function the function to execute
+ * @return true if function returned before timeout, false if function was cancelled after timeout
  */
 template<typename T>
-void try_run(int timeout, T function, const char* name = "")
+bool try_run(int timeout, T function, const char* name = "")
 {
     QTime timer;
     timer.start();
@@ -22,7 +23,9 @@ void try_run(int timeout, T function, const char* name = "")
     {
         qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms" << name;
         funct.cancel();
+        return false;
     }
+    return true;
 }
 
 /**

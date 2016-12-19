@@ -71,23 +71,27 @@ jack_client_t *CarlaPatchBackend::jackClient()
         }
         else
         {
-            try_run(500,[](){
-                jack_port_register(m_client, "audio-in1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-                jack_port_register(m_client, "audio-in2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-                jack_port_register(m_client, "audio-out1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
-                jack_port_register(m_client, "audio-out2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
-                jack_port_register(m_client, "events-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-                jack_port_register(m_client, "events-out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
-                jack_port_register(m_client, "control_gui-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-                
-                jack_set_port_connect_callback(m_client, &CarlaPatchBackend::connectionChanged, NULL);
-                
-                jack_set_process_callback(m_client, &CarlaPatchBackend::receiveMidiEvents, NULL);
-                
-                jack_on_shutdown(m_client, &CarlaPatchBackend::serverLost, NULL);
-                
-                jack_activate(m_client);
-            }, "register callbacks");
+            if(!try_run(500,
+                [](){
+                    jack_port_register(m_client, "audio-in1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+                    jack_port_register(m_client, "audio-in2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+                    jack_port_register(m_client, "audio-out1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
+                    jack_port_register(m_client, "audio-out2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
+                    jack_port_register(m_client, "events-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+                    jack_port_register(m_client, "events-out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
+                    jack_port_register(m_client, "control_gui-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+                    
+                    jack_set_port_connect_callback(m_client, &CarlaPatchBackend::connectionChanged, NULL);
+                    
+                    jack_set_process_callback(m_client, &CarlaPatchBackend::receiveMidiEvents, NULL);
+                    
+                    jack_on_shutdown(m_client, &CarlaPatchBackend::serverLost, NULL);
+                    
+                    jack_activate(m_client);
+                }, "register callbacks"))
+            {
+                while(!freeJackClient());
+            }
         }
     } 
     return m_client;
@@ -113,7 +117,7 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
     for(const char* port : allportlist)
     {
         QStringList conlist;
-        const char** cons;
+        const char** cons = nullptr;
         try_run(500,[&cons,&port](){
             cons = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
         });
@@ -236,7 +240,7 @@ void CarlaPatchBackend::connectClient()
 {
     for(const char* port : portlist)
     {
-        try_run(500, [&port,this](){
+        try_run(200, [&port,this](){
             const char** cons = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
             while(cons && *cons)
             {
@@ -258,11 +262,11 @@ void CarlaPatchBackend::connectClient()
 #ifdef WITH_JACK
 void CarlaPatchBackend::disconnectClient()
 {
-    if(clientName.isEmpty())
+    if(!exec || clientName.isEmpty())
         return;
     for(const char* port : portlist)
     {
-        try_run(500,[&port,this](){
+        try_run(200,[&port,this](){
             jack_port_disconnect(m_client, jack_port_by_name(m_client, (clientName+":"+port).toLatin1())); 
         });
     }
