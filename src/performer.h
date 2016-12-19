@@ -104,6 +104,7 @@ private slots:
     
     void setAlwaysOnTop(bool ontop);
     void setHandleProgramChanges(bool handle);
+    void setHideBackend(bool hide);
     
 #ifndef WITH_KF5
     void requestPatch();
@@ -127,8 +128,8 @@ private:
     
     QToolButton* alwaysontopbutton;
     QAction* alwaysontopaction;
-    
     QAction* programchangeaction;
+    QAction* hidebackendaction;
     
     QPointer<QAbstractScrollArea> pageView;
     
@@ -136,6 +137,7 @@ private:
     
     bool alwaysontop;
     bool handleProgramChange;
+    bool hideBackend;
     
 #ifndef WITH_KF5
     QToolBar* toolBar();

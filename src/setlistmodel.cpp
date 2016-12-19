@@ -484,3 +484,9 @@ void SetlistModel::updateProgress(int p)
         emit dataChanged(index(ind,0), index(ind,0));
     }
 }
+
+
+void SetlistModel::setHideBackend(bool hide)
+{
+    CarlaPatchBackend::setHideBackend(hide);
+}

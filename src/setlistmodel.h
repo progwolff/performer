@@ -66,6 +66,7 @@ public slots:
     int add(const QString &name, const QVariantMap &conf);
     void connections(QMap<QString,QStringList> connections);
     void panic();
+    void setHideBackend(bool hide);
 
 signals:
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);

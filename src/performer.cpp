@@ -64,6 +64,7 @@ Performer::Performer(QWidget *parent) :
     ,m_viewer(nullptr)
     ,alwaysontop(false)
     ,handleProgramChange(true)
+    ,hideBackend(true)
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
@@ -153,6 +154,8 @@ Performer::Performer(QWidget *parent) :
     setAlwaysOnTop(!alwaysontop);
     
     setHandleProgramChanges(handleProgramChange);
+    
+    setHideBackend(hideBackend);
 }
 
 
@@ -345,11 +348,11 @@ void Performer::updateSelected()
 #ifdef WITH_KF5
     QVariantMap map;
     map.insert("patch", m_setlist->patchrequester->url());
-    patchdefaultpath = m_setlist->patchrequester->url().path().section('/',0,-2);
+    patchdefaultpath = m_setlist->patchrequester->url().toLocalFile().section('/',0,-2);
     if(!patchdefaultpath.isEmpty())
         m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
     map.insert("notes", m_setlist->notesrequester->url());
-    notesdefaultpath = m_setlist->notesrequester->url().path().section('/',0,-2);
+    notesdefaultpath = m_setlist->notesrequester->url().toLocalFile().section('/',0,-2);
     if(!notesdefaultpath.isEmpty())
         m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(notesdefaultpath));
     map.insert("preload", m_setlist->preloadBox->isChecked());
@@ -387,13 +390,18 @@ void Performer::addSong()
 }
 
 void Performer::songSelected(const QModelIndex& index)
-{
+{    
     QModelIndex ind = index;
     if(!ind.isValid())
         ind = model->activeIndex();
     
     if(!ind.isValid())
         return;
+
+    static QModelIndex oldindex;
+    m_setlist->setListView->setCurrentIndex(oldindex);
+    updateSelected();
+    m_setlist->setListView->setCurrentIndex(index);
     
     m_setlist->setupBox->setVisible(true);
     m_setlist->setupBox->setTitle(i18n("Set up %1", ind.data(SetlistModel::NameRole).toString()));
@@ -401,8 +409,6 @@ void Performer::songSelected(const QModelIndex& index)
     //m_setlist->patchrequester->clear();
 #ifdef WITH_KF5
     m_setlist->patchrequester->setUrl(ind.data(SetlistModel::PatchRole).toUrl());
-    qDebug() << "patch: " << ind.data(SetlistModel::PatchRole).toUrl().toLocalFile();
-    //m_setlist->patchrequester->clear();
     m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
     m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
 #else
@@ -414,6 +420,8 @@ void Performer::songSelected(const QModelIndex& index)
     {
         m_viewer->load(ind.data(SetlistModel::NotesRole).toUrl());
     }
+    
+    oldindex = index;
 
 }
 
@@ -568,10 +576,17 @@ void Performer::prepareUi()
     programchangeaction->setCheckable(true);
     connect(programchangeaction, SIGNAL(toggled(bool)), this, SLOT(setHandleProgramChanges(bool)));
     
+    hidebackendaction = new QAction(this);
+    hidebackendaction->setText(i18n("&Hide Carla"));
+    hidebackendaction->setToolTip(i18n("If activated, Carla instances will not be visible."));
+    hidebackendaction->setCheckable(true);
+    connect(hidebackendaction, SIGNAL(toggled(bool)), this, SLOT(setHideBackend(bool)));
+    
+    
     QAction *before = nullptr;
     if(settingsmenu->actions().size() > 1)
         before = settingsmenu->actions()[1];
-    settingsmenu->insertActions(before, QList<QAction*>() << programchangeaction << alwaysontopaction);
+    settingsmenu->insertActions(before, QList<QAction*>() << programchangeaction << alwaysontopaction << hidebackendaction);
     
     if(existed)
     {
@@ -629,6 +644,12 @@ void Performer::setHandleProgramChanges(bool handle)
     programchangeaction->setChecked(handle);
 }
 
+void Performer::setHideBackend(bool hide)
+{
+    hideBackend = hide;
+    hidebackendaction->setChecked(hide);
+    model->setHideBackend(hide);
+}
 
 void Performer::loadConfig()
 {
@@ -661,8 +682,8 @@ void Performer::loadConfig()
     model->connections(connections);
     
     alwaysontop = config->group("window").readEntry("alwaysontop",false);
-    
     handleProgramChange = config->group("setlist").readEntry("programchange",true);
+    hideBackend = config->group("setlist").readEntry("hidebackend",true);
 #else
     QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
     
@@ -701,6 +722,7 @@ void Performer::loadConfig()
     
     config.beginGroup("setlist");
     handleProgramChange = config.value("programchange",true).toBool();
+    hideBackend = config.value("hidebackend",true).toBool();
     config.endGroup();
 #endif
 }
@@ -858,8 +880,8 @@ void Performer::saveConfig()
     config->group("paths").writeEntry("patch", patchdefaultpath);
     
     config->group("window").writeEntry("alwaysontop", alwaysontop);
-    
     config->group("setlist").writeEntry("programchange", handleProgramChange);
+    config->group("setlist").writeEntry("hidebackend", hideBackend);
        
     config->sync();
 
@@ -891,6 +913,7 @@ void Performer::saveConfig()
     
     config.beginGroup("setlist");
     config.setValue("programchange", handleProgramChange);
+    config.setValue("hidebackend", hideBackend);
     config.endGroup();   
     
     config.sync();

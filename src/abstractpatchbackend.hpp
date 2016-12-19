@@ -24,6 +24,7 @@ class AbstractPatchBackend : public QObject
     Q_OBJECT
     
 public:
+    
     enum ERROR_CODE : int {JACK_NO_SERVER=-5, JACK_OPEN_FAILED=-4, PROCESS_FAILEDTOSTART=-3, PROCESS_ERROR=-2, PROCESS_EXIT=-1, PROGRESS_NONE=0, PROGRESS_CREATE=1, PROGRESS_PRELOAD=5, PROGRESS_ACTIVE=10, PROGRESS_LOADED=50, PROGRESS_READY=100};
     
     /**
@@ -89,6 +90,15 @@ public slots:
      */
     virtual void deactivate() = 0;
     
+    /**
+     * Choose if backends should be hidden or shown
+     * @param hide backends will be shown if true, hidden else
+     */
+    static void setHideBackend(bool hide)
+    {
+        hideBackend = hide;
+    }
+    
 protected:
     
     QString patchfile;
@@ -99,6 +109,8 @@ protected:
      * Call kill instead. It will deleteLater the object.
      */
     ~AbstractPatchBackend(){};
+    
+    static bool hideBackend;
     
 };
 

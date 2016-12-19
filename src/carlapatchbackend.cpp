@@ -20,6 +20,8 @@
 jack_client_t *CarlaPatchBackend::m_client = nullptr;
 #endif
 
+bool AbstractPatchBackend::hideBackend = false;
+
 QSemaphore CarlaPatchBackend::instanceCounter(MAX_INSTANCES);
 QMutex CarlaPatchBackend::clientInitMutex;
 CarlaPatchBackend *CarlaPatchBackend::activeBackend = nullptr;
@@ -39,9 +41,9 @@ CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile)
     
     connect(this, SIGNAL(jackconnection(const char*, const char*, bool)), this, SLOT(jackconnect(const char*, const char*, bool)));
     
-#ifdef WITH_JACK
+    #ifdef WITH_JACK
     jackClient();
-#endif    
+    #endif    
 }
 
 #ifdef WITH_JACK
@@ -106,7 +108,7 @@ void CarlaPatchBackend::serverLost(void* arg)
 QMap<QString,QStringList> CarlaPatchBackend::connections()
 {
     QMap<QString, QStringList> ret;
-#ifdef WITH_JACK
+    #ifdef WITH_JACK
     if(m_client)
     for(const char* port : allportlist)
     {
@@ -122,13 +124,13 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
         }
         ret[port] = conlist;
     }
-#endif
+    #endif
     return ret;
 }
 
 void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
 {
-#ifdef WITH_JACK
+    #ifdef WITH_JACK
     for(const char* port : allportlist)
     {
         try_run(500,[&port](){
@@ -147,7 +149,7 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
             });
         }
     }
-#endif
+    #endif
 }
 
 #ifdef WITH_JACK
@@ -197,7 +199,7 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
                 if(!jack_port_connected_to
                     (
                         jack_port_by_name(m_client, replace(a, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")), 
-                                                    replace(b, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")
+                     replace(b, clientName+":", QString::fromLatin1(jack_get_client_name(m_client))+":")
                     )
                 )
                     jack_disconnect(m_client, a, b);
@@ -287,7 +289,7 @@ void CarlaPatchBackend::kill()
 
 void CarlaPatchBackend::preload()
 {
-#ifdef WITH_JACK
+    #ifdef WITH_JACK
     if(exec)
         return;
     
@@ -316,7 +318,7 @@ void CarlaPatchBackend::preload()
                     clientInitMutex.unlock();
                 exec = nullptr;
                 clientName = "";
-	            emit progress(PROCESS_EXIT);
+                emit progress(PROCESS_EXIT);
             }
             QObject::sender()->deleteLater();
         });
@@ -328,99 +330,102 @@ void CarlaPatchBackend::preload()
                     clientInitMutex.unlock();
                 exec = nullptr;
                 clientName = "";
-				if (err == QProcess::FailedToStart)
-				{
-					emit progress(PROCESS_FAILEDTOSTART);
-					if (this == activeBackend)
-						activeBackend = nullptr;
-				}
-				else 
-					emit progress(PROCESS_ERROR);
+                if (err == QProcess::FailedToStart)
+                {
+                    emit progress(PROCESS_FAILEDTOSTART);
+                    if (this == activeBackend)
+                        activeBackend = nullptr;
+                }
+                else 
+                    emit progress(PROCESS_ERROR);
             }
             qDebug() << ((QProcess*)QObject::sender())->readAllStandardError();
             QObject::sender()->deleteLater();
         });
         
-		QString carlaPath = QStandardPaths::findExecutable("carla-patchbay");
-		if(carlaPath.isEmpty())
-			carlaPath = QStandardPaths::findExecutable("carla-patchbay", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) +"/Carla");
-		if (carlaPath.isEmpty())
-			carlaPath = QStandardPaths::findExecutable("Carla");
-		if (carlaPath.isEmpty())
-			carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla");
-		qDebug() << "searching in PATH and " + QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla";
-		qDebug() << "carlaPath: " << carlaPath;
-		if (carlaPath.isEmpty())
-			emit progress(PROCESS_FAILEDTOSTART);
-		else
-		{
-			exec->start(carlaPath, QStringList() << patchfile);
-
-			std::function<void()> outputhandler;
-			outputhandler = [this, pre, outputhandler, preClients]() {
-				static QString stdoutstr;
-				QString newoutput = QString::fromLatin1(exec->readAllStandardOutput());
-				qDebug() << newoutput;
-				stdoutstr += newoutput;
-				//qDebug() << stdoutstr;
-				if (stdoutstr.contains("loaded sucessfully!"))
-				{
-					emit progress(PROGRESS_LOADED);
-				}
-				if (stdoutstr.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully
-					emit progress(PROGRESS_READY);
-				if (clientName.isEmpty())
-				{
-					QStringList post = jackClients();
-					QMap<QString, QString> postClients;
-					for (const QString& port : post)
-					{
-						QString client = port.section(':', 0, 0).trimmed();
-
-						try_run(500, [&postClients, &client]() {
-							postClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
-						});
-						//qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLatin1());
-
-						if (!pre.contains(port) || (preClients[client] != postClients[client]))
-						{
-							QString name = client;
-							qDebug() << "new port detected: " << port;
-							if (!name.isEmpty())
-							{
-								clientInitMutex.unlock();
-								clientName = name;
-								clients.insert(clientName, this);
-								qDebug() << "started " << clientName;
-								disconnectClient();
-								break;
-							}
-						}
-					}
-				}
-				stdoutstr = stdoutstr.section('\n', -1);
-
-				if (this != activeBackend)
-					disconnectClient();
-
-			};
-
-			connect(exec, &QProcess::readyReadStandardOutput, this, outputhandler);
-
-			emit progress(PROGRESS_ACTIVE);
-		}
+        QString carlaPath = QStandardPaths::findExecutable("carla-patchbay");
+        if(carlaPath.isEmpty())
+            carlaPath = QStandardPaths::findExecutable("carla-patchbay", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) +"/Carla");
+        if (carlaPath.isEmpty())
+            carlaPath = QStandardPaths::findExecutable("Carla");
+        if (carlaPath.isEmpty())
+            carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla");
+        qDebug() << "searching in PATH and " + QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla";
+        qDebug() << "carlaPath: " << carlaPath;
+        if (carlaPath.isEmpty())
+            emit progress(PROCESS_FAILEDTOSTART);
+        else
+        {
+            if(hideBackend)
+                exec->start(carlaPath, QStringList() << "-n" << patchfile);
+            else
+                exec->start(carlaPath, QStringList() << patchfile);
+            
+            std::function<void()> outputhandler;
+            outputhandler = [this, pre, outputhandler, preClients]() {
+                static QString stdoutstr;
+                QString newoutput = QString::fromLatin1(exec->readAllStandardOutput());
+                qDebug() << newoutput;
+                stdoutstr += newoutput;
+                //qDebug() << stdoutstr;
+                if (stdoutstr.contains("loaded sucessfully!"))
+                {
+                    emit progress(PROGRESS_LOADED);
+                }
+                if (stdoutstr.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully
+                    emit progress(PROGRESS_READY);
+                if (clientName.isEmpty())
+                {
+                    QStringList post = jackClients();
+                    QMap<QString, QString> postClients;
+                    for (const QString& port : post)
+                    {
+                        QString client = port.section(':', 0, 0).trimmed();
+                        
+                        try_run(500, [&postClients, &client]() {
+                            postClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
+                        });
+                        //qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                        
+                        if (!pre.contains(port) || (preClients[client] != postClients[client]))
+                        {
+                            QString name = client;
+                            qDebug() << "new port detected: " << port;
+                            if (!name.isEmpty())
+                            {
+                                clientInitMutex.unlock();
+                                clientName = name;
+                                clients.insert(clientName, this);
+                                qDebug() << "started " << clientName;
+                                disconnectClient();
+                                break;
+                            }
+                        }
+                    }
+                }
+                stdoutstr = stdoutstr.section('\n', -1);
+                
+                if (this != activeBackend)
+                    disconnectClient();
+                
+            };
+            
+            connect(exec, &QProcess::readyReadStandardOutput, this, outputhandler);
+            
+            emit progress(PROGRESS_ACTIVE);
+        }
     }
     else 
         QTimer::singleShot(200, this, SLOT(preload()));
-#endif
-
+    #endif
+    
 }
 
 void CarlaPatchBackend::activate()
 {
-#ifndef WITH_JACK
+    #ifndef WITH_JACK
     return;
-#else
+    #else
     
     activeBackend = this;
     
@@ -439,16 +444,16 @@ void CarlaPatchBackend::activate()
     connectClient();
     
     qDebug() << "activated client " << clientName << " with patch " << patchfile;
-#endif
+    #endif
 }
 
 void CarlaPatchBackend::deactivate()
 {
-#ifdef WITH_JACK
+    #ifdef WITH_JACK
     if(this == activeBackend)
         activeBackend = nullptr;
-     disconnectClient();
-#endif
+    disconnectClient();
+    #endif
 }
 
 #ifdef WITH_JACK
@@ -461,7 +466,7 @@ const QStringList CarlaPatchBackend::jackClients()
         for (int i = 0; ports && ports[i]; ++i) 
             if(QString::fromLatin1(ports[i]).contains("Carla"))
                 ret << ports[i];
-        
+            
         if(ports)
             jack_free(ports);
     });
@@ -492,7 +497,7 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
     jack_midi_event_t in_event;
     // get the port data
     void* port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":control_gui-in").toLatin1()), nframes);
-
+    
     // input: get number of events, and process them.
     jack_nframes_t event_count = jack_midi_get_event_count(port_buf);
     if(event_count > 0)
@@ -506,7 +511,7 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
             }
         }
     }
-  
+    
     return 0;
 }
 #endif
