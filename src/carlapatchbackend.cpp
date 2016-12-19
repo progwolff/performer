@@ -135,7 +135,7 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
             }
             ret[port] = conlist;
         }
-    });
+    }, "connections()");
     #endif
     return ret;
 }
@@ -149,7 +149,7 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
         {
             jack_port_disconnect(m_client, jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1())); 
         }
-    });
+    },"connections(QMap) 1");
     
     try_run(500,[&connections](){
         for(const QString& port : connections.keys())
@@ -162,7 +162,7 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
                     jack_connect(m_client, con.toLatin1(), (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
             }
         }
-    });
+    },"connections(QMap) 2");
     #endif
 }
 
@@ -220,7 +220,7 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
                     )
                 )
                     jack_disconnect(m_client, a, b);
-            });
+            },"jackconnect");
         }
         connectClient();
     }
@@ -244,7 +244,7 @@ bool CarlaPatchBackend::freeJackClient()
         try_run(500, [](){
             jack_client_close(m_client);
             m_client = nullptr;
-        });
+        },"freeJackClient");
         return true;
     }
     return false;
@@ -271,7 +271,7 @@ void CarlaPatchBackend::connectClient()
                 ++cons;
             }
         }
-    });
+    },"connectClient");
 }
 #endif
 
@@ -280,12 +280,12 @@ void CarlaPatchBackend::disconnectClient()
 {
     if(clientName.isEmpty())
         return;
-    try_run(500,[this](){
+    try_run(1000,[this](){
         for(const char* port : portlist)
         {
             jack_port_disconnect(m_client, jack_port_by_name(m_client, (clientName+":"+port).toLatin1())); 
         }
-    });
+    },"disconnectClient");
 }
 #endif
 
@@ -324,9 +324,10 @@ void CarlaPatchBackend::preload()
         for(const QString& port : pre)
         {
             QString client = port.section(':', 0, 0).trimmed();
+            if(!client.isEmpty())
             try_run(500,[&preClients,&client](){
                 preClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
-            });
+            },"preload 1");
         }
         
         QStringList env = QProcess::systemEnvironment();
@@ -407,7 +408,7 @@ void CarlaPatchBackend::preload()
                         
                         try_run(500, [&postClients, &client]() {
                             postClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
-                        });
+                        },"preload 2");
                         //qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLatin1());
                         
                         if (!pre.contains(port) || (preClients[client] != postClients[client]))
@@ -498,7 +499,7 @@ const QStringList CarlaPatchBackend::jackClients()
             
         if(ports)
             jack_free(ports);
-    });
+    },"jackClients");
     return ret;
 }
 #endif
