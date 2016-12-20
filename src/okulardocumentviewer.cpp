@@ -74,7 +74,7 @@ QAbstractScrollArea* OkularDocumentViewer::scrollArea()
 
 QWidget * OkularDocumentViewer::widget()
 {
-    return m_part->widget();
+    return (m_part)?m_part->widget():nullptr;
 }
 
 KParts::ReadOnlyPart * OkularDocumentViewer::part()
@@ -84,7 +84,8 @@ KParts::ReadOnlyPart * OkularDocumentViewer::part()
 
 void OkularDocumentViewer::load(QUrl url)
 {
-    m_part->openUrl(url);
+    if(m_part)
+        m_part->openUrl(url);
 }
 
 #endif

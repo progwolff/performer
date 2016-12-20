@@ -101,7 +101,6 @@ void SetlistModel::removeBackend(AbstractPatchBackend*& backend)
     if(!backend)
         return;
 
-    backend->disconnect(this);
     backend->kill();
     backend = nullptr;
 }
@@ -422,6 +421,8 @@ void SetlistModel::updateProgress(int p)
 		break;
     case AbstractPatchBackend::PROCESS_ERROR:
     case AbstractPatchBackend::PROCESS_EXIT:
+        if(ind < 0)
+            break;
         qDebug() << "error on " << m_setlist[ind].name() << ". Trying to restart.";
         if(ind == activeindex)
             m_activebackend->activate();

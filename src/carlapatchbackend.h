@@ -5,6 +5,7 @@
 
 #include <QSemaphore>
 #include <QMutex>
+#include <QReadWriteLock>
 
 #include <QThread>
 
@@ -39,7 +40,7 @@ private slots:
 #ifdef WITH_JACK
     void jackconnect(const char* a, const char* b, bool connect);
     void connectClient();
-    void disconnectClient();
+    void disconnectClient(const QString& clientname = "");
 #endif
     
 private:
@@ -51,7 +52,10 @@ private:
 #endif
     static QSemaphore instanceCounter;
     static QMutex clientInitMutex;
-    static QMutex activeBackendMutex;
+    static QReadWriteLock activeBackendLock;
+    static QReadWriteLock clientsLock;
+    QReadWriteLock clientNameLock;
+    QReadWriteLock execLock;
     static CarlaPatchBackend *activeBackend;
     
 #ifdef WITH_JACK

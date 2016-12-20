@@ -18,7 +18,7 @@ bool try_run(int timeout, T function, const char* name = "")
     QTime timer;
     timer.start();
     QFuture<void> funct = QtConcurrent::run(function);
-    while(timer.elapsed() < timeout && funct.isRunning());
+    while(timer.elapsed() < timeout && funct.isRunning()) QThread::msleep(10);
     if(funct.isRunning())
     {
         qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms" << name;
