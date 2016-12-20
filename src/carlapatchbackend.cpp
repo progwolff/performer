@@ -199,7 +199,7 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
     {
         activeBackend->emit jackconnection(name_a, name_b, connect);
     }
-    else
+    else if(activeBackend)
     {
         clientsLock.lockForWrite();
         for(const QString& name : clients.keys())
@@ -252,7 +252,10 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
     for(const QString& backendname : clients.keys())
     {
         if(connect && clients[backendname] != activeBackend && (QString::fromLatin1(a).contains(backendname+":") || QString::fromLatin1(b).contains(backendname+":")))
-        {
+        { 
+            qDebug() << "disconnecting " << backendname;
+            qDebug() << "activebackend: " << QString::number((size_t)activeBackend);
+            qDebug() << "clients[backendname]: " << QString::number((size_t)clients[backendname]);
             try_run(500,[a,b,name](){
                 jack_disconnect(m_client, a, b);
             },"jackconnect2");
