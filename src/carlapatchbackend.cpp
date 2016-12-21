@@ -190,32 +190,9 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
         return;
     activeBackendLock.lockForRead();
     if(activeBackend)
-        activeBackend->clientNameLock.lockForRead();
-    if(activeBackend && (portBelongsToClient(name_a, activeBackend->clientName) || portBelongsToClient(name_b, activeBackend->clientName)))
     {
         activeBackend->emit jackconnection(name_a, name_b, connect);
     }
-    else if(activeBackend && (portBelongsToClient(name_a, m_client) || portBelongsToClient(name_b, m_client)))
-    {
-        activeBackend->emit jackconnection(name_a, name_b, connect);
-    }
-    else if(activeBackend)
-    {
-        clientsLock.lockForWrite();
-        for(const QString& name : clients.keys())
-        {
-            if(portBelongsToClient(name_a, name) || portBelongsToClient(name_b, name))
-            {
-                if(clients[name] && clients[name]->exec)
-                {
-                    clients[name]->emit jackconnection(name_a, name_b, connect);
-                }
-            }
-        }
-        clientsLock.unlock();
-    }
-    if(activeBackend)
-        activeBackend->clientNameLock.unlock();
     activeBackendLock.unlock();
 }
 #endif
@@ -224,44 +201,54 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
 void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
 {
     activeBackendLock.lockForRead();
-    CarlaPatchBackend *activeBackendCopy = activeBackend;
-    activeBackendLock.unlock();
     
-    clientNameLock.lockForRead();
-    QString name = clientName;
-    clientNameLock.unlock();
     
-    if(name.isEmpty())
-        return;
-    
-    if(this == activeBackendCopy)
+    if(activeBackend)
     {
-        //qDebug() << "connect" << a << b << connect;
-        if(connect && (QString::fromLatin1(a).contains(name+":") || QString::fromLatin1(b).contains(name+":")))
+        
+        clientNameLock.lockForRead();
+        QString name = activeBackend->clientName;
+        clientNameLock.unlock();
+        
+        if(!name.isEmpty())
         {
-            try_run(500,[a,b,name](){
-                jack_port_t* portid = jack_port_by_name(m_client, replace(a, name+":", QString::fromLatin1(jack_get_client_name(m_client))+":"));
-                if(portid && !jack_port_connected_to(portid, replace(b, name+":", QString::fromLatin1(jack_get_client_name(m_client))+":")))
+            //qDebug() << "connect" << a << b << connect;
+            if(connect && (QString::fromLatin1(a).contains(name+":")))
+            {
+                try_run(500,[a,b,name](){
+                    jack_port_t* portid = jack_port_by_name(m_client, replace(a, name+":", QString::fromLatin1(jack_get_client_name(m_client))+":"));
+                    if(portid && !jack_port_connected_to(portid, b))
+                        jack_disconnect(m_client, a, b);
+                },"jackconnect");
+            }
+            if(connect && (QString::fromLatin1(b).contains(name+":")))
+            {
+                try_run(500,[a,b,name](){
+                    jack_port_t* portid = jack_port_by_name(m_client, a);
+                    if(portid && !jack_port_connected_to(portid, replace(b, name+":", QString::fromLatin1(jack_get_client_name(m_client))+":")))
+                        jack_disconnect(m_client, a, b);
+                },"jackconnect");
+            }
+            activeBackend->connectClient();
+        }
+        
+        clientsLock.lockForRead();
+        for(const QString& backendname : clients.keys())
+        {
+            if(connect 
+                && clients[backendname] != activeBackend 
+                && backendname != activeBackend->clientName
+                && (QString::fromLatin1(a).contains(backendname+":") || QString::fromLatin1(b).contains(backendname+":"))
+            )
+            { 
+                try_run(500,[a,b](){
                     jack_disconnect(m_client, a, b);
-            },"jackconnect");
+                },"jackconnect2");
+            }
         }
-        connectClient();
+        clientsLock.unlock();
+        
     }
-    activeBackendLock.lockForRead();
-    clientsLock.lockForRead();
-    for(const QString& backendname : clients.keys())
-    {
-        if(connect && clients[backendname] != activeBackend && (QString::fromLatin1(a).contains(backendname+":") || QString::fromLatin1(b).contains(backendname+":")))
-        { 
-            qDebug() << "disconnecting " << backendname;
-            qDebug() << "activebackend: " << QString::number((size_t)activeBackend);
-            qDebug() << "clients[backendname]: " << QString::number((size_t)clients[backendname]);
-            try_run(500,[a,b,name](){
-                jack_disconnect(m_client, a, b);
-            },"jackconnect2");
-        }
-    }
-    clientsLock.unlock();
     activeBackendLock.unlock();
 }
 #endif
@@ -288,33 +275,31 @@ bool CarlaPatchBackend::freeJackClient()
 void CarlaPatchBackend::connectClient()
 {
     clientNameLock.lockForRead();
-    QString name = clientName;
-    clientNameLock.unlock();
-    if(name.isEmpty())
-        return;
-    
-    jack_client_t* client = m_client;
-    try_run(500, [name,client](){
-        for(const char* port : portlist)
-        {
-            const char** conlist = jack_port_get_connections(jack_port_by_name(client, (QString::fromLatin1(jack_get_client_name(client))+":"+port).toLatin1()));
-            const char** cons = conlist;
-            while(cons && *cons)
+    if(!clientName.isEmpty())
+    {
+        try_run(500, [this](){
+            for(const char* port : portlist)
             {
-                jack_port_t* portid = jack_port_by_name(client, (name+":"+port).toLatin1());
-                //qDebug() << "connect" << (clientName+":"+port).toLatin1() << "to" << *cons;
-                if(portid && !jack_port_connected_to(portid, *cons))
+                const char** conlist = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
+                const char** cons = conlist;
+                while(cons && *cons)
                 {
-                    if(jack_port_flags(portid) & JackPortIsOutput)
-                        jack_connect(client, (name+":"+port).toLatin1(), *cons);
-                    else
-                        jack_connect(client, *cons, (name+":"+port).toLatin1());
+                    jack_port_t* portid = jack_port_by_name(m_client, (clientName+":"+port).toLatin1());
+                    //qDebug() << "connect" << (clientName+":"+port).toLatin1() << "to" << *cons;
+                    if(portid && !jack_port_connected_to(portid, *cons))
+                    {
+                        if(jack_port_flags(portid) & JackPortIsOutput)
+                            jack_connect(m_client, (clientName+":"+port).toLatin1(), *cons);
+                        else
+                            jack_connect(m_client, *cons, (clientName+":"+port).toLatin1());
+                    }
+                    ++cons;
                 }
-                ++cons;
+                jack_free(conlist);
             }
-            jack_free(conlist);
-        }
-    },"connectClient");
+        },"connectClient");
+    }
+    clientNameLock.unlock();
 }
 #endif
 
