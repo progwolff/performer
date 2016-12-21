@@ -210,23 +210,41 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
         QString name = activeBackend->clientName;
         clientNameLock.unlock();
         
+        QString jackclientname = QString::fromLatin1(jack_get_client_name(m_client));
+        
         if(!name.isEmpty())
         {
             //qDebug() << "connect" << a << b << connect;
-            if(connect && (QString::fromLatin1(a).contains(name+":")))
+            if(connect && QString::fromLatin1(a).contains(name+":"))
             {
-                try_run(500,[a,b,name](){
-                    jack_port_t* portid = jack_port_by_name(m_client, replace(a, name+":", QString::fromLatin1(jack_get_client_name(m_client))+":"));
+                try_run(500,[a,b,name,jackclientname](){
+                    jack_port_t* portid = jack_port_by_name(m_client, replace(a, name+":", jackclientname+":"));
                     if(portid && !jack_port_connected_to(portid, b))
                         jack_disconnect(m_client, a, b);
                 },"jackconnect");
             }
-            if(connect && (QString::fromLatin1(b).contains(name+":")))
+            else if(connect && QString::fromLatin1(b).contains(name+":"))
             {
-                try_run(500,[a,b,name](){
+                try_run(500,[a,b,name,jackclientname](){
                     jack_port_t* portid = jack_port_by_name(m_client, a);
-                    if(portid && !jack_port_connected_to(portid, replace(b, name+":", QString::fromLatin1(jack_get_client_name(m_client))+":")))
+                    if(portid && !jack_port_connected_to(portid, replace(b, name+":", jackclientname+":")))
                         jack_disconnect(m_client, a, b);
+                },"jackconnect");
+            }
+            else if(!connect && QString::fromLatin1(a).contains(jackclientname+":"))
+            {
+                try_run(500,[a,b,name,jackclientname](){
+                    jack_port_t* portid = jack_port_by_name(m_client, replace(a, jackclientname+":", name+":"));
+                    if(portid && jack_port_connected_to(portid, b))
+                        jack_disconnect(m_client, replace(a, jackclientname+":", name+":"), b);
+                },"jackconnect");
+            }
+            else if(!connect && QString::fromLatin1(b).contains(jackclientname+":"))
+            {
+                try_run(500,[a,b,name,jackclientname](){
+                    jack_port_t* portid = jack_port_by_name(m_client, a);
+                    if(portid && jack_port_connected_to(portid, replace(b, jackclientname+":", name+":")))
+                        jack_disconnect(m_client, a, replace(b, jackclientname+":", name+":"));
                 },"jackconnect");
             }
             activeBackend->connectClient();
