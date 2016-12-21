@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-16 17:51+0100\n"
+"POT-Creation-Date: 2016-12-21 20:06+0100\n"
 "PO-Revision-Date: 2016-11-13 19:33+0100\n"
 "Last-Translator: Julian Wolff <wolff@julianwolff.de>\n"
 "Language-Team: DE <wolff@julianwolff.de>\n"
@@ -16,39 +16,35 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: main.cpp:33
+#: main.cpp:35
 msgid "[file]"
 msgstr "[Datei]"
 
-#: main.cpp:33
+#: main.cpp:35
 msgid "Setlist to load"
 msgstr "Lade gegebene Se&tliste"
 
-#: main.cpp:43
+#: main.cpp:45
 msgid "Performer"
 msgstr "Performer"
 
-#: main.cpp:47
+#: main.cpp:49
 msgid "Live performance audio session manager"
 msgstr "Audio-Sessionmanager für Liveauftritte"
 
-#: main.cpp:51
+#: main.cpp:53
 msgid "(c) 2016"
 msgstr ""
 
-#: main.cpp:54 main.cpp:60
+#: main.cpp:56 main.cpp:62
 msgid " "
-msgstr ""
-
-#: main.cpp:60
-msgid "Julian Wolff"
 msgstr ""
 
 #. i18n: file: ui/setlist.ui:109
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
 #. i18n: file: ui/setlist_without_kde.ui:109
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
-#: performer.cpp:85 rc.cpp:18 rc.cpp:48
+#: performer.cpp:88 rc.cpp:18 rc.cpp:48
 msgid "Previous"
 msgstr "Zurück"
 
@@ -56,142 +52,163 @@ msgstr "Zurück"
 #. i18n: ectx: property (text), widget (QToolButton, nextButton)
 #. i18n: file: ui/setlist_without_kde.ui:128
 #. i18n: ectx: property (text), widget (QToolButton, nextButton)
-#: performer.cpp:89 rc.cpp:21 rc.cpp:51
+#: performer.cpp:92 rc.cpp:21 rc.cpp:51
 msgid "Next"
 msgstr "Vor"
 
-#: performer.cpp:98
+#: performer.cpp:101
 msgid "Always on top"
 msgstr "Immer im Vordergrund"
 
-#: performer.cpp:105
+#: performer.cpp:108
 msgid "Terminate and reload all Carla instances."
 msgstr "Beende alle Carla-Instanzen und lade sie neu."
 
-#: performer.cpp:106
+#: performer.cpp:109
 msgid "Panic!"
 msgstr "Panik!"
 
-#: performer.cpp:114 performer.cpp:129
+#: performer.cpp:117 performer.cpp:132
 msgid ""
 "Performer was built without Jack. Rebuild Performer with Jack to enable "
 "loading Carla patches."
-msgstr ""
+msgstr "Performer wurde ohne Jack kompiliert. Kompilieren Sie Performer erneut unter Verwendung von Jack, um das Laden von Carla Patches zu ermöglichen."
 
-#: performer.cpp:118 performer.cpp:134
+#: performer.cpp:121 performer.cpp:137
 msgid ""
-"Performer was built without KParts or QWebEngine. Rebuild Performer with "
-"KParts or QWebEngine to enable displaying notes."
-msgstr ""
+"Performer was built without KParts, QWebEngine or QtWebView. Rebuild "
+"Performer with one of these dependencies to enable displaying notes."
+msgstr "Performer wurde ohne KParts, QWebEngine oder QtWebView kompiliert. Kompilieren Sie Performer erneut unter Verwendung einer dieser Komponenten, um die Darstellung von Notizen zu ermöglichen."
 
-#: performer.cpp:237
+#: performer.cpp:244
 msgid "Play now"
 msgstr "Jetzt spielen"
 
-#: performer.cpp:245
+#: performer.cpp:252
 msgid "Prefer"
 msgstr "Vorziehen"
 
-#: performer.cpp:249
+#: performer.cpp:256
 msgid "Defer"
 msgstr "Zurückstellen"
 
-#: performer.cpp:255
+#: performer.cpp:262
 msgid "Remove entry"
 msgstr "Eintrag löschen"
 
-#: performer.cpp:277
+#: performer.cpp:284
 msgid "CC %1 Assigned"
 msgstr "CC %1 zugewiesen"
 
-#: performer.cpp:281
+#: performer.cpp:288
 msgid "Learn MIDI CC"
 msgstr "Lerne MIDI CC"
 
-#: performer.cpp:282
+#: performer.cpp:289
 msgid "Clear MIDI CC"
 msgstr "Lösche MIDI CC"
 
-#: performer.cpp:301
+#: performer.cpp:308
 msgid "Learning MIDI CC for action %1"
 msgstr "Lerne MIDI CC für Aktion %1"
 
-#: performer.cpp:307
+#: performer.cpp:314
 msgid "MIDI CC cleared for action %1"
 msgstr "MIDI CC für Aktion %1 gelöscht"
 
-#: performer.cpp:320
+#: performer.cpp:327
 msgid "MIDI CC %1 assigned to action %2"
 msgstr "MIDI CC %1 auf Aktion %2 zugewiesen"
 
 #: performer.cpp:374
-#, fuzzy
 msgid "Carla Patch (*.carxp)"
-msgstr "Carla Patch"
+msgstr "Carla Patch (*.carxp)"
 
 #: performer.cpp:387
 msgid "New Song"
 msgstr "Neuer Song"
 
-#: performer.cpp:402
+#: performer.cpp:407
 msgid "Set up %1"
 msgstr "%1 einrichten"
 
-#: performer.cpp:435
+#: performer.cpp:440
 msgid "Okular KPart not found"
 msgstr "Okular KPart wurde nicht gefunden"
 
-#: performer.cpp:451
-#, fuzzy
+#: performer.cpp:456
 msgid "Previous page"
-msgstr "Zurück"
+msgstr "Vorherige Seite"
 
-#: performer.cpp:451
-#, fuzzy
+#: performer.cpp:456
 msgid "Next page"
-msgstr "Vor"
+msgstr "Nächste Seite"
 
-#: performer.cpp:478
+#: performer.cpp:483
 msgid "Zoom"
 msgstr ""
 
-#: performer.cpp:508
+#: performer.cpp:519
 msgid "File"
 msgstr "Datei"
 
-#: performer.cpp:511
+#: performer.cpp:522
 msgid "&New"
 msgstr "&Neu"
 
-#: performer.cpp:517
+#: performer.cpp:529
 msgid "&Open"
 msgstr "&Öffnen"
 
-#: performer.cpp:523
+#: performer.cpp:536
 msgid "&Save"
 msgstr "&Speichern"
 
-#: performer.cpp:529
+#: performer.cpp:543
 msgid "&Save as"
 msgstr "&Speichern unter"
 
-#: performer.cpp:536
+#: performer.cpp:565
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: performer.cpp:568
+msgid "&Always on top"
+msgstr "Immer im &Vordergrund"
+
+#: performer.cpp:574
+msgid "&MIDI Program Changes"
+msgstr "&MIDI Programmwechsel"
+
+#: performer.cpp:575
+msgid "If activated, the setlist will react to MIDI Program Change messages."
+msgstr "Falls aktiviert, reagiert die Setliste auf MIDI Programmwechsel."
+
+#: performer.cpp:580
+msgid "&Hide Carla"
+msgstr "&Verstecke Carla"
+
+#: performer.cpp:581
+msgid "If activated, Carla instances will not be visible."
+msgstr "Falls aktiviert, sind Instanzen von Carla nicht sichtbar."
+
+#: performer.cpp:599
 msgid "Performer Toolbar"
 msgstr "Performer-Werkzeugleiste"
 
-#: performer.cpp:551
+#: performer.cpp:612
 msgid "Scroll vertical"
 msgstr "Vertikal scrollen"
 
-#: performer.cpp:555
+#: performer.cpp:616
 msgid "Scroll horizontal"
 msgstr "Horizontal scrollen"
 
-#: performer.cpp:655
+#: performer.cpp:737
 msgid "Setlists (*.pfm)"
 msgstr "Setlisten (*.pfm)"
 
-#: performer.cpp:723
+#: performer.cpp:805
 msgid "Save File As..."
 msgstr "Speichern unter..."
 
@@ -211,18 +228,18 @@ msgstr "Ganze Seite"
 msgid "Page width"
 msgstr "Seitenbreite"
 
-#: setlistmodel.cpp:421
+#: setlistmodel.cpp:420
 msgid "Failed to start Carla process."
 msgstr "Konnte Carla nicht starten."
 
-#: setlistmodel.cpp:441 setlistmodel.cpp:470
+#: setlistmodel.cpp:442 setlistmodel.cpp:471
 msgid ""
 "Could not find a running jack server. Will retry to connect to server in %1 "
 "seconds."
 msgstr ""
 "Konnte keinen laufenden Jack-Server finden. Versuche es in %1 nocheinmal."
 
-#: setlistmodel.cpp:477
+#: setlistmodel.cpp:478
 msgid ""
 "Could not create a client on the existing jack server. Can't load Carla "
 "patches."
