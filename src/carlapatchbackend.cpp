@@ -247,7 +247,6 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
                         jack_disconnect(m_client, a, replace(b, jackclientname+":", name+":"));
                 },"jackconnect");
             }
-            activeBackend->connectClient();
         }
         
         clientsLock.lockForRead();
@@ -265,6 +264,8 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
             }
         }
         clientsLock.unlock();
+        
+        activeBackend->connectClient();
         
     }
     activeBackendLock.unlock();
