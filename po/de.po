@@ -197,7 +197,7 @@ msgstr "Speichern unter..."
 
 #: qtwebviewdocumentviewer.cpp:40 qwebenginedocumentviewer.cpp:32
 msgid "Automatic zoom"
-msgstr "Automatischer Zoom"
+msgstr "Automatisch einpassen"
 
 #: qtwebviewdocumentviewer.cpp:41 qwebenginedocumentviewer.cpp:33
 msgid "Original size"
@@ -205,7 +205,7 @@ msgstr "Originalgröße"
 
 #: qtwebviewdocumentviewer.cpp:42 qwebenginedocumentviewer.cpp:34
 msgid "Page size"
-msgstr "Seitengröße"
+msgstr "Ganze Seite"
 
 #: qtwebviewdocumentviewer.cpp:43 qwebenginedocumentviewer.cpp:35
 msgid "Page width"
