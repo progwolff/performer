@@ -76,3 +76,8 @@ Click "Next". A Carla instance for the next song in your setlist will be created
 
 Right click a GUI element like the "Next" button or the document viewer's scrollbar. In the shown MIDI learn context menu choose "Learn MIDI CC". Move a control of a MIDI device connected to the control_gui-in port. This control will be 
 assigned to the GUI element, allowing you to control Performer's GUI with your MIDI device.
+
+## Notes on Carla's external patchbay
+When Carla loads a patch it tries to reconnect the ports of the external patchbay to match the state when the patch was saved.
+Performer disconnects these connections after creating a new Carla instance and connects the ports of the active instance to match the connections of Performer (We only want one instance of Carla to be active and leave the others disconnected). However, if a patch contains information about the connections of Performer in Carla's external patchbay, then these connections will be applied to the running instance of Performer.
+To get rid of this issue, make sure that you do not have connected any ports of Performer when saving a Carla patch.
