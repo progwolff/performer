@@ -186,6 +186,9 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
     name_a = jack_port_name(jack_port_by_id(m_client, a));
     name_b = jack_port_name(jack_port_by_id(m_client, b));
     
+    
+    qDebug() << ((connect)?"connecting":"disconnecting") << a << name_a << b << name_b;
+    
     if(!name_a || !name_b)
         return;
     activeBackendLock.lockForRead();
@@ -308,9 +311,15 @@ void CarlaPatchBackend::connectClient()
                     if(portid && !jack_port_connected_to(portid, *cons))
                     {
                         if(jack_port_flags(portid) & JackPortIsOutput)
+                        {
                             jack_connect(m_client, (clientName+":"+port).toLatin1(), *cons);
+                            qDebug() << "connect client" << (clientName+":"+port).toLatin1() << *cons;
+                        }
                         else
+                        {
                             jack_connect(m_client, *cons, (clientName+":"+port).toLatin1());
+                            qDebug() << "connect client" << *cons << (clientName+":"+port).toLatin1();
+                        }
                     }
                     ++cons;
                 }
@@ -428,8 +437,10 @@ void CarlaPatchBackend::preload()
         execLock.unlock();
         connect(exec, static_cast<void (QProcess::*)(int,QProcess::ExitStatus)>(&QProcess::finished), this, [this]()
         {
-            execLock.lockForWrite();
-            if(QObject::sender() == exec)
+            execLock.lockForRead();
+            QProcess *p = exec;
+            execLock.unlock();
+            if(QObject::sender() == p)
             {
                 if(clientName.isEmpty())
                     clientInitMutex.unlock();
@@ -439,21 +450,26 @@ void CarlaPatchBackend::preload()
                     clientName = "";
                     clientNameLock.unlock();
                 }
+                execLock.lockForWrite();
                 exec = nullptr;
+                execLock.unlock();
                 emit progress(PROCESS_EXIT);
             }
             QObject::sender()->deleteLater();
-            execLock.unlock();
         });
         connect(exec, &QProcess::errorOccurred, this, [this](QProcess::ProcessError err)
         {
-            execLock.lockForWrite();
-            if(QObject::sender() == exec)
+            execLock.lockForRead();
+            QProcess *p = exec;
+            execLock.unlock();
+            if(QObject::sender() == p)
             {
                 clientNameLock.lockForWrite();
                 if(clientName.isEmpty())
                     clientInitMutex.unlock();
+                execLock.lockForWrite();
                 exec = nullptr;
+                execLock.unlock();
                 clientName = "";
                 clientNameLock.unlock();
                 if (err == QProcess::FailedToStart)
@@ -469,7 +485,6 @@ void CarlaPatchBackend::preload()
             }
             qDebug() << ((QProcess*)QObject::sender())->readAllStandardError();
             QObject::sender()->deleteLater();
-            execLock.unlock();
         });
         
         QString carlaPath = QStandardPaths::findExecutable("carla-patchbay");
