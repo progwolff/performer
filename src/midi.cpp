@@ -177,6 +177,16 @@ void MIDI::setMin(unsigned char cc, unsigned char min)
     emit dataChanged(index(m_actions.indexOf(action(cc)), LowColumn), index(m_actions.indexOf(action(cc)), LowColumn));
 }
 
+void MIDI::autoRange(unsigned char cc)
+{
+    m_params[cc].autorange = true;
+}
+
+void MIDI::fixRange(unsigned char cc)
+{
+    m_params[cc].autorange = false;
+}
+
 void MIDI::trigger(unsigned char cc, unsigned char val)
 {
     QAction* action = MIDI::action(cc);
@@ -353,6 +363,12 @@ QVariant MIDI::headerData(int section, Qt::Orientation orientation, int role) co
 
 Qt::ItemFlags MIDI::flags(const QModelIndex& index) const
 {
+    if(!index.isValid())
+        return 0;
+    
+    if(index.column() != CcColumn && m_params[cc(m_actions[index.row()])].action == nullptr)
+        return 0;
+    
     switch (index.column())
     {
         case ActionColumn:

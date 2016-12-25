@@ -65,6 +65,7 @@ Performer::Performer(QWidget *parent) :
     ,alwaysontop(false)
     ,handleProgramChange(true)
     ,hideBackend(true)
+    ,showMIDI(false)
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
@@ -156,6 +157,7 @@ Performer::Performer(QWidget *parent) :
     setHandleProgramChanges(handleProgramChange);
     
     setHideBackend(hideBackend);
+    setShowMIDI(showMIDI);
 }
 
 
@@ -446,6 +448,12 @@ void Performer::prepareUi()
     midi = new MIDI(midiView);
     midiView->setModel(midi);
     addDockWidget(Qt::RightDockWidgetArea, m_midiDock);
+    midiView->verticalHeader()->setVisible(false);
+    midiView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    for (int i = 1; i < midiView->horizontalHeader()->count(); ++i)
+    {
+        midiView->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+    }
     
 #ifdef WITH_KPARTS
     m_viewer = new OkularDocumentViewer(this);
@@ -597,11 +605,17 @@ void Performer::prepareUi()
     hidebackendaction->setCheckable(true);
     connect(hidebackendaction, SIGNAL(toggled(bool)), this, SLOT(setHideBackend(bool)));
     
+    showmidiaction = new QAction(this);
+    showmidiaction->setText(i18n("Show &MIDI controls"));
+    showmidiaction->setToolTip(i18n("If activated, a MIDI controls configuration view will be visible."));
+    showmidiaction->setCheckable(true);
+    connect(showmidiaction, SIGNAL(toggled(bool)), this, SLOT(setShowMIDI(bool)));
+    
     
     QAction *before = nullptr;
     if(settingsmenu->actions().size() > 1)
         before = settingsmenu->actions()[1];
-    settingsmenu->insertActions(before, QList<QAction*>() << programchangeaction << alwaysontopaction << hidebackendaction);
+    settingsmenu->insertActions(before, QList<QAction*>() << programchangeaction << alwaysontopaction << hidebackendaction << showmidiaction);
     
     if(existed)
     {
@@ -666,6 +680,13 @@ void Performer::setHideBackend(bool hide)
     model->setHideBackend(hide);
 }
 
+void Performer::setShowMIDI(bool show)
+{
+    showMIDI = show;
+    showmidiaction->setChecked(show);
+    m_midiDock->setVisible(show);
+}
+
 void Performer::loadConfig()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
@@ -689,6 +710,7 @@ void Performer::loadConfig()
                 midi->setCc(action, val[0].toInt());
                 midi->setMin(val[0].toInt(), val[1].toInt());
                 midi->setMax(val[0].toInt(), val[2].toInt());
+                midi->fixRange(val[0].toInt());
             }
         }
     }
@@ -704,6 +726,7 @@ void Performer::loadConfig()
     alwaysontop = config->group("window").readEntry("alwaysontop",false);
     handleProgramChange = config->group("setlist").readEntry("programchange",true);
     hideBackend = config->group("setlist").readEntry("hidebackend",true);
+    showMIDI = config->group("window").readEntry("showmidi",false);
 #else
     QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
     
@@ -743,6 +766,7 @@ void Performer::loadConfig()
     
     config.beginGroup("window");
     alwaysontop = config.value("alwaysontop",false).toBool();
+    showmidi = config.value("showmidi",false).toBool();
     config.endGroup();
     
     config.beginGroup("setlist");
@@ -909,8 +933,9 @@ void Performer::saveConfig()
     config->group("paths").writeEntry("patch", patchdefaultpath);
     
     config->group("window").writeEntry("alwaysontop", alwaysontop);
+    config->group("window").writeEntry("showmidi", showMIDI);
     config->group("setlist").writeEntry("programchange", handleProgramChange);
-    config->group("setlist").writeEntry("hidebackend", hideBackend);
+    config->group("setlist").writeEntry("hidebackend", hideBackend); 
        
     config->sync();
 
@@ -941,6 +966,7 @@ void Performer::saveConfig()
     
     config.beginGroup("window");
     config.setValue("alwaysontop", alwaysontop);
+    config.setValue("showmidi", showMIDI);
     config.endGroup();   
     
     config.beginGroup("setlist");

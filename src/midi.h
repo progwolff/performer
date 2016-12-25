@@ -155,6 +155,17 @@ public slots:
      */
     void trigger(unsigned char cc, unsigned char value);
     
+    /**
+     * Let the range of a continuous control be learned from the values it receives
+     * @param cc a continuous control
+     */
+    void autoRange(unsigned char cc);
+    
+    /**
+     * Fix the range of a continuous control to its current min and max values
+     * @param cc continuous control
+     */
+    void fixRange(unsigned char cc);
     
 private:
     
