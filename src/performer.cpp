@@ -740,7 +740,7 @@ void Performer::loadConfig()
     config.beginGroup("midi");
     for(QString actionstr: config.allKeys())
     {
-        QStringList val = config->value(actionstr, QString()).toString().split(',');
+        QStringList val = config.value(actionstr, QString()).toString().split(',');
         if(val.size() > 2)
         for(QAction* action : midi->actions())
         {
@@ -766,7 +766,7 @@ void Performer::loadConfig()
     
     config.beginGroup("window");
     alwaysontop = config.value("alwaysontop",false).toBool();
-    showmidi = config.value("showmidi",false).toBool();
+    showMIDI = config.value("showmidi",false).toBool();
     config.endGroup();
     
     config.beginGroup("setlist");
