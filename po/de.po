@@ -222,9 +222,8 @@ msgid "Show &MIDI controls"
 msgstr "Zeige &MIDI-Steuerung"
 
 #: performer.cpp:610
-#, fuzzy
 msgid "If activated, a MIDI controls configuration view will be visible."
-msgstr "Falls aktiviert, sind Instanzen von Carla nicht sichtbar."
+msgstr "Falls aktiviert, ist die Konfigurationsansicht für die MIDI-Steuerung sichtbar."
 
 #: performer.cpp:628
 msgid "Performer Toolbar"
