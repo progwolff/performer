@@ -443,6 +443,7 @@ void Performer::prepareUi()
     m_midiDock = new QDockWidget("MIDI", this);
     m_midiDock->setObjectName("MIDI dock");
     m_midiDock->setFeatures(QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable);
+    m_midiDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     QTableView *midiView = new QTableView(m_midiDock);
     m_midiDock->setWidget(midiView);
     midi = new MIDI(midiView);
