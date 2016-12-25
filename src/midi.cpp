@@ -298,6 +298,18 @@ QVariant MIDI::data(const QModelIndex& index, int role) const
                     return QString::number(max(cc));
                     break;
             }  
+            
+        case Qt::ToolTipRole:
+            
+            switch(index.column())
+            {
+                case CcColumn:
+                    return description(cc);
+                case ActionColumn:
+                    return action->toolTip();
+                default:
+                    return QVariant();
+            }
                 
         default:
             return QVariant();
@@ -380,4 +392,231 @@ Qt::ItemFlags MIDI::flags(const QModelIndex& index) const
             return Qt::ItemIsEditable | Qt::ItemIsEnabled;
     }
     return 0;
+}
+
+QString MIDI::description(unsigned char cc)
+{
+    switch(cc) {
+        case 0:
+            return i18n("Bank select MSB");
+        case 1:
+            return i18n("Modulation MSB");
+        case 2:
+            return i18n("Breath Controller");
+        case 3:
+            return i18n("Undefined");
+        case 4:
+            return i18n("Foot Controller MSB");
+        case 5:
+            return i18n("Portamento Time MSB");
+        case 6:
+            return i18n("Data Byte");
+        case 7:
+            return i18n("Main volume");
+        case 8:
+            return i18n("Balance");
+        case 9:
+            return i18n("Undefined");
+        case 10:
+            return i18n("Panorama");
+        case 11:
+            return i18n("Expression");
+        case 12:
+            return i18n("Effect Control 1");
+        case 13:
+            return i18n("Effect Control 2");
+        case 14:
+        case 15:
+            return i18n("Undefined");
+        case 16:
+            return i18n("General Purpose Controller 1");
+        case 17:
+            return i18n("General Purpose Controller 2");
+        case 18:
+            return i18n("General Purpose Controller 3");
+        case 19:
+            return i18n("General Purpose Controller 4");
+        case 20:
+        case 21:
+        case 22:
+        case 23:
+        case 24:
+        case 25: 
+        case 26:
+        case 27:
+        case 28:
+        case 29:
+        case 30:
+        case 31:
+            return i18n("Undefined");
+        case 32:
+            return i18n("Bank select LSB");
+        case 33:
+            return i18n("LSB for CC 1");
+        case 34:
+            return i18n("LSB for CC 2");
+        case 35:
+            return i18n("LSB for CC 3");
+        case 36:
+            return i18n("LSB for CC 4");
+        case 37:
+            return i18n("LSB for CC 5");
+        case 38:
+            return i18n("LSB for CC 6");
+        case 39:
+            return i18n("LSB for CC 7");
+        case 40:
+            return i18n("LSB for CC 8");
+        case 41:
+            return i18n("LSB for CC 9");
+        case 42:
+            return i18n("LSB for CC 10");
+        case 43:
+            return i18n("LSB for CC 11");
+        case 44:
+            return i18n("LSB for CC 12");
+        case 45:
+            return i18n("LSB for CC 13");
+        case 46:
+            return i18n("LSB for CC 14");
+        case 47:
+            return i18n("LSB for CC 15");
+        case 48:
+            return i18n("LSB for CC 16");
+        case 49:
+            return i18n("LSB for CC 17");
+        case 50:
+            return i18n("LSB for CC 18");
+        case 51:
+            return i18n("LSB for CC 19");
+        case 52:
+            return i18n("LSB for CC 20");
+        case 53:
+            return i18n("LSB for CC 21");
+        case 54:
+            return i18n("LSB for CC 22");
+        case 55:
+            return i18n("LSB for CC 23");
+        case 56:
+            return i18n("LSB for CC 24");
+        case 57:
+            return i18n("LSB for CC 25");
+        case 58:
+            return i18n("LSB for CC 26");
+        case 59:
+            return i18n("LSB for CC 27");
+        case 60:
+            return i18n("LSB for CC 28");
+        case 61:
+            return i18n("LSB for CC 29");
+        case 62:
+            return i18n("LSB for CC 30");
+        case 63:
+            return i18n("LSB for CC 31");
+        case 64:
+            return i18n("Hold 1");
+        case 65:
+            return i18n("Portamento");
+        case 66:
+            return i18n("Sostenuto");
+        case 67:
+            return i18n("Soft Pedal");
+        case 68:
+            return i18n("Legato Footswitch");
+        case 69:
+            return i18n("Hold 2");
+        case 70:
+            return i18n("Sound Variation");
+        case 71:
+            return i18n("Harmonic Content");
+        case 72:
+            return i18n("Release Time");
+        case 73:
+            return i18n("Attack Time");
+        case 74:
+            return i18n("Brightness");
+        case 75:
+            return i18n("Sound Controller 6");
+        case 76:
+            return i18n("Sound Controller 7");
+        case 77:
+            return i18n("Sound Controller 8");
+        case 78:
+            return i18n("Sound Controller 9");
+        case 79:
+            return i18n("Sound Controller 10");
+        case 80:
+        case 81:
+        case 82:
+        case 83:
+            return i18n("General Purpose Controller");
+        case 84:
+            return i18n("Portamento Control");
+        case 85:
+        case 86:
+        case 87:
+        case 88:
+        case 89:
+        case 90:
+            return i18n("Undefined");
+        case 91:
+            return i18n("Effects 1 Depth");
+        case 92:
+            return i18n("Effects 2 Depth");
+        case 93:
+            return i18n("Effects 3 Depth");
+        case 94:
+            return i18n("Effects 4 Depth");
+        case 95:
+            return i18n("Effects 5 Depth");
+        case 96:
+            return i18n("Data Increment RPN/NRPN");
+        case 97:
+            return i18n("Data Decrement RPN/NRPN");
+        case 98:
+            return i18n("NRPN LSB");
+        case 99:
+            return i18n("NRPN MSB");
+        case 100:
+            return i18n("RPN LSB");
+        case 101:
+            return i18n("RPN MSB");
+        case 102:
+        case 103:
+        case 104:
+        case 105:
+        case 106:
+        case 107:
+        case 108:
+        case 109:
+        case 110:
+        case 111:
+        case 112:
+        case 113:
+        case 114:
+        case 115:
+        case 116:
+        case 117:
+        case 118:
+        case 119:
+            return i18n("Undefined");
+        case 120:
+            return i18n("all sounds off");
+        case 121:
+            return i18n("Controller Reset");
+        case 122:
+            return i18n("Local Control on/off");
+        case 123:
+            return i18n("all notes off");
+        case 124:
+            return i18n("omni off");
+        case 125:
+            return i18n("omni on");
+        case 126:
+            return i18n("mono on / poly off");
+        case 127:
+            return i18n("poly on / mono off");
+        default:
+            return "";
+    }
 }

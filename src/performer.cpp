@@ -332,7 +332,7 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
         if(midi_learn_action)
         {
             midi->setCc(midi_learn_action, data1);
-            statusBar()->showMessage(i18n("MIDI CC %1 assigned to action %2", QString::number(data1), midi_learn_action->text()), 2000);
+            statusBar()->showMessage(i18n("MIDI CC %1 (%3) assigned to action %2", QString::number(data1), midi_learn_action->text(), midi->description(data1)), 2000);
             midi_learn_action = nullptr;
             midi->setValue(data1, data2);
         }

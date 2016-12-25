@@ -113,6 +113,8 @@ public:
     
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     
+    static QString description(unsigned char cc);
+    
 public slots:    
     /**
      * Sets the MIDI CC for a given action.
