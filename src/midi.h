@@ -12,17 +12,36 @@
 #define IS_MIDIPC(a) ((0xF0 & (a)) == 0xC0)
 
 
-#define MIDI_BUTTON_THRESHOLD_UPPER (128/2+2)
-#define MIDI_BUTTON_THRESHOLD_LOWER (128/2-2)
-
+#include <QAbstractTableModel>
 #include <QList>
 #include <QAction>
 
 
-class MIDI : public QObject
+class MIDI : public QAbstractTableModel
 {
     Q_OBJECT
+    
+protected:
+    struct Parameter {
+        QAction *action;
+        unsigned char low;
+        unsigned char high;
+        unsigned char value;
+        bool autorange;
+    };
+    
 public: 
+    enum Columns {
+        ActionColumn = 0,
+        CcColumn,
+        LowColumn,
+        HighColumn,
+        ValueColumn,
+        ColumnsCount
+    };
+    
+    explicit MIDI(QObject *parent=0);
+    
     /**
      * Adds midi learn functionality to a QWidget.\n
      * On right click on the widget a midi learn context menu will be shown.\n
@@ -32,74 +51,115 @@ public:
      * @param name a locale independent identifier of the corresponding action
      * @param text a human readable (possibly localized) identifier of the corresponding action
      */
-    static QAction* setLearnable(QWidget* widget, const QString& text, const QString& name, QObject* parent = nullptr);
+    QAction* setLearnable(QWidget* widget, const QString& text, const QString& name, QObject* parent = nullptr);
     
     /**
      * Adds a QAction to the list of learnable actions
      * @param action the QAction to add
      */
-    static void addAction(QAction* action);
+    void addAction(QAction* action);
     
     /**
-     * Get a list of MIDI learnable actions
+     * Returns a list of MIDI learnable actions
      * @return a list of MIDI learnable actions
      */
-    static const QList<QAction*>& actions();
+    
+    const QList<QAction*>& actions() const;
     
     /**
      * Get the action assigned to a given MIDI CC
      * @param cc the CC to get the assigned action for
      * @return the action assigned to the given MIDI CC
      */
-    static QAction* action(unsigned char cc);
+    QAction* action(unsigned char cc) const;
     
     /**
-     * Get the corresponding MIDI CC to a given action
+     * Returns the corresponding MIDI CC to a given action
      * @param action the action for which a MIDI CC should be returned
      * @return If there is a MIDI CC assigned to the given action, the corresponding CC is returned. If there is no MIDI CC assigned to the given action, a value greater than 127 is returned.
      */
-    static unsigned char cc(QAction* action);
+    unsigned char cc(QAction* action) const;
     
     /**
-     * Get the last known value of a given MIDI CC
+     * Returns the last known value of a given MIDI CC
      * @param cc the MIDI CC to get the last known value of
      * @return the last known value of the given MIDI CC
      */
-    static unsigned char value(unsigned char cc);
+    unsigned char value(unsigned char cc) const;
+    
+    /**
+     * Returns the minimum value in the range of a givven MIDI CC
+     * @param cc the MIDI CC to get the minimum value of
+     * @return the minimum value of the given CC
+     */
+    unsigned char min(unsigned char cc) const;
+    
+    /**
+     * Returns the maximum value in the range of a givven MIDI CC
+     * @param cc the MIDI CC to get the maximum value of
+     * @return the maximum value of the given CC
+     */
+    unsigned char max(unsigned char cc) const;
+    
+    int rowCount(const QModelIndex& parent) const override;
 
+    int columnCount(const QModelIndex& parent) const override;
+    
+    QVariant data(const QModelIndex& index, int role) const override;
+
+    bool setData(const QModelIndex & index, const QVariant & value, int role) override;
+
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+    
 public slots:    
     /**
      * Sets the MIDI CC for a given action.
      * @param action the action to assign a MIDI CC to
      * @param cc the CC to assign to the given action
      */
-    static void setCc(QAction* action, unsigned char cc);
+    void setCc(QAction* action, unsigned char cc);
     
     /**
      * Resets all CCs for a given action.
      * @param action the action to remove all MIDI CCs from
      */
-    static void resetCc(QAction* action);
+    void resetCc(QAction* action);
     
     /**
-     * Trigger the action that is assigned to MIDI CC cc.
-     * @param cc the MIDI CC assigned to the action to trigger.
-     * @param value the current value of the given MIDI CC
-     */
-    static void trigger(unsigned char cc, unsigned char value);
-    
-    /**
-     * Update the value of a given MIDI CC
+     * Updates the value of a given MIDI CC
      * @param cc the MIDI CC to update
      * @param value the current value of the given MIDI CC
      */
-    static void setValue(unsigned char cc, unsigned char value);
+    void setValue(unsigned char cc, unsigned char value);
+    
+    /**
+     * Sets the minimum value of the given CC
+     * @param cc the MIDI CC to set the maximum value of
+     * @param value the new minimum value of the given cc.
+     */
+    void setMin(unsigned char cc, unsigned char min);
+    
+    /**
+     * Sets the maximum value of the given CC
+     * @param cc the MIDI CC to set the maximum value of
+     * @param value the new maximum value of the given cc.
+     */
+    void setMax(unsigned char cc, unsigned char max);
+    
+    /**
+     * Triggers the action that is assigned to MIDI CC cc.
+     * @param cc the MIDI CC assigned to the action to trigger.
+     * @param value the current value of the given MIDI CC
+     */
+    void trigger(unsigned char cc, unsigned char value);
+    
     
 private:
     
-    static QMap<unsigned char, QAction*> midi_cc_map;
-    static QList<QAction*> midi_cc_actions;
-    static QMap<unsigned char, unsigned char> midi_cc_value_map;
+    QMap<unsigned char, Parameter> m_params;
+    QList<QAction*> m_actions;
 };
 
 

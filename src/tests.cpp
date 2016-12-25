@@ -76,12 +76,13 @@ TEST_CASE ( "MIDI actions can be added and returned" )
     action.setObjectName("TestAction");
     QAction action2("Test2");
     action2.setObjectName("TestAction2");
-    MIDI::addAction(&action);
-    MIDI::addAction(&action2);
+    MIDI midi;
+    midi.addAction(&action);
+    midi.addAction(&action2);
     
-    REQUIRE( MIDI::actions().size() == 2 );
-    REQUIRE( MIDI::actions()[0]->objectName() == "TestAction" );
-    REQUIRE( MIDI::actions()[1]->objectName() == "TestAction2" );
+    REQUIRE( midi.actions().size() == 2 );
+    REQUIRE( midi.actions()[0]->objectName() == "TestAction" );
+    REQUIRE( midi.actions()[1]->objectName() == "TestAction2" );
 }
 
 TEST_CASE ( "MIDI CCs can be assigned to actions" )
@@ -90,14 +91,15 @@ TEST_CASE ( "MIDI CCs can be assigned to actions" )
     action.setObjectName("TestAction");
     QAction action2("Test2");
     action2.setObjectName("TestAction2");
-    MIDI::addAction(&action);
-    MIDI::addAction(&action2);
+    MIDI midi;
+    midi.addAction(&action);
+    midi.addAction(&action2);
     
-    MIDI::setCc(&action, 4);
-    MIDI::setCc(&action2, 64);
+    midi.setCc(&action, 4);
+    midi.setCc(&action2, 64);
     
-    REQUIRE( MIDI::cc(&action) == 4 );
-    REQUIRE( MIDI::cc(&action2) == 64 );
+    REQUIRE( midi.cc(&action) == 4 );
+    REQUIRE( midi.cc(&action2) == 64 );
 }
 
 TEST_CASE ( "MIDI learn for QWidgets" )
@@ -106,7 +108,8 @@ TEST_CASE ( "MIDI learn for QWidgets" )
     QApplication app(argc, nullptr);
     QToolButton button;
     
-    QAction *action = MIDI::setLearnable(&button, "Test", "Test");
+    MIDI midi;
+    QAction *action = midi.setLearnable(&button, "Test", "Test");
     
     REQUIRE( button.actions()[0] == action );
     

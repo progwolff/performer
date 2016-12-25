@@ -85,11 +85,11 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
     m_setlist->addButton->setIcon(QIcon::fromTheme("list-add"));//, QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     
-    MIDI::setLearnable(m_setlist->previousButton, i18n("Previous"), "Previous", this);
+    midi->setLearnable(m_setlist->previousButton, i18n("Previous"), "Previous", this);
     connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){model->playPrevious(); songSelected(QModelIndex());});  
     m_setlist->previousButton->setEnabled(true);  
     
-    MIDI::setLearnable(m_setlist->nextButton, i18n("Next"), "Next", this);
+    midi->setLearnable(m_setlist->nextButton, i18n("Next"), "Next", this);
     connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){model->playNext(); songSelected(QModelIndex());});    
     m_setlist->nextButton->setEnabled(true);
    
@@ -98,7 +98,7 @@ Performer::Performer(QWidget *parent) :
     toolBar()->addWidget(alwaysontopbutton);
     alwaysontopbutton->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
     alwaysontopbutton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    MIDI::setLearnable(alwaysontopbutton, i18n("Always on top"), "Alwaysontop", this);
+    midi->setLearnable(alwaysontopbutton, i18n("Always on top"), "Alwaysontop", this);
     connect(alwaysontopbutton, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));  
     
     QToolButton *toolButton = new QToolButton(toolBar());
@@ -106,7 +106,7 @@ Performer::Performer(QWidget *parent) :
     toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolButton->setIcon(QIcon::fromTheme("dialog-warning", QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning)));
     toolButton->setToolTip(i18n("Terminate and reload all Carla instances."));
-    MIDI::setLearnable(toolButton, i18n("Panic!"), "Panic", this);
+    midi->setLearnable(toolButton, i18n("Panic!"), "Panic", this);
     connect(toolButton, SIGNAL(clicked()), model, SLOT(panic()));
     
     m_setlist->setupBox->setVisible(false);
@@ -169,11 +169,17 @@ Performer::~Performer()
     delete model;
     model = nullptr;
     
+    delete midi;
+    midi = nullptr;
+    
     delete m_viewer;
     m_viewer = nullptr;
 
     delete m_dock;
     m_dock = nullptr;
+    
+    delete m_midiDock;
+    m_midiDock = nullptr;
 
     delete m_setlist;
     m_setlist = nullptr;
@@ -277,7 +283,7 @@ void Performer::midiContextMenuRequested(const QPoint& pos)
             QMenu myMenu;
             QAction *action;
             
-            unsigned int cc = MIDI::cc(sender->actions()[0]);
+            unsigned int cc = midi->cc(sender->actions()[0]);
             
             if(cc <= 127)
             {
@@ -310,7 +316,7 @@ void Performer::midiLearn(QAction* action)
 
 void Performer::midiClear(QAction* action)
 {
-    MIDI::resetCc(action);
+    midi->resetCc(action);
     statusBar()->showMessage(i18n("MIDI CC cleared for action %1", action->text()), 2000);
 }
 
@@ -323,14 +329,14 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
         //qDebug() << "received MIDI event" << QString::number(status) << QString::number(data1) << QString::number(data2);
         if(midi_learn_action)
         {
-            MIDI::setCc(midi_learn_action, data1);
+            midi->setCc(midi_learn_action, data1);
             statusBar()->showMessage(i18n("MIDI CC %1 assigned to action %2", QString::number(data1), midi_learn_action->text()), 2000);
             midi_learn_action = nullptr;
-            MIDI::setValue(data1, data2);
+            midi->setValue(data1, data2);
         }
         else
         {
-            MIDI::trigger(data1, data2);
+            midi->trigger(data1, data2);
         }
     }
     else if(IS_MIDIPC(status))
@@ -432,6 +438,15 @@ void Performer::prepareUi()
     m_setlist->setupUi(m_dock);
     addDockWidget(Qt::LeftDockWidgetArea, m_dock);
     
+    m_midiDock = new QDockWidget("MIDI", this);
+    m_midiDock->setObjectName("MIDI dock");
+    m_midiDock->setFeatures(QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable);
+    QTableView *midiView = new QTableView(m_midiDock);
+    m_midiDock->setWidget(midiView);
+    midi = new MIDI(midiView);
+    midiView->setModel(midi);
+    addDockWidget(Qt::RightDockWidgetArea, m_midiDock);
+    
 #ifdef WITH_KPARTS
     m_viewer = new OkularDocumentViewer(this);
     
@@ -457,7 +472,7 @@ void Performer::prepareUi()
         QStringList name = {"PreviousPage", "NextPage"};
         for(int i=0; i<buttons.size(); ++i)
         {
-            MIDI::setLearnable(buttons[i], text[i], name[i], this);
+            midi->setLearnable(buttons[i], text[i], name[i], this);
         }
         
         QWidget* okularToolBar = findChild<QWidget*>("okularToolBar");
@@ -469,7 +484,7 @@ void Performer::prepareUi()
                 qDebug() << "found a toolbutton";
                 for(QAction* action : button->actions())
                 {
-                    MIDI::addAction(action);
+                    midi->addAction(action);
                     action->setData("button");
                 }
                 
@@ -480,7 +495,7 @@ void Performer::prepareUi()
             if(box)
             {
                 qDebug() << "found a combobox";
-                MIDI::setLearnable(box, i18n("Zoom"), "zoom", this);
+                midi->setLearnable(box, i18n("Zoom"), "zoom", this);
             }
         }
         
@@ -609,11 +624,11 @@ void Performer::setupPageViewActions()
     
     QScrollBar* scrollBar = pageView->verticalScrollBar();
     if(scrollBar)
-        MIDI::setLearnable(scrollBar, i18n("Scroll vertical"), "ScrollV", this);
+        midi->setLearnable(scrollBar, i18n("Scroll vertical"), "ScrollV", this);
     
     scrollBar = pageView->horizontalScrollBar();
     if(scrollBar)
-        MIDI::setLearnable(scrollBar, i18n("Scroll horizontal"), "ScrollH", this);
+        midi->setLearnable(scrollBar, i18n("Scroll horizontal"), "ScrollH", this);
 }
 
 void Performer::setAlwaysOnTop(bool ontop)
@@ -663,13 +678,18 @@ void Performer::loadConfig()
     m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
     qDebug() << m_setlist->patchrequester->startDir();
     
-    for(QString cc: config->group("midi").keyList())
+    for(QString actionstr: config->group("midi").keyList())
     {
-        
-        for(QAction* action : MIDI::actions())
+        QStringList val = config->group("midi").readEntry(actionstr, QString()).split(',');
+        if(val.size() > 2)
+        for(QAction* action : midi->actions())
         {
-            if(config->group("midi").readEntry(cc, QString()) == action->objectName())
-                MIDI::setCc(action, cc.toInt());
+            if(actionstr == action->objectName())
+            {
+                midi->setCc(action, val[0].toInt());
+                midi->setMin(val[0].toInt(), val[1].toInt());
+                midi->setMax(val[0].toInt(), val[2].toInt());
+            }
         }
     }
     
@@ -695,13 +715,18 @@ void Performer::loadConfig()
     config.endGroup();
     
     config.beginGroup("midi");
-    for(QString cc: config.allKeys())
+    for(QString actionstr: config.allKeys())
     {
-        qDebug() << cc;
-        for(QAction* action : MIDI::actions())
+        QStringList val = config->value(actionstr, QString()).toString().split(',');
+        if(val.size() > 2)
+        for(QAction* action : midi->actions())
         {
-            if(config.value(cc, QString()).toString() == action->objectName())
-                MIDI::setCc(action, cc.toInt());
+            if(actionstr == action->objectName())
+            {
+                midi->setCc(action, val[0].toInt());
+                midi->setMin(val[0].toInt(), val[1].toInt());
+                midi->setMax(val[0].toInt(), val[2].toInt());
+            }
         }
     }
     config.endGroup();
@@ -867,10 +892,13 @@ void Performer::saveConfig()
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
     config->deleteGroup("midi");
-    for(QAction* action: MIDI::actions())
+    for(QAction* action: midi->actions())
     {
-        if(MIDI::cc(action) <= 127)
-            config->group("midi").writeEntry(QString::number(MIDI::cc(action)), action->objectName());
+        if(midi->cc(action) <= 127)
+            config->group("midi").writeEntry( 
+                action->objectName(),
+                QString::number(midi->cc(action))+","+QString::number(midi->min(midi->cc(action)))+","+QString::number(midi->max(midi->cc(action)))
+            );
     }
     
     config->deleteGroup("connections");
@@ -890,10 +918,13 @@ void Performer::saveConfig()
     QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
     
     config.beginGroup("midi");
-    for(QAction *action : MIDI::actions())
+    for(QAction *action : midi->actions())
     {
-        if(MIDI::cc(action) <= 127)
-            config.setValue(QString::number(MIDI::cc(action)), action->objectName());
+        if(midi->cc(action) <= 127)
+            config.setValue(
+                action->objectName(),
+                QString::number(midi->cc(action))+","+QString::number(midi->min(midi->cc(action)))+","+QString::number(midi->max(midi->cc(action)))
+            );
     }
     config.endGroup();
     

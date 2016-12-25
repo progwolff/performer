@@ -117,8 +117,10 @@ private:
     
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
+    QDockWidget *m_midiDock;
     
     QAction* midi_learn_action;
+    MIDI *midi;
     
     SetlistModel *model;
     
