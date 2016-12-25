@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-25 17:22+0100\n"
+"POT-Creation-Date: 2016-12-25 22:46+0100\n"
 "PO-Revision-Date: 2016-11-13 19:33+0100\n"
 "Last-Translator: Julian Wolff <wolff@julianwolff.de>\n"
 "Language-Team: DE <wolff@julianwolff.de>\n"
@@ -40,25 +40,370 @@ msgstr ""
 msgid " "
 msgstr ""
 
-#: midi.cpp:349
+#: midi.cpp:361
 msgid "Action"
 msgstr "Aktion"
 
-#: midi.cpp:351
+#: midi.cpp:363
 msgid "Value"
 msgstr "Wert"
 
-#: midi.cpp:353
+#: midi.cpp:365
 msgid "Min"
 msgstr "Min"
 
-#: midi.cpp:355
+#: midi.cpp:367
 msgid "Max"
 msgstr "Max"
 
-#: midi.cpp:357
+#: midi.cpp:369
 msgid "CC"
 msgstr "CC"
+
+#: midi.cpp:401
+msgid "Bank select MSB"
+msgstr ""
+
+#: midi.cpp:403
+msgid "Modulation MSB"
+msgstr ""
+
+#: midi.cpp:405
+msgid "Breath Controller"
+msgstr ""
+
+#: midi.cpp:407 midi.cpp:419 midi.cpp:430 midi.cpp:451 midi.cpp:561
+#: midi.cpp:602
+msgid "Undefined"
+msgstr "Undefiniert"
+
+#: midi.cpp:409
+msgid "Foot Controller MSB"
+msgstr ""
+
+#: midi.cpp:411
+msgid "Portamento Time MSB"
+msgstr ""
+
+#: midi.cpp:413
+msgid "Data Byte"
+msgstr ""
+
+#: midi.cpp:415
+msgid "Main volume"
+msgstr ""
+
+#: midi.cpp:417
+msgid "Balance"
+msgstr ""
+
+#: midi.cpp:421
+msgid "Panorama"
+msgstr ""
+
+#: midi.cpp:423
+msgid "Expression"
+msgstr ""
+
+#: midi.cpp:425
+msgid "Effect Control 1"
+msgstr ""
+
+#: midi.cpp:427
+msgid "Effect Control 2"
+msgstr ""
+
+#: midi.cpp:432
+msgid "General Purpose Controller 1"
+msgstr ""
+
+#: midi.cpp:434
+msgid "General Purpose Controller 2"
+msgstr ""
+
+#: midi.cpp:436
+msgid "General Purpose Controller 3"
+msgstr ""
+
+#: midi.cpp:438
+msgid "General Purpose Controller 4"
+msgstr ""
+
+#: midi.cpp:453
+msgid "Bank select LSB"
+msgstr ""
+
+#: midi.cpp:455
+msgid "LSB for CC 1"
+msgstr ""
+
+#: midi.cpp:457
+msgid "LSB for CC 2"
+msgstr ""
+
+#: midi.cpp:459
+msgid "LSB for CC 3"
+msgstr ""
+
+#: midi.cpp:461
+msgid "LSB for CC 4"
+msgstr ""
+
+#: midi.cpp:463
+msgid "LSB for CC 5"
+msgstr ""
+
+#: midi.cpp:465
+msgid "LSB for CC 6"
+msgstr ""
+
+#: midi.cpp:467
+msgid "LSB for CC 7"
+msgstr ""
+
+#: midi.cpp:469
+msgid "LSB for CC 8"
+msgstr ""
+
+#: midi.cpp:471
+msgid "LSB for CC 9"
+msgstr ""
+
+#: midi.cpp:473
+msgid "LSB for CC 10"
+msgstr ""
+
+#: midi.cpp:475
+msgid "LSB for CC 11"
+msgstr ""
+
+#: midi.cpp:477
+msgid "LSB for CC 12"
+msgstr ""
+
+#: midi.cpp:479
+msgid "LSB for CC 13"
+msgstr ""
+
+#: midi.cpp:481
+msgid "LSB for CC 14"
+msgstr ""
+
+#: midi.cpp:483
+msgid "LSB for CC 15"
+msgstr ""
+
+#: midi.cpp:485
+msgid "LSB for CC 16"
+msgstr ""
+
+#: midi.cpp:487
+msgid "LSB for CC 17"
+msgstr ""
+
+#: midi.cpp:489
+msgid "LSB for CC 18"
+msgstr ""
+
+#: midi.cpp:491
+msgid "LSB for CC 19"
+msgstr ""
+
+#: midi.cpp:493
+msgid "LSB for CC 20"
+msgstr ""
+
+#: midi.cpp:495
+msgid "LSB for CC 21"
+msgstr ""
+
+#: midi.cpp:497
+msgid "LSB for CC 22"
+msgstr ""
+
+#: midi.cpp:499
+msgid "LSB for CC 23"
+msgstr ""
+
+#: midi.cpp:501
+msgid "LSB for CC 24"
+msgstr ""
+
+#: midi.cpp:503
+msgid "LSB for CC 25"
+msgstr ""
+
+#: midi.cpp:505
+msgid "LSB for CC 26"
+msgstr ""
+
+#: midi.cpp:507
+msgid "LSB for CC 27"
+msgstr ""
+
+#: midi.cpp:509
+msgid "LSB for CC 28"
+msgstr ""
+
+#: midi.cpp:511
+msgid "LSB for CC 29"
+msgstr ""
+
+#: midi.cpp:513
+msgid "LSB for CC 30"
+msgstr ""
+
+#: midi.cpp:515
+msgid "LSB for CC 31"
+msgstr ""
+
+#: midi.cpp:517
+msgid "Hold 1"
+msgstr "Haltepedal"
+
+#: midi.cpp:519
+msgid "Portamento"
+msgstr ""
+
+#: midi.cpp:521
+msgid "Sostenuto"
+msgstr ""
+
+#: midi.cpp:523
+msgid "Soft Pedal"
+msgstr ""
+
+#: midi.cpp:525
+msgid "Legato Footswitch"
+msgstr "Legatopedal"
+
+#: midi.cpp:527
+msgid "Hold 2"
+msgstr "2. Haltepedal"
+
+#: midi.cpp:529
+msgid "Sound Variation"
+msgstr ""
+
+#: midi.cpp:531
+msgid "Harmonic Content"
+msgstr ""
+
+#: midi.cpp:533
+msgid "Release Time"
+msgstr ""
+
+#: midi.cpp:535
+msgid "Attack Time"
+msgstr ""
+
+#: midi.cpp:537
+msgid "Brightness"
+msgstr ""
+
+#: midi.cpp:539
+msgid "Sound Controller 6"
+msgstr ""
+
+#: midi.cpp:541
+msgid "Sound Controller 7"
+msgstr ""
+
+#: midi.cpp:543
+msgid "Sound Controller 8"
+msgstr ""
+
+#: midi.cpp:545
+msgid "Sound Controller 9"
+msgstr ""
+
+#: midi.cpp:547
+msgid "Sound Controller 10"
+msgstr ""
+
+#: midi.cpp:552
+msgid "General Purpose Controller"
+msgstr ""
+
+#: midi.cpp:554
+msgid "Portamento Control"
+msgstr ""
+
+#: midi.cpp:563
+msgid "Effects 1 Depth"
+msgstr ""
+
+#: midi.cpp:565
+msgid "Effects 2 Depth"
+msgstr ""
+
+#: midi.cpp:567
+msgid "Effects 3 Depth"
+msgstr ""
+
+#: midi.cpp:569
+msgid "Effects 4 Depth"
+msgstr ""
+
+#: midi.cpp:571
+msgid "Effects 5 Depth"
+msgstr ""
+
+#: midi.cpp:573
+msgid "Data Increment RPN/NRPN"
+msgstr ""
+
+#: midi.cpp:575
+msgid "Data Decrement RPN/NRPN"
+msgstr ""
+
+#: midi.cpp:577
+msgid "NRPN LSB"
+msgstr ""
+
+#: midi.cpp:579
+msgid "NRPN MSB"
+msgstr ""
+
+#: midi.cpp:581
+msgid "RPN LSB"
+msgstr ""
+
+#: midi.cpp:583
+msgid "RPN MSB"
+msgstr ""
+
+#: midi.cpp:604
+msgid "all sounds off"
+msgstr ""
+
+#: midi.cpp:606
+msgid "Controller Reset"
+msgstr ""
+
+#: midi.cpp:608
+msgid "Local Control on/off"
+msgstr ""
+
+#: midi.cpp:610
+msgid "all notes off"
+msgstr ""
+
+#: midi.cpp:612
+msgid "omni off"
+msgstr ""
+
+#: midi.cpp:614
+msgid "omni on"
+msgstr ""
+
+#: midi.cpp:616
+msgid "mono on / poly off"
+msgstr ""
+
+#: midi.cpp:618
+msgid "poly on / mono off"
+msgstr ""
 
 #. i18n: file: ui/setlist.ui:109
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
@@ -142,7 +487,8 @@ msgid "MIDI CC cleared for action %1"
 msgstr "MIDI CC für Aktion %1 gelöscht"
 
 #: performer.cpp:335
-msgid "MIDI CC %1 assigned to action %2"
+#, fuzzy
+msgid "MIDI CC %1 (%3) assigned to action %2"
 msgstr "MIDI CC %1 auf Aktion %2 zugewiesen"
 
 #: performer.cpp:382
@@ -157,91 +503,93 @@ msgstr "Neuer Song"
 msgid "Set up %1"
 msgstr "%1 einrichten"
 
-#: performer.cpp:463
+#: performer.cpp:464
 msgid "Okular KPart not found"
 msgstr "Okular KPart wurde nicht gefunden"
 
-#: performer.cpp:479
+#: performer.cpp:480
 msgid "Previous page"
 msgstr "Vorherige Seite"
 
-#: performer.cpp:479
+#: performer.cpp:480
 msgid "Next page"
 msgstr "Nächste Seite"
 
-#: performer.cpp:506
+#: performer.cpp:507
 msgid "Zoom"
 msgstr ""
 
-#: performer.cpp:542
+#: performer.cpp:543
 msgid "File"
 msgstr "Datei"
 
-#: performer.cpp:545
+#: performer.cpp:546
 msgid "&New"
 msgstr "&Neu"
 
-#: performer.cpp:552
+#: performer.cpp:553
 msgid "&Open"
 msgstr "&Öffnen"
 
-#: performer.cpp:559
+#: performer.cpp:560
 msgid "&Save"
 msgstr "&Speichern"
 
-#: performer.cpp:566
+#: performer.cpp:567
 msgid "&Save as"
 msgstr "&Speichern unter"
 
-#: performer.cpp:588
+#: performer.cpp:589
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: performer.cpp:591
+#: performer.cpp:592
 msgid "&Always on top"
 msgstr "Immer im &Vordergrund"
 
-#: performer.cpp:597
+#: performer.cpp:598
 msgid "&MIDI Program Changes"
 msgstr "&MIDI Programmwechsel"
 
-#: performer.cpp:598
+#: performer.cpp:599
 msgid "If activated, the setlist will react to MIDI Program Change messages."
 msgstr "Falls aktiviert, reagiert die Setliste auf MIDI Programmwechsel."
 
-#: performer.cpp:603
+#: performer.cpp:604
 msgid "&Hide Carla"
 msgstr "&Verstecke Carla"
 
-#: performer.cpp:604
+#: performer.cpp:605
 msgid "If activated, Carla instances will not be visible."
 msgstr "Falls aktiviert, sind Instanzen von Carla nicht sichtbar."
 
-#: performer.cpp:609
+#: performer.cpp:610
 msgid "Show &MIDI controls"
 msgstr "Zeige &MIDI-Steuerung"
 
-#: performer.cpp:610
+#: performer.cpp:611
 msgid "If activated, a MIDI controls configuration view will be visible."
-msgstr "Falls aktiviert, ist die Konfigurationsansicht für die MIDI-Steuerung sichtbar."
+msgstr ""
+"Falls aktiviert, ist die Konfigurationsansicht für die MIDI-Steuerung "
+"sichtbar."
 
-#: performer.cpp:628
+#: performer.cpp:629
 msgid "Performer Toolbar"
 msgstr "Performer-Werkzeugleiste"
 
-#: performer.cpp:641
+#: performer.cpp:642
 msgid "Scroll vertical"
 msgstr "Vertikal scrollen"
 
-#: performer.cpp:645
+#: performer.cpp:646
 msgid "Scroll horizontal"
 msgstr "Horizontal scrollen"
 
-#: performer.cpp:786
+#: performer.cpp:787
 msgid "Setlists (*.pfm)"
 msgstr "Setlisten (*.pfm)"
 
-#: performer.cpp:854
+#: performer.cpp:855
 msgid "Save File As..."
 msgstr "Speichern unter..."
 
