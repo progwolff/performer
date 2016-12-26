@@ -19,5 +19,11 @@ inline QString i18n (const char *text, T param, S param2)
 {
     return QObject::tr(text).arg(param).arg(param2);
 }
+
+template<typename T,typename S,typename Q>
+inline QString i18n (const char *text, T param, S param2, Q param3)
+{
+    return QObject::tr(text).arg(param).arg(param2).arg(param3);
+}
 #endif
 #endif
