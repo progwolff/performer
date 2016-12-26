@@ -49,6 +49,17 @@ In cmd.exe with admin privileges:
 cmake --build . --target install
 ```
 
+### Android [Experimental]
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake -DANDROID_TOOLCHAIN_ROOT=arm-linux-androideabi -DANDROID_ABI="armeabi-v7a" -DCMAKE_FIND_ROOT_PATH="/opt/android-qt5;/opt/android-qt5/5.7.0/armeabi-v7a/lib/cmake/Qt5" -DANDROID_TOOLCHAIN_NAME=arm-linux-androideabi-4.9 -DANDROID_TOOLCHAIN_MACHINE_NAME=arm-linux-androideabi -DANDROID_COMPILER_VERSION=4.9 -DWITH_JACK=0 ..
+cmake --build .
+```
+
+Install the apk in src/bin/ to your android device.
+
 ## Usage
 Start Performer.
 
