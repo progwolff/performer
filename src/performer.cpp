@@ -459,7 +459,7 @@ void Performer::prepareUi()
 #ifdef WITH_KPARTS
     m_viewer = new OkularDocumentViewer(this);
     
-    if(!((OkularDocumentViewer*)m_viewer)->part())
+    if(!static_cast<OkularDocumentViewer*>(m_viewer)->part())
     {
         KMessageBox::error(this, i18n("Okular KPart not found"));
         setupGUI(ToolBar | Keys | StatusBar | Save);
@@ -473,9 +473,9 @@ void Performer::prepareUi()
         setCentralWidget(m_viewer->widget());
         setupGUI(ToolBar | Keys | StatusBar | Save);
         // and integrate the part's GUI with the shell's
-        createGUI(((OkularDocumentViewer*)m_viewer)->part());
+        createGUI(static_cast<OkularDocumentViewer*>(m_viewer)->part());
         
-        QList<QToolButton*> buttons = ((OkularDocumentViewer*)m_viewer)->pageButtons();
+        QList<QToolButton*> buttons = static_cast<OkularDocumentViewer*>(m_viewer)->pageButtons();
         
         QStringList text = {i18n("Previous page"), i18n("Next page")};
         QStringList name = {"PreviousPage", "NextPage"};
@@ -511,7 +511,7 @@ void Performer::prepareUi()
         QMenu *helpmenu = findChild<QMenu*>("help");
         if(helpmenu)
         {
-            helpmenu->addAction(((OkularDocumentViewer*)m_viewer)->part()->actionCollection()->action("help_about_backend"));
+            helpmenu->addAction(static_cast<OkularDocumentViewer*>(m_viewer)->part()->actionCollection()->action("help_about_backend"));
         }
 
     }

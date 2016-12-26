@@ -227,15 +227,15 @@ void MIDI::trigger(unsigned char cc, unsigned char val)
             for(QWidget *widget : action->associatedWidgets())
                 if(widget->inherits("QToolButton"))
                 {
-                    ((QToolButton*)widget)->emit clicked();
-                    ((QToolButton*)widget)->setDown(true);
+                    static_cast<QToolButton*>(widget)->emit clicked();
+                    static_cast<QToolButton*>(widget)->setDown(true);
                 }
         }
         if(dec)
         {
             for(QWidget *widget : action->associatedWidgets())
                 if(widget->inherits("QToolButton"))
-                    ((QToolButton*)widget)->setDown(false);
+                    static_cast<QToolButton*>(widget)->setDown(false);
         }
     }
     else if(action)

@@ -483,7 +483,7 @@ void CarlaPatchBackend::preload()
                 else 
                     emit progress(PROCESS_ERROR);
             }
-            qDebug() << ((QProcess*)QObject::sender())->readAllStandardError();
+            qDebug() << static_cast<QProcess*>(QObject::sender())->readAllStandardError();
             QObject::sender()->deleteLater();
         });
         

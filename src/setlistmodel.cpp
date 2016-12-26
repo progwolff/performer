@@ -460,8 +460,8 @@ void SetlistModel::updateProgress(int p)
                 else
 #endif
                 {
-                    ((QTimer*)QObject::sender())->stop();
-                    ((QTimer*)QObject::sender())->deleteLater();
+                    static_cast<QTimer*>(QObject::sender())->stop();
+                    static_cast<QTimer*>(QObject::sender())->deleteLater();
                     delete secondsleft;
                     panic();
                 }
