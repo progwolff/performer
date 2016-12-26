@@ -12,17 +12,9 @@
 #include "fallback.h"
 #endif
 
-#include <QTimer>
-
 MIDI::MIDI(QObject* parent)
 : QAbstractTableModel(parent)
 {
-    QTimer *timer = new QTimer(this);
-    timer->setInterval(1000);
-    connect(timer, &QTimer::timeout , this, [this](){
-        emit dataChanged(index(0,0), index(0,0));
-    });
-    timer->start();
 }
 
 QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString& name, QObject* parent)
