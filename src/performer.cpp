@@ -59,7 +59,6 @@ Performer::Performer(QWidget *parent) :
     QMainWindow(parent)
 #endif
     ,m_setlist(new Ui::Setlist)
-    ,midi_learn_action(nullptr)
     ,pageView(nullptr)
     ,m_viewer(nullptr)
     ,alwaysontop(false)
@@ -145,6 +144,10 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->setListView, SIGNAL(clicked(QModelIndex)), SLOT(songSelected(QModelIndex)));
 
     connect(model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), this, SLOT(receiveMidiEvent(unsigned char,unsigned char,unsigned char)));
+    connect(model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), midi, SLOT(message(unsigned char,unsigned char,unsigned char)));
+    
+    connect(midi, SIGNAL(status(const QString&)), this, SLOT(info(const QString&)));
+    
     connect(model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
     connect(model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
     
@@ -274,74 +277,10 @@ void Performer::showContextMenu(QPoint pos)
     }
 }
 
-void Performer::midiContextMenuRequested(const QPoint& pos)
-{
-    if(QObject::sender()->inherits("QToolButton") || QObject::sender()->inherits("QScrollBar") || QObject::sender()->inherits("QComboBox"))
-    {
-        QWidget *sender = (QWidget*)QObject::sender();
-        if(sender)
-        {
-            QPoint globalPos = sender->mapToGlobal(pos);
-            QMenu myMenu;
-            QAction *action;
-            
-            unsigned int cc = midi->cc(sender->actions()[0]);
-            
-            if(cc <= 127)
-            {
-                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc), this, [](){});
-                action->setEnabled(false);
-                myMenu.addSeparator();
-            }
-            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"), this, [sender,this](){midiClear(sender->actions()[0]); midiLearn(sender->actions()[0]);});
-            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"), this, [sender,this](){midiClear(sender->actions()[0]);});
-            if(cc > 127) 
-                action->setEnabled(false);
-            
-            // Show context menu at handling position
-            myMenu.exec(globalPos);
-        }
-    }
-    else
-        qDebug() << "MIDI context menu not implemented for this type of object.";
-}
-
-
-void Performer::midiLearn(QAction* action)
-{
-    if(!action)
-        return;
-    
-    midi_learn_action = action;
-    statusBar()->showMessage(i18n("Learning MIDI CC for action %1", action->text()));
-}
-
-void Performer::midiClear(QAction* action)
-{
-    midi->resetCc(action);
-    statusBar()->showMessage(i18n("MIDI CC cleared for action %1", action->text()), 2000);
-}
-
 void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsigned char data2)
 {
-    
-    if(IS_MIDICC(status))
-    {
-        
-        //qDebug() << "received MIDI event" << QString::number(status) << QString::number(data1) << QString::number(data2);
-        if(midi_learn_action)
-        {
-            midi->setCc(midi_learn_action, data1);
-            statusBar()->showMessage(i18n("MIDI CC %1 (%3) assigned to action %2", QString::number(data1), midi_learn_action->text(), midi->description(data1)), 2000);
-            midi_learn_action = nullptr;
-            midi->setValue(data1, data2);
-        }
-        else
-        {
-            midi->trigger(data1, data2);
-        }
-    }
-    else if(IS_MIDIPC(status))
+    Q_UNUSED(data2)
+    if(IS_MIDIPC(status))
     {
         if(handleProgramChange)
         {
@@ -490,20 +429,15 @@ void Performer::prepareUi()
             qDebug() << "found okularToolBar";
             for(QToolButton* button : okularToolBar->findChildren<QToolButton*>())
             {
-                qDebug() << "found a toolbutton";
-                for(QAction* action : button->actions())
+                if(button->defaultAction())
                 {
-                    midi->addAction(action);
-                    action->setData("button");
+                    midi->setLearnable(button);
+                    connect(button, SIGNAL(clicked(bool)), button->defaultAction(), SLOT(trigger()));
                 }
-                
-                button->setContextMenuPolicy(Qt::CustomContextMenu);
-                connect(button, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(midiContextMenuRequested(const QPoint&)));
             }
             QComboBox* box = okularToolBar->findChild<QComboBox*>();
             if(box)
             {
-                qDebug() << "found a combobox";
                 midi->setLearnable(box, i18n("Zoom"), "zoom", this);
             }
         }

@@ -15,6 +15,7 @@
 #include <QAbstractTableModel>
 #include <QList>
 #include <QAction>
+#include <QToolButton>
 
 
 class MIDI : public QAbstractTableModel
@@ -46,12 +47,21 @@ public:
      * Adds midi learn functionality to a QWidget.\n
      * On right click on the widget a midi learn context menu will be shown.\n
      * Once learned, a MIDI CC message will trigger the default action of the widget.
-     * @param parent the parent object of the new action. This Object should implement the slot midiContextMenuRequested(const QPoint&).
+     * @param parent the parent object of the new action.
      * @param widget the widget to add midi learn functionality to
      * @param name a locale independent identifier of the corresponding action
      * @param text a human readable (possibly localized) identifier of the corresponding action
+     * @return a new action of parent that is assigned to widget. This action is added to the list of learnable actions and can be triggered with 
      */
     QAction* setLearnable(QWidget* widget, const QString& text, const QString& name, QObject* parent = nullptr);
+    
+    /**
+     * Adds midi learn functionality to a QToolButton using the current defaultAction of this button.\n
+     * On right click on the widget a midi learn context menu will be shown.\n
+     * Once learned, a MIDI CC message will trigger the default action of the widget.
+     * @param widget the widget to add midi learn functionality to
+     */
+    void setLearnable(QToolButton* widget);
     
     /**
      * Adds a QAction to the list of learnable actions
@@ -169,10 +179,35 @@ public slots:
      */
     void fixRange(unsigned char cc);
     
+    /**
+     * Process a MIDI message. Connect this slot to a MIDI signal source that should be used to learn and trigger MIDI events.
+     * @param status status byte of a MIDI message
+     * @param data1 first data byte of a MIDI message
+     * @param data2 second data byte of a MIDI message
+     */
+    void message(unsigned char status, unsigned char data1, unsigned char data2);
+    
+    /**
+     * Start learning a MIDI CC for a given action. 
+     * @param action the action to learn a MIDI CC for. The next CC received through the message slot will be assigned to this action.
+     */
+    void learn(QAction* action);
+    
+signals:
+    /**
+     * A status message regarding MIDI learn or trigger events
+     * @param msg a status message
+     */
+    void status(const QString& msg);
+    
+private slots:
+    void midiContextMenuRequested(const QPoint& pos);
+    
 private:
     
     QMap<unsigned char, Parameter> m_params;
     QList<QAction*> m_actions;
+    QAction *m_learn;
 };
 
 

@@ -83,7 +83,6 @@ public slots:
     
 private slots:
     void showContextMenu(QPoint);
-    void midiContextMenuRequested(const QPoint& pos);
     void addSong();
     void songSelected(const QModelIndex&);
     void updateSelected();
@@ -95,9 +94,6 @@ private slots:
     void loadFile();
     
     void receiveMidiEvent(unsigned char status, unsigned char data1, unsigned char data2);
-    
-    void midiLearn(QAction* action);
-    void midiClear(QAction* action);
     
     void error(const QString& message);
     void info(const QString& message);
@@ -120,7 +116,6 @@ private:
     QDockWidget *m_dock;
     QDockWidget *m_midiDock;
     
-    QAction* midi_learn_action;
     MIDI *midi;
     
     SetlistModel *model;
