@@ -58,9 +58,11 @@ jack_client_t *CarlaPatchBackend::jackClient()
     {
         qDebug() << "creating jack client";
         jack_status_t status;
+        
         try_run(2000,[&status](){
             m_client = jack_client_open("Performer", JackNoStartServer, &status, NULL);
         }, "jack_client_open");
+        
         if (m_client == NULL) {
             if (status & JackServerFailed) {
                 fprintf (stderr, "JACK server not running\n");
@@ -141,6 +143,7 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
             jack_free(conmem);
         }
     }, "connections()");
+    
     #endif
     return ret;
 }
@@ -174,6 +177,7 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
             }
         }
     },"connections(QMap) 2");
+    
     #endif
 }
 
@@ -185,9 +189,6 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
     const char *name_a,*name_b;
     name_a = jack_port_name(jack_port_by_id(m_client, a));
     name_b = jack_port_name(jack_port_by_id(m_client, b));
-    
-    
-    qDebug() << ((connect)?"connecting":"disconnecting") << a << name_a << b << name_b;
     
     if(!name_a || !name_b)
         return;
@@ -204,7 +205,6 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
 void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
 {
     activeBackendLock.lockForRead();
-    
     
     if(activeBackend)
     {
@@ -435,7 +435,8 @@ void CarlaPatchBackend::preload()
         execLock.lockForWrite();
         exec->setEnvironment(env);
         execLock.unlock();
-        connect(exec, static_cast<void (QProcess::*)(int,QProcess::ExitStatus)>(&QProcess::finished), this, [this]()
+        
+        std::function<void()> exithandler =  [this]()
         {
             execLock.lockForRead();
             QProcess *p = exec;
@@ -456,8 +457,10 @@ void CarlaPatchBackend::preload()
                 emit progress(PROCESS_EXIT);
             }
             QObject::sender()->deleteLater();
-        });
-        connect(exec, &QProcess::errorOccurred, this, [this](QProcess::ProcessError err)
+        };
+        connect(exec, static_cast<void (QProcess::*)(int,QProcess::ExitStatus)>(&QProcess::finished), this, exithandler);
+        
+        std::function<void(QProcess::ProcessError)> errorhandler = [this](QProcess::ProcessError err)
         {
             execLock.lockForRead();
             QProcess *p = exec;
@@ -485,7 +488,8 @@ void CarlaPatchBackend::preload()
             }
             qDebug() << static_cast<QProcess*>(QObject::sender())->readAllStandardError();
             QObject::sender()->deleteLater();
-        });
+        };
+        connect(exec, &QProcess::errorOccurred, this, errorhandler);
         
         QString carlaPath = QStandardPaths::findExecutable("carla-patchbay");
         if(carlaPath.isEmpty())
@@ -494,8 +498,7 @@ void CarlaPatchBackend::preload()
             carlaPath = QStandardPaths::findExecutable("Carla");
         if (carlaPath.isEmpty())
             carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla");
-        qDebug() << "searching in PATH and " + QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla";
-        qDebug() << "carlaPath: " << carlaPath;
+        
         if (carlaPath.isEmpty())
             emit progress(PROCESS_FAILEDTOSTART);
         else
@@ -638,6 +641,7 @@ void CarlaPatchBackend::deactivate()
 const QStringList CarlaPatchBackend::jackClients()
 {
     QStringList ret;
+    
     if(!try_run(500,[&ret](){
         const char **portlist = jack_get_ports(m_client, NULL, NULL, 0);
         const char **ports = portlist;
