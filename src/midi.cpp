@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QMenu>
 #include <QApplication>
+#include <QGraphicsEffect>
 
 #ifdef WITH_KF5
 #include <KLocalizedString>
@@ -410,6 +411,94 @@ Qt::ItemFlags MIDI::flags(const QModelIndex& index) const
     return 0;
 }
 
+void MIDI::midiContextMenuRequested(const QPoint& pos)
+{
+    if(QObject::sender()->inherits("QToolButton") || QObject::sender()->inherits("QScrollBar") || QObject::sender()->inherits("QComboBox"))
+    {
+        QWidget *sender = (QWidget*)QObject::sender();
+        if(sender)
+        {
+            QPoint globalPos = sender->mapToGlobal(pos);
+            QMenu myMenu;
+            QAction *action;
+            
+            unsigned int cc = this->cc(sender->actions()[0]);
+            
+            if(cc <= 127)
+            {
+                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc), this, [](){});
+                action->setEnabled(false);
+                myMenu.addSeparator();
+            }
+            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"), this, [sender,this](){
+                resetCc(sender->actions()[0]); 
+                learn(sender->actions()[0]);
+                emit status(i18n("Learning MIDI CC for action %1", sender->actions()[0]->text()));
+            });
+            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"), this, [sender,this](){
+                resetCc(sender->actions()[0]);
+                emit status(i18n("MIDI CC cleared for action %1", sender->actions()[0]->text()));
+            });
+            if(cc > 127) 
+                action->setEnabled(false);
+            
+            // Show context menu at handling position
+            myMenu.exec(globalPos);
+        }
+    }
+    else
+        qDebug() << "MIDI context menu not implemented for this type of object.";
+}
+
+void MIDI::learn(QAction* action)
+{
+    if(!action)
+        return;
+    
+    visualizeMidiLearn(action);
+    
+    m_learn = action;
+}
+
+void MIDI::visualizeMidiLearn(QAction *action)
+{
+    if(m_learn)
+    for(QWidget* widget : m_learn->associatedWidgets())
+    {
+        widget->setGraphicsEffect(nullptr);
+    }
+    
+    if(action)
+    for(QWidget* widget : action->associatedWidgets())
+    {
+        QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
+        effect->setColor(QApplication::palette().color(QPalette::Highlight));
+        widget->setGraphicsEffect(effect);
+    }
+}
+
+void MIDI::message(unsigned char status, unsigned char data1, unsigned char data2)
+{
+    
+    if(IS_MIDICC(status))
+    {
+        
+        //qDebug() << "received MIDI event" << QString::number(status) << QString::number(data1) << QString::number(data2);
+        if(m_learn)
+        {
+            setCc(m_learn, data1);
+            emit this->status(i18n("MIDI CC %1 (%3) assigned to action %2", QString::number(data1), m_learn->text(), description(data1)));
+            visualizeMidiLearn();
+            m_learn = nullptr;
+            setValue(data1, data2);
+        }
+        else
+        {
+            trigger(data1, data2);
+        }
+    }
+}
+
 QString MIDI::description(unsigned char cc)
 {
     switch(cc) {
@@ -637,69 +726,3 @@ QString MIDI::description(unsigned char cc)
     }
 }
 
-void MIDI::midiContextMenuRequested(const QPoint& pos)
-{
-    if(QObject::sender()->inherits("QToolButton") || QObject::sender()->inherits("QScrollBar") || QObject::sender()->inherits("QComboBox"))
-    {
-        QWidget *sender = (QWidget*)QObject::sender();
-        if(sender)
-        {
-            QPoint globalPos = sender->mapToGlobal(pos);
-            QMenu myMenu;
-            QAction *action;
-            
-            unsigned int cc = this->cc(sender->actions()[0]);
-            
-            if(cc <= 127)
-            {
-                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc), this, [](){});
-                action->setEnabled(false);
-                myMenu.addSeparator();
-            }
-            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"), this, [sender,this](){
-                resetCc(sender->actions()[0]); learn(sender->actions()[0]);
-                emit status(i18n("Learning MIDI CC for action %1", sender->actions()[0]->text()));
-            });
-            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"), this, [sender,this](){
-                resetCc(sender->actions()[0]);
-                emit status(i18n("MIDI CC cleared for action %1", sender->actions()[0]->text()));
-            });
-            if(cc > 127) 
-                action->setEnabled(false);
-            
-            // Show context menu at handling position
-            myMenu.exec(globalPos);
-        }
-    }
-    else
-        qDebug() << "MIDI context menu not implemented for this type of object.";
-}
-
-void MIDI::learn(QAction* action)
-{
-    if(!action)
-        return;
-    
-    m_learn = action;
-}
-
-void MIDI::message(unsigned char status, unsigned char data1, unsigned char data2)
-{
-    
-    if(IS_MIDICC(status))
-    {
-        
-        //qDebug() << "received MIDI event" << QString::number(status) << QString::number(data1) << QString::number(data2);
-        if(m_learn)
-        {
-            setCc(m_learn, data1);
-            emit this->status(i18n("MIDI CC %1 (%3) assigned to action %2", QString::number(data1), m_learn->text(), description(data1)));
-            m_learn = nullptr;
-            setValue(data1, data2);
-        }
-        else
-        {
-            trigger(data1, data2);
-        }
-    }
-}

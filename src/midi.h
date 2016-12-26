@@ -203,6 +203,8 @@ signals:
 private slots:
     void midiContextMenuRequested(const QPoint& pos);
     
+    void visualizeMidiLearn(QAction* action = nullptr);
+    
 private:
     
     QMap<unsigned char, Parameter> m_params;
