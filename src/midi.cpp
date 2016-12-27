@@ -471,6 +471,8 @@ void MIDI::visualizeMidiLearn(QAction *action)
     if(action)
     for(QWidget* widget : action->associatedWidgets())
     {
+        if(action->data() == "button" && !widget->inherits("QToolButton"))
+            continue;
         QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect();
         effect->setColor(QApplication::palette().color(QPalette::Highlight));
         widget->setGraphicsEffect(effect);
