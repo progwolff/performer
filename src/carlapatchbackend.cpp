@@ -432,6 +432,7 @@ void CarlaPatchBackend::preload()
         }
         
         QStringList env = QProcess::systemEnvironment();
+        env << "CARLA_DONT_MANAGE_CONNECTIONS=1";
         execLock.lockForWrite();
         exec->setEnvironment(env);
         execLock.unlock();
