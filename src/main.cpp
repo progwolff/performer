@@ -76,8 +76,10 @@ int main (int argc, char *argv[])
     
     int exit = app.exec();
     
-    //delete window;
-    
+#ifndef WITH_KF5
+    delete window;
+#endif    
+  
     return exit;
 }
 

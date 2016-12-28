@@ -634,18 +634,20 @@ void Performer::loadConfig()
     m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
     qDebug() << m_setlist->patchrequester->startDir();
     
-    for(QString actionstr: config->group("midi").keyList())
+    for(QString actionstr: config->group("midi").groupList())
     {
-        QStringList val = config->group("midi").readEntry(actionstr, QString()).split(',');
-        if(val.size() > 2)
         for(QAction* action : midi->actions())
         {
             if(actionstr == action->objectName())
             {
-                midi->setCc(action, val[0].toInt());
-                midi->setMin(val[0].toInt(), val[1].toInt());
-                midi->setMax(val[0].toInt(), val[2].toInt());
-                midi->fixRange(val[0].toInt());
+                int cc = config->group("midi").group(actionstr).readEntry("cc", 128);
+                if(cc < 128)
+                {
+                    midi->setCc(action, cc);
+                    midi->setMin(cc, config->group("midi").group(actionstr).readEntry("min", 0));
+                    midi->setMax(cc, config->group("midi").group(actionstr).readEntry("max", 127));
+                    midi->fixRange(cc);
+                }
             }
         }
     }
@@ -673,19 +675,23 @@ void Performer::loadConfig()
     config.endGroup();
     
     config.beginGroup("midi");
-    for(QString actionstr: config.allKeys())
+    for(QString actionstr: config.childGroups())
     {
-        QStringList val = config.value(actionstr, QString()).toString().split(',');
-        if(val.size() > 2)
+        config.beginGroup(actionstr);
         for(QAction* action : midi->actions())
         {
             if(actionstr == action->objectName())
             {
-                midi->setCc(action, val[0].toInt());
-                midi->setMin(val[0].toInt(), val[1].toInt());
-                midi->setMax(val[0].toInt(), val[2].toInt());
+                int cc = config.value("cc", 128).toInt();
+                if(cc < 128)
+                {
+                    midi->setCc(action, cc);
+                    midi->setMin(cc, config.value("min", 0).toInt());
+                    midi->setMax(cc, config.value("max", 127).toInt());
+                }
             }
         }
+        config.endGroup();
     }
     config.endGroup();
     
@@ -709,6 +715,86 @@ void Performer::loadConfig()
     hideBackend = config.value("hidebackend",true).toBool();
     config.endGroup();
 #endif
+}
+
+void Performer::saveConfig()
+{
+    QVariantMap args;
+    
+    
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+#ifdef WITH_KF5
+    KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
+    
+    config->deleteGroup("midi");
+    for(QAction* action: midi->actions())
+    {
+        if(midi->cc(action) <= 127)
+        {
+            config->group("midi").group(action->objectName()).writeEntry("cc",QString::number(midi->cc(action)));
+            config->group("midi").group(action->objectName()).writeEntry("min",QString::number(midi->min(midi->cc(action))));
+            config->group("midi").group(action->objectName()).writeEntry("max",QString::number(midi->max(midi->cc(action))));
+        }
+    }
+    
+    config->deleteGroup("connections");
+    for(QString& port : model->connections().keys())
+        config->group("connections").writeEntry(port, model->connections()[port].join(','));
+    
+    config->group("paths").writeEntry("notes", notesdefaultpath);
+    config->group("paths").writeEntry("patch", patchdefaultpath);
+    
+    config->group("window").writeEntry("alwaysontop", alwaysontop);
+    config->group("window").writeEntry("showmidi", showMIDI);
+    config->group("setlist").writeEntry("programchange", handleProgramChange);
+    config->group("setlist").writeEntry("hidebackend", hideBackend); 
+       
+    config->sync();
+
+#else
+    QSettings config(dir+"/performer.conf", QSettings::IniFormat);
+    
+    config.remove("midi");
+    config.beginGroup("midi");
+    for(QAction *action : midi->actions())
+    {
+        if(midi->cc(action) <= 127)
+        {
+            config.beginGroup(action->objectName());
+            config.setValue("cc",QString::number(midi->cc(action)));
+            config.setValue("min",QString::number(midi->min(midi->cc(action))));
+            config.setValue("max",QString::number(midi->max(midi->cc(action))));
+            config.endGroup();
+        }
+    }
+    config.endGroup();
+    
+    config.remove("connections");
+    config.beginGroup("connections");
+    for(QString& port : model->connections().keys())
+        config.setValue(port, model->connections()[port].join(','));
+    config.endGroup();
+    
+    config.beginGroup("paths");
+    config.setValue("notes", notesdefaultpath);
+    config.setValue("patch", patchdefaultpath);
+    config.endGroup();
+    
+    config.beginGroup("window");
+    config.setValue("alwaysontop", alwaysontop);
+    config.setValue("showmidi", showMIDI);
+    config.endGroup();   
+    
+    config.beginGroup("setlist");
+    config.setValue("programchange", handleProgramChange);
+    config.setValue("hidebackend", hideBackend);
+    config.endGroup();   
+    
+    qDebug() << "saving";
+    
+    config.sync();
+#endif
+    loadConfig();
 }
 
 void Performer::defaults()
@@ -839,79 +925,6 @@ void Performer::saveFile(const QString& path)
     set.sync();
 #endif
     
-}
-
-void Performer::saveConfig()
-{
-    QVariantMap args;
-    
-    
-    QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-#ifdef WITH_KF5
-    KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
-    
-    config->deleteGroup("midi");
-    for(QAction* action: midi->actions())
-    {
-        if(midi->cc(action) <= 127)
-            config->group("midi").writeEntry( 
-                action->objectName(),
-                QString::number(midi->cc(action))+","+QString::number(midi->min(midi->cc(action)))+","+QString::number(midi->max(midi->cc(action)))
-            );
-    }
-    
-    config->deleteGroup("connections");
-    for(QString& port : model->connections().keys())
-        config->group("connections").writeEntry(port, model->connections()[port].join(','));
-    
-    config->group("paths").writeEntry("notes", notesdefaultpath);
-    config->group("paths").writeEntry("patch", patchdefaultpath);
-    
-    config->group("window").writeEntry("alwaysontop", alwaysontop);
-    config->group("window").writeEntry("showmidi", showMIDI);
-    config->group("setlist").writeEntry("programchange", handleProgramChange);
-    config->group("setlist").writeEntry("hidebackend", hideBackend); 
-       
-    config->sync();
-
-#else
-    QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
-    
-    config.beginGroup("midi");
-    for(QAction *action : midi->actions())
-    {
-        if(midi->cc(action) <= 127)
-            config.setValue(
-                action->objectName(),
-                QString::number(midi->cc(action))+","+QString::number(midi->min(midi->cc(action)))+","+QString::number(midi->max(midi->cc(action)))
-            );
-    }
-    config.endGroup();
-    
-    config.remove("connections");
-    config.beginGroup("connections");
-    for(QString& port : model->connections().keys())
-        config.setValue(port, model->connections()[port].join(','));
-    config.endGroup();
-    
-    config.beginGroup("paths");
-    config.setValue("notes", notesdefaultpath);
-    config.setValue("patch", patchdefaultpath);
-    config.endGroup();
-    
-    config.beginGroup("window");
-    config.setValue("alwaysontop", alwaysontop);
-    config.setValue("showmidi", showMIDI);
-    config.endGroup();   
-    
-    config.beginGroup("setlist");
-    config.setValue("programchange", handleProgramChange);
-    config.setValue("hidebackend", hideBackend);
-    config.endGroup();   
-    
-    config.sync();
-#endif
-    loadConfig();
 }
 
 #ifndef WITH_KF5
