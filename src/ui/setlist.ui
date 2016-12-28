@@ -167,13 +167,20 @@
        </property>
        <item row="0" column="0">
         <widget class="QCheckBox" name="preloadBox">
+         <property name="toolTip">
+          <string>Preload the song. If disabled, the song will only be loaded if it is active.</string>
+         </property>
          <property name="text">
           <string>Preload</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="nameEdit"/>
+        <widget class="QLineEdit" name="nameEdit">
+         <property name="toolTip">
+          <string>Name of the song</string>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label">
@@ -184,6 +191,9 @@
        </item>
        <item row="1" column="1">
         <widget class="KUrlRequester" name="patchrequester">
+         <property name="toolTip">
+          <string>Carla patch for the song</string>
+         </property>
          <property name="filter">
           <string notr="true">*.carxp</string>
          </property>
@@ -201,6 +211,9 @@
        </item>
        <item row="2" column="1">
         <widget class="KUrlRequester" name="notesrequester">
+         <property name="toolTip">
+          <string>Notes or chords for the song</string>
+         </property>
          <property name="filter">
           <string/>
          </property>

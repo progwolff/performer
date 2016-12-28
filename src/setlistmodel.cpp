@@ -118,6 +118,8 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     const SetlistMetadata metadata = m_setlist[index.row()];
+    
+    QString tooltip;
 
     switch(role) {
     case Qt::DisplayRole:
@@ -171,6 +173,49 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
         }
         return QBrush(gradient);
     }
+    case Qt::ToolTipRole:
+        if(index.row()==activeindex)
+            tooltip = "Active Song. ";
+        switch(metadata.progress())
+        {
+            case AbstractPatchBackend::JACK_NO_SERVER:
+                tooltip += i18n("Could not find a running jack server. Can't load Carla patches.");
+                break;
+            case AbstractPatchBackend::JACK_OPEN_FAILED:
+                tooltip += i18n("Could not create a client on the existing jack server. Can't load Carla patches.");
+                break;
+            case AbstractPatchBackend::PROCESS_FAILEDTOSTART:
+                tooltip += i18n("Carla failed to start.");
+                break;
+            case AbstractPatchBackend::PROCESS_ERROR:
+                tooltip += i18n("Carla crashed.");
+                break;
+            case AbstractPatchBackend::PROCESS_EXIT: 
+                tooltip += i18n("Carla has been terminated.");
+                break;
+            case AbstractPatchBackend::PROGRESS_NONE: 
+                tooltip += "";
+                break;
+            case AbstractPatchBackend::PROGRESS_CREATE:
+                tooltip += i18n("Waiting for other songs to start up...");
+                break;
+            case AbstractPatchBackend::PROGRESS_PRELOAD:
+                tooltip += i18n("Starting Carla process...");
+                break;
+            case AbstractPatchBackend::PROGRESS_ACTIVE:
+                tooltip += i18n("Starting Carla JACK client...");
+                break;
+            case AbstractPatchBackend::PROGRESS_LOADED:
+                tooltip += i18n("Loading plugins...");
+                break;
+            case AbstractPatchBackend::PROGRESS_READY:
+                tooltip += i18n("Ready to play.");
+                break;
+            default:
+                tooltip += "";
+                break;
+        }
+        return tooltip;
     case SetlistModel::NameRole:
         return metadata.name();
     case SetlistModel::PatchRole:

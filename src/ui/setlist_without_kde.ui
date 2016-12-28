@@ -167,6 +167,9 @@
        </property>
        <item row="0" column="0">
         <widget class="QCheckBox" name="preloadBox">
+         <property name="toolTip">
+          <string>Preload the song. If disabled, the song will only be loaded if it is active.</string>
+         </property>
          <property name="text">
           <string>Preload</string>
          </property>
@@ -192,6 +195,9 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Carla patch for the song</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
@@ -241,6 +247,9 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>Notes or chords for the song</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
