@@ -525,8 +525,9 @@ void CarlaPatchBackend::preload()
                 if (stdoutstr.contains("loaded sucessfully!"))
                 {
                     emit progress(PROGRESS_LOADED);
+                    emit progress(PROGRESS_READY); //TODO: find a way to get the state of plugins loaded by Carla
                 }
-                if (stdoutstr.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully
+                if (stdoutstr.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully, broken with latest Carla version
                     emit progress(PROGRESS_READY);
                 clientNameLock.lockForRead();
                 QString name = clientName;
