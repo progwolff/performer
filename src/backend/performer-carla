@@ -12,4 +12,4 @@ fi
 
 INSTALL_PREFIX="/usr"
 export PATH="$INSTALL_PREFIX"/lib/carla:$PATH
-$PYTHON "$INSTALL_PREFIX"/share/carla/performer-carla --with-appname="$0" --with-libprefix="$INSTALL_PREFIX" "$@"
+exec $PYTHON "$INSTALL_PREFIX"/share/carla/performer-carla --with-appname="$0" --with-libprefix="$INSTALL_PREFIX" "$@"

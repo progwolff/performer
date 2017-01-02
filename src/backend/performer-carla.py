@@ -84,4 +84,4 @@ if __name__ == '__main__':
 
     app.exit_exec()
     
-
+    os.close()
