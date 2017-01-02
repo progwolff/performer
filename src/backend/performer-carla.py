@@ -68,13 +68,11 @@ if __name__ == '__main__':
     
     host.PluginAddedCallback.connect(handler.slot_pluginAdded)
 
+    loadHostSettings(host)    
     # -------------------------------------------------------------
     # Create GUI
     
     gui = HostWindow(host, True)
-    
-    
-    loadHostSettings(host)    
 
     # -------------------------------------------------------------
     # Show GUI
