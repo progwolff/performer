@@ -98,14 +98,14 @@ public:
     unsigned char value(unsigned char cc) const;
     
     /**
-     * Returns the minimum value in the range of a givven MIDI CC
+     * Returns the minimum value in the range of a given MIDI CC
      * @param cc the MIDI CC to get the minimum value of
      * @return the minimum value of the given CC
      */
     unsigned char minValue(unsigned char cc) const;
     
     /**
-     * Returns the maximum value in the range of a givven MIDI CC
+     * Returns the maximum value in the range of a given MIDI CC
      * @param cc the MIDI CC to get the maximum value of
      * @return the maximum value of the given CC
      */

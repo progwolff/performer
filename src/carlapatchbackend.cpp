@@ -420,17 +420,26 @@ void CarlaPatchBackend::preload()
         execLock.lockForWrite();
         exec = new QProcess(this);
         execLock.unlock();
-        QStringList pre = jackClients();
         QMap<QString,QString> preClients;
-        for(const QString& port : pre)
-        {
-            QString client = port.section(':', 0, 0).trimmed();
-            if(!client.isEmpty())
+        QStringList pre = jackClients();
+        if(!try_run(500,[&preClients,this,pre](){
+            QMap<QString,QString> tmpClients;
+            for(const QString& port : pre)
             {
-                char* uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
-                if(uuid)
-                    preClients[client] = QString::fromLatin1(uuid);
+                QString client = port.section(':', 0, 0).trimmed();
+                if(!client.isEmpty())
+                {
+                    char* uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                    if(uuid)
+                        tmpClients[client] = QString::fromLatin1(uuid);
+                }
             }
+            preClients = tmpClients;
+        }))
+        {
+            emit progress(JACK_OPEN_FAILED);
+            clientInitMutex.unlock();
+            return;
         }
         
         QStringList env = QProcess::systemEnvironment();
