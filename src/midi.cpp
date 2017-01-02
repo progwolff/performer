@@ -163,7 +163,7 @@ void MIDI::setValue(unsigned char cc, unsigned char value)
     emit dataChanged(index(m_actions.indexOf(action(cc)), ValueColumn), index(m_actions.indexOf(action(cc)), ValueColumn));
 }
 
-unsigned char MIDI::max(unsigned char cc) const
+unsigned char MIDI::maxValue(unsigned char cc) const
 {
     return m_params[cc].high;
 }
@@ -174,7 +174,7 @@ void MIDI::setMax(unsigned char cc, unsigned char max)
     emit dataChanged(index(m_actions.indexOf(action(cc)), HighColumn), index(m_actions.indexOf(action(cc)), HighColumn));
 }
 
-unsigned char MIDI::min(unsigned char cc) const
+unsigned char MIDI::minValue(unsigned char cc) const
 {
     return m_params[cc].low;
 }
@@ -199,7 +199,7 @@ void MIDI::trigger(unsigned char cc, unsigned char val)
 {
     QAction* action = MIDI::action(cc);
     
-    int range = max(cc) - min(cc);
+    int range = maxValue(cc) - minValue(cc);
     
     int value = val;
     
@@ -212,8 +212,8 @@ void MIDI::trigger(unsigned char cc, unsigned char val)
         
         if(range > 0)
         {
-            low_thresh = min(cc) + (1+range)/2 - ((range >= 4)?2:0);
-            high_thresh = min(cc) + (1+range)/2 + ((range >= 4)?2:0);
+            low_thresh = minValue(cc) + (1+range)/2 - ((range >= 4)?2:0);
+            high_thresh = minValue(cc) + (1+range)/2 + ((range >= 4)?2:0);
             outofrange = value < low_thresh || value >= high_thresh;
             inc = olddata2 < low_thresh && value >= high_thresh;
             dec = olddata2 >= high_thresh && value < low_thresh;
@@ -221,8 +221,8 @@ void MIDI::trigger(unsigned char cc, unsigned char val)
         else
         {
             range = -range;
-            low_thresh = max(cc) + (1+range)/2 - ((range >= 4)?2:0);
-            high_thresh = max(cc) + (1+range)/2 + ((range >= 4)?2:0);
+            low_thresh = maxValue(cc) + (1+range)/2 - ((range >= 4)?2:0);
+            high_thresh = maxValue(cc) + (1+range)/2 + ((range >= 4)?2:0);
             outofrange = value >= low_thresh || value < high_thresh;
             inc = olddata2 >= low_thresh && value < high_thresh;
             dec = olddata2 < high_thresh && value >= low_thresh;
@@ -257,15 +257,15 @@ void MIDI::trigger(unsigned char cc, unsigned char val)
     }
     else if(action)
     {
-        if(value > max(cc) && m_params[cc].autorange)
+        if(value > maxValue(cc) && m_params[cc].autorange)
             setMax(cc, value);
-        if(value < min(cc) && m_params[cc].autorange)
+        if(value < minValue(cc) && m_params[cc].autorange)
             setMin(cc, value);
         setValue(cc, value);
-        range = max(cc) - min(cc);
+        range = maxValue(cc) - minValue(cc);
         if(range != 0)
         {
-            action->setData((value-min(cc)) * 127/range);
+            action->setData((value-minValue(cc)) * 127/range);
             action->trigger();
         }
     }
@@ -309,10 +309,10 @@ QVariant MIDI::data(const QModelIndex& index, int role) const
                     return action->text().replace("&","");
                     break;
                 case LowColumn:
-                    return QString::number(min(cc));
+                    return QString::number(minValue(cc));
                     break;
                 case HighColumn:
-                    return QString::number(max(cc));
+                    return QString::number(maxValue(cc));
                     break;
             }  
             

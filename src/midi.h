@@ -102,14 +102,14 @@ public:
      * @param cc the MIDI CC to get the minimum value of
      * @return the minimum value of the given CC
      */
-    unsigned char min(unsigned char cc) const;
+    unsigned char minValue(unsigned char cc) const;
     
     /**
      * Returns the maximum value in the range of a givven MIDI CC
      * @param cc the MIDI CC to get the maximum value of
      * @return the maximum value of the given CC
      */
-    unsigned char max(unsigned char cc) const;
+    unsigned char maxValue(unsigned char cc) const;
     
     int rowCount(const QModelIndex& parent) const override;
 

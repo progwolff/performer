@@ -734,8 +734,8 @@ void Performer::saveConfig()
         if(midi->cc(action) <= 127)
         {
             config->group("midi").group(action->objectName()).writeEntry("cc",QString::number(midi->cc(action)));
-            config->group("midi").group(action->objectName()).writeEntry("min",QString::number(midi->min(midi->cc(action))));
-            config->group("midi").group(action->objectName()).writeEntry("max",QString::number(midi->max(midi->cc(action))));
+            config->group("midi").group(action->objectName()).writeEntry("min",QString::number(midi->minValue(midi->cc(action))));
+            config->group("midi").group(action->objectName()).writeEntry("max",QString::number(midi->maxValue(midi->cc(action))));
         }
     }
     
@@ -764,8 +764,8 @@ void Performer::saveConfig()
         {
             config.beginGroup(action->objectName());
             config.setValue("cc",QString::number(midi->cc(action)));
-            config.setValue("min",QString::number(midi->min(midi->cc(action))));
-            config.setValue("max",QString::number(midi->max(midi->cc(action))));
+            config.setValue("min",QString::number(midi->minValue(midi->cc(action))));
+            config.setValue("max",QString::number(midi->maxValue(midi->cc(action))));
             config.endGroup();
         }
     }
