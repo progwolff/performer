@@ -335,10 +335,12 @@ void CarlaPatchBackend::connectClient()
 void CarlaPatchBackend::disconnectClient(const QString& clientname)
 {
     QString name = clientname;
-    if(name.isEmpty() && execLock.tryLockForRead())
+    if(name.isEmpty())
     {
-        if(exec && clientNameLock.tryLockForRead())
+        execLock.lockForRead();
+        if(exec)
         {
+            clientNameLock.lockForRead();
             name = clientName;
             clientNameLock.unlock();
         }
@@ -492,9 +494,9 @@ void CarlaPatchBackend::preload()
         };
         connect(exec, &QProcess::errorOccurred, this, errorhandler);
         
-        QString carlaPath = QStandardPaths::findExecutable("carla-patchbay");
+        QString carlaPath = QStandardPaths::findExecutable("performer-carla");
         if(carlaPath.isEmpty())
-            carlaPath = QStandardPaths::findExecutable("carla-patchbay", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) +"/Carla");
+            carlaPath = QStandardPaths::findExecutable("performer-carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) +"/Carla");
         if (carlaPath.isEmpty())
             carlaPath = QStandardPaths::findExecutable("Carla");
         if (carlaPath.isEmpty())
@@ -525,9 +527,8 @@ void CarlaPatchBackend::preload()
                 if (stdoutstr.contains("loaded sucessfully!"))
                 {
                     emit progress(PROGRESS_LOADED);
-                    emit progress(PROGRESS_READY); //TODO: find a way to get the state of plugins loaded by Carla
                 }
-                if (stdoutstr.contains("Carla Client Ready!")) //this means at least one audio plugin was loaded successfully, broken with latest Carla version
+                if (stdoutstr.contains("Added plugin:")) //this means at least one audio plugin was loaded successfully, broken with latest Carla version
                     emit progress(PROGRESS_READY);
                 clientNameLock.lockForRead();
                 QString name = clientName;
@@ -562,7 +563,7 @@ void CarlaPatchBackend::preload()
                                 clients.insert(clientName, this);
                                 clientNameLock.unlock();
                                 clientsLock.unlock();
-                                disconnectClient();
+                                connectClient();
                                 qDebug() << "started " << clientName;
                                 break;
                             }
@@ -596,35 +597,47 @@ void CarlaPatchBackend::activate()
     return;
     #else
     
-    activeBackendLock.lockForWrite();
-    activeBackend = this;
-    activeBackendLock.unlock();
-    
-    if(patchfile.isEmpty())
-        return;
     execLock.lockForRead();
     bool hasexec = exec;
     execLock.unlock();
-    if(!hasexec) 
-        preload();
-    activeBackendLock.lockForRead();
-    CarlaPatchBackend *backend = activeBackend;
-    activeBackendLock.unlock();
-    if (this != backend)
+    
+    if(patchfile.isEmpty())
         return;
     
-    clientNameLock.lockForRead();
-    QString name = clientName;
-    clientNameLock.unlock();
-    if(name.isEmpty())
+    if(hasexec)
     {
-        //qDebug() << "cannot activate. clientName is empty";
-        QTimer::singleShot(200, this, SLOT(activate()));
-        return;
-    }
-    qDebug() << "activated client " << name << " with patch " << patchfile;
+        activeBackendLock.lockForWrite();
+        activeBackend = this;
     
-    connectClient();
+        clientNameLock.lockForRead();
+        QString name = clientName;
+        clientNameLock.unlock();
+        
+        if(name.isEmpty())
+        {
+            //qDebug() << "cannot activate. clientName is empty";
+            QTimer::singleShot(200, this, SLOT(activate()));
+        }
+        else
+        {
+            qDebug() << "activated client " << name << " with patch " << patchfile;
+        
+            clientsLock.lockForRead();
+            for(CarlaPatchBackend* client : clients)
+                if(client != activeBackend)
+                    client->disconnectClient();
+            clientsLock.unlock();
+            
+            connectClient();
+        }
+        activeBackendLock.unlock();
+    }
+    else
+    {
+        preload();
+        QTimer::singleShot(200, this, SLOT(activate()));
+    }
+    
     #endif
 }
 
@@ -634,8 +647,12 @@ void CarlaPatchBackend::deactivate()
     activeBackendLock.lockForWrite();
     if(this == activeBackend)
         activeBackend = nullptr;
+    clientsLock.lockForRead();
+    for(CarlaPatchBackend* client : clients)
+        if(client != activeBackend)
+            client->disconnectClient();
+    clientsLock.unlock();
     activeBackendLock.unlock();
-    disconnectClient();
     #endif
 }
 

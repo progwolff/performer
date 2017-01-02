@@ -177,9 +177,11 @@ Performer::~Performer()
     delete midi;
     midi = nullptr;
     
+#ifndef WITH_KPARTS
     delete m_viewer;
     m_viewer = nullptr;
-
+#endif
+    
     delete m_dock;
     m_dock = nullptr;
     
