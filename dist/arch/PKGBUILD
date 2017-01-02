@@ -1,5 +1,5 @@
 pkgname=performer-git
-pkgver=r24.bb992d5
+pkgver=r191.8073e53
 pkgrel=1
 pkgdesc="Session manager for live audio performances"
 arch=('i686' 'x86_64')
@@ -42,7 +42,7 @@ package() {
   make DESTDIR="${pkgdir}" install
 
   cd "${srcdir}/${_gitname}"
-  install "./src/backend/performer-carla" "${pkgdir}/usr/bin/performer-carla"
-  install "./src/backend/performer-carla.py" "${pkgdir}/usr/share/carla/performer-carla"
+  install -D "./src/backend/performer-carla" "${pkgdir}/usr/bin/performer-carla"
+  install -D "./src/backend/performer-carla.py" "${pkgdir}/usr/share/carla/performer-carla"
 }
 

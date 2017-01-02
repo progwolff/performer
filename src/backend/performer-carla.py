@@ -29,11 +29,8 @@ from carla_host import *
 
 class CallbackHandler(QObject):
     
-    def __init__(self, host, app):
+    def __init__(self):
         super().__init__()
-        self.host = host
-        self.out = out
-        self.app = app
     
     @pyqtSlot(int, str)
     def slot_pluginAdded(self, pluginId, pluginName):
@@ -67,8 +64,7 @@ if __name__ == '__main__':
     host.processModeForced = True
     
     
-    handler = CallbackHandler(host,app)
-    handler.slot_pluginAdded(4, "TestPlugin\n")
+    handler = CallbackHandler()
     
     host.PluginAddedCallback.connect(handler.slot_pluginAdded)
 

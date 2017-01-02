@@ -446,14 +446,12 @@ void CarlaPatchBackend::preload()
             execLock.unlock();
             if(QObject::sender() == p)
             {
+                clientNameLock.lockForWrite();
                 if(clientName.isEmpty())
                     clientInitMutex.unlock();
                 else
-                {
-                    clientNameLock.lockForWrite();
                     clientName = "";
-                    clientNameLock.unlock();
-                }
+                clientNameLock.unlock();
                 execLock.lockForWrite();
                 exec = nullptr;
                 execLock.unlock();
@@ -513,6 +511,20 @@ void CarlaPatchBackend::preload()
                 exec->start(carlaPath, QStringList() << patchfile);
             execLock.unlock();
             
+            numPlugins = 0;
+            QFile patch(patchfile);
+            if (!patch.open(QIODevice::ReadOnly | QIODevice::Text))
+                return;
+
+            while (!patch.atEnd()) {
+                QByteArray line = patch.readLine();
+                if(line.contains("<Plugin>"))
+                    ++numPlugins;
+            }
+            qDebug() << patchfile << "has" << numPlugins << "plugins";
+            
+            patch.close();
+            
             std::function<void()> outputhandler;
             outputhandler = [this, pre, outputhandler, preClients]() {
                 static QString stdoutstr;
@@ -527,9 +539,16 @@ void CarlaPatchBackend::preload()
                 if (stdoutstr.contains("loaded sucessfully!"))
                 {
                     emit progress(PROGRESS_LOADED);
+                    pluginsLoaded = 0;
+                    if(numPlugins == 0)
+                        emit progress(PROGRESS_READY);
                 }
-                if (stdoutstr.contains("Added plugin:")) //this means at least one audio plugin was loaded successfully, broken with latest Carla version
-                    emit progress(PROGRESS_READY);
+                if (stdoutstr.contains("Added plugin:"))
+                {
+                    pluginsLoaded += stdoutstr.count("Added plugin:");
+                    qDebug() << pluginsLoaded;
+                    emit progress(PROGRESS_LOADED + pluginsLoaded*(PROGRESS_READY-PROGRESS_LOADED)/numPlugins);
+                }
                 clientNameLock.lockForRead();
                 QString name = clientName;
                 clientNameLock.unlock();

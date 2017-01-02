@@ -77,6 +77,9 @@ private:
     static const char portlist[6][11];
     static const char allportlist[7][15];
     
+    int numPlugins;
+    int pluginsLoaded;
+    
 };
 
 #endif
