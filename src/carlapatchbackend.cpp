@@ -406,6 +406,12 @@ void CarlaPatchBackend::kill()
 
 void CarlaPatchBackend::preload()
 {
+    if(!m_client)
+    {
+        emit progress(JACK_OPEN_FAILED);
+        return;
+    }
+    
     #ifdef WITH_JACK
     execLock.lockForRead();
     bool hasexec = exec;
@@ -422,25 +428,28 @@ void CarlaPatchBackend::preload()
         execLock.unlock();
         QMap<QString,QString> preClients;
         QStringList pre = jackClients();
-        if(!try_run(500,[&preClients,this,pre](){
-            QMap<QString,QString> tmpClients;
-            for(const QString& port : pre)
+        for(const QString& port : pre)
+        {
+            QString client = port.section(':', 0, 0).trimmed();
+            if(!client.isEmpty())
             {
-                QString client = port.section(':', 0, 0).trimmed();
-                if(!client.isEmpty())
+                char* uuid;
+                if(!try_run(100,[this,client,&uuid](){
+                    uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                },"preClients"))
                 {
-                    char* uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                    emit progress(JACK_OPEN_FAILED);
+                    clientInitMutex.unlock();
+                    return;
+                }
+                else
+                {
                     if(uuid)
-                        tmpClients[client] = QString::fromLatin1(uuid);
+                        preClients[client] = QString::fromLatin1(uuid);
                 }
             }
-            preClients = tmpClients;
-        }))
-        {
-            emit progress(JACK_OPEN_FAILED);
-            clientInitMutex.unlock();
-            return;
         }
+        
         
         QStringList env = QProcess::systemEnvironment();
         env << "CARLA_DONT_MANAGE_CONNECTIONS=1";
@@ -671,6 +680,8 @@ void CarlaPatchBackend::activate()
 
 void CarlaPatchBackend::deactivate()
 {
+    return;
+    
     #ifdef WITH_JACK
     activeBackendLock.lockForWrite();
     if(this == activeBackend)

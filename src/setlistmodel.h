@@ -78,11 +78,14 @@ private:
     QList<SetlistMetadata> m_setlist;
     void createBackend(AbstractPatchBackend*& backend, int index);
     void removeBackend(AbstractPatchBackend*& backend);
+    void forceRestart(const char* msg, int timeout);
 
     int movedindex;
     int activeindex,previousindex,nextindex;
 
     AbstractPatchBackend *m_activebackend,*m_previousbackend,*m_nextbackend;
+    
+    int *secondsleft;
 };
 
 #endif //SETLISTMODEL_H

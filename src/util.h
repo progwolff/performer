@@ -5,6 +5,12 @@
 #include <QFuture>
 #include <QtConcurrent>
 
+#ifdef WITH_KF5
+#include <KLocalizedString>
+#else
+#include "fallback.h"
+#endif
+
 #if defined(_MSC_VER)
     //  Microsoft 
     #define EXPORT __declspec(dllexport)

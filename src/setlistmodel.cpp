@@ -55,6 +55,7 @@ SetlistModel::SetlistModel(QObject *parent)
     , m_activebackend(nullptr)
     , m_previousbackend(nullptr)
     , m_nextbackend(nullptr)
+    , secondsleft(nullptr)
 {
     movedindex = -1;
     activeindex = -1;
@@ -484,43 +485,13 @@ void SetlistModel::updateProgress(int p)
 #ifdef WITH_JACK
         while(!CarlaPatchBackend::freeJackClient());
 #endif
-        emit info(i18n("Could not find a running jack server. Will retry to connect to server in %1 seconds.", 10));
-        QTimer *timer;
-        timer = new QTimer(this);
-        timer->setInterval(1000);
-        timer->setSingleShot(false);
-        int *secondsleft;
-        secondsleft = new int(10);
-        connect(timer, &QTimer::timeout, this, [this,secondsleft](){
-            --*secondsleft;
-            if(*secondsleft <= 0)
-            {
-                emit info("");
-                    
-#ifdef WITH_JACK
-                if(!CarlaPatchBackend::jackClient())
-                {
-                    *secondsleft = 11;
-                }
-                else
-#endif
-                {
-                    static_cast<QTimer*>(QObject::sender())->stop();
-                    static_cast<QTimer*>(QObject::sender())->deleteLater();
-                    delete secondsleft;
-                    panic();
-                }
-            }
-            else if (*secondsleft < 10)
-            {
-                emit info(i18n("Could not find a running jack server. Will retry to connect to server in %1 seconds.", *secondsleft));
-            }
-        });
-        timer->start();
+        emit info(i18n("Could not find a running jack server."));
+        forceRestart("Could not find a running jack server.", 5);
         break;
     case AbstractPatchBackend::JACK_OPEN_FAILED:
         qDebug() << "failed to create a jack client.";
-        emit info(i18n("Could not create a client on the existing jack server. Can't load Carla patches."));
+        emit info(i18n("Could not create a client on the existing jack server."));
+        forceRestart("Could not create a client on the existing jack server.",5);
         break;
     }
 
@@ -531,6 +502,43 @@ void SetlistModel::updateProgress(int p)
     }
 }
 
+void SetlistModel::forceRestart(const char* msg, int timeout)
+{
+    if(secondsleft)
+        return;
+    QTimer *timer;
+    timer = new QTimer(this);
+    timer->setInterval(1000);
+    timer->setSingleShot(false);
+    secondsleft = new int(timeout);
+    connect(timer, &QTimer::timeout, this, [this,msg,timeout](){
+        --*secondsleft;
+        if(*secondsleft <= 0)
+        {
+            emit info("");
+                
+#ifdef WITH_JACK
+            if(!CarlaPatchBackend::jackClient())
+            {
+                *secondsleft = timeout+1;
+            }
+            else
+#endif
+            {
+                static_cast<QTimer*>(QObject::sender())->stop();
+                static_cast<QTimer*>(QObject::sender())->deleteLater();
+                delete secondsleft;
+                secondsleft = nullptr;
+                panic();
+            }
+        }
+        else if (*secondsleft < timeout)
+        {
+            emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *secondsleft));
+        }
+    });
+    timer->start();
+}
 
 void SetlistModel::setHideBackend(bool hide)
 {
