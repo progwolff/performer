@@ -108,6 +108,9 @@ private slots:
     void requestNotes();
 #endif
     
+signals:
+    void select(const QModelIndex& index);
+    
 private:
     void prepareUi();
     void setupPageViewActions();

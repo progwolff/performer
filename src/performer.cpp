@@ -74,6 +74,8 @@ Performer::Performer(QWidget *parent) :
     
     prepareUi();
     
+    connect(this, SIGNAL(select(const QModelIndex&)), this, SLOT(songSelected(const QModelIndex&)), Qt::QueuedConnection);
+    
     m_setlist->setListView->setModel(model);
 
     m_setlist->setListView->setItemDelegate(new RemoveSelectionDelegate);
@@ -86,11 +88,11 @@ Performer::Performer(QWidget *parent) :
     m_setlist->addButton->setIcon(QIcon::fromTheme("list-add"));//, QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     
     midi->setLearnable(m_setlist->previousButton, i18n("Previous"), "Previous", this);
-    connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){model->playPrevious(); songSelected(QModelIndex());});  
+    connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){model->playPrevious(); emit select(QModelIndex());});  
     m_setlist->previousButton->setEnabled(true);  
     
     midi->setLearnable(m_setlist->nextButton, i18n("Next"), "Next", this);
-    connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){model->playNext(); songSelected(QModelIndex());});    
+    connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){model->playNext(); emit select(QModelIndex());});    
     m_setlist->nextButton->setEnabled(true);
    
     alwaysontopbutton = new QToolButton(toolBar());

@@ -23,7 +23,7 @@ jack_client_t *CarlaPatchBackend::m_client = nullptr;
 
 bool AbstractPatchBackend::hideBackend = false;
 
-QSemaphore CarlaPatchBackend::instanceCounter(MAX_INSTANCES);
+QSemaphore CarlaPatchBackend::instanceCounter(0);
 QMutex CarlaPatchBackend::clientInitMutex;
 QReadWriteLock CarlaPatchBackend::activeBackendLock(QReadWriteLock::Recursive);
 QReadWriteLock CarlaPatchBackend::clientsLock(QReadWriteLock::Recursive);
@@ -42,13 +42,18 @@ CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile)
 {    
     emit progress(PROGRESS_CREATE);
     
-    instanceCounter.acquire(1);
+    instanceCounter.release(1);
     
     connect(this, SIGNAL(jackconnection(const char*, const char*, bool)), this, SLOT(jackconnect(const char*, const char*, bool)), Qt::QueuedConnection);
     
     #ifdef WITH_JACK
     jackClient();
     #endif    
+}
+
+CarlaPatchBackend::~CarlaPatchBackend()
+{
+    delete exec;
 }
 
 #ifdef WITH_JACK
@@ -281,7 +286,7 @@ bool CarlaPatchBackend::freeJackClient()
     activeBackendLock.lockForWrite();
     activeBackend = nullptr;
     activeBackendLock.unlock();
-    if(instanceCounter.available() >= MAX_INSTANCES)
+    if(instanceCounter.available() <= 0)
     {
         try_run(500, [](){
             jack_client_close(m_client);
@@ -363,45 +368,44 @@ void CarlaPatchBackend::disconnectClient(const QString& clientname)
 
 void CarlaPatchBackend::kill()
 {
-    QProcess *oldexec = nullptr;
     
     activeBackendLock.lockForWrite();
     execLock.lockForWrite();
     clientsLock.lockForWrite();
     clientNameLock.lockForWrite();
     
-    oldexec = exec;
+    QString name = clientName;
+
+    if(!name.isEmpty())
+        clients.remove(name);
+    
+    if(this == activeBackend)
+        activeBackend = nullptr;
+    
+    clientName = "";
+    
+    instanceCounter.acquire(1);
+    
+    if(exec && name.isEmpty())
+        clientInitMutex.unlock();
+    
+    clientsLock.unlock();
+    activeBackendLock.unlock();
+    
     if(exec)
     {
         emit progress(PROGRESS_NONE);
-        exec->terminate();
         connect(exec, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(deleteLater()));
         QTimer::singleShot(3000, exec, SLOT(kill()));
+        exec->terminate();        
         exec = nullptr;
     }
     else
         deleteLater();
     
-    QString name = clientName;
-
-    if(!name.isEmpty())
-    {
-        clients.remove(name);
-    }
-    
-    if(this == activeBackend)
-        activeBackend = nullptr;
-    instanceCounter.release();
-    
-    clientName = "";
-    
-    if(oldexec && name.isEmpty())
-        clientInitMutex.unlock();
-    
     clientNameLock.unlock();
-    clientsLock.unlock();
     execLock.unlock();
-    activeBackendLock.unlock();
+    
 }
 
 void CarlaPatchBackend::preload()
@@ -434,19 +438,9 @@ void CarlaPatchBackend::preload()
             if(!client.isEmpty())
             {
                 char* uuid;
-                if(!try_run(100,[this,client,&uuid](){
-                    uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
-                },"preClients"))
-                {
-                    emit progress(JACK_OPEN_FAILED);
-                    clientInitMutex.unlock();
-                    return;
-                }
-                else
-                {
-                    if(uuid)
-                        preClients[client] = QString::fromLatin1(uuid);
-                }
+                uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                if(uuid)
+                    preClients[client] = QString::fromLatin1(uuid);
             }
         }
         
@@ -581,8 +575,11 @@ void CarlaPatchBackend::preload()
                         if(client.isEmpty())
                             continue;
                         
-                        postClients[client] = QString::fromLatin1(jack_get_uuid_for_client_name(m_client, client.toLatin1()));
-                    
+                        char* uuid;
+                        uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                        if(!uuid)
+                            continue;
+                        postClients[client] = QString::fromLatin1(uuid);
                         //qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLatin1());
                         
                         if (!pre.contains(port) || (preClients[client] != postClients[client]))

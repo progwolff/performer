@@ -44,7 +44,7 @@ private slots:
 #endif
     
 private:
-    ~CarlaPatchBackend(){}
+    ~CarlaPatchBackend();
 #ifdef WITH_JACK
     const QStringList jackClients();
     static void connectionChanged(jack_port_id_t a, jack_port_id_t b, int connect, void *arg);
