@@ -20,6 +20,7 @@ Additionally Performer uses [Okular](https://github.com/KDE/okular) or QWebEngin
 * kparts (optional: display notes or chords with okular)
 * okular-git (optional: display notes or chords)
 * qt5-webengine (optional: display notes or chords without okular)
+* jackman (optional: automatically restart unresponsive jack server)
 
 ## Install
 ### Arch Linux
