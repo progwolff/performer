@@ -484,12 +484,12 @@ void SetlistModel::updateProgress(int p)
 #ifdef WITH_JACK
         while(!CarlaPatchBackend::freeJackClient());
 #endif
-        emit info(i18n("Could not find a running jack server."));
+        //emit info(i18n("Could not find a running jack server."));
         forceRestart("Could not find a running jack server.", 5);
         break;
     case AbstractPatchBackend::JACK_OPEN_FAILED:
         qDebug() << "failed to create a jack client.";
-        emit info(i18n("Could not create a client on the existing jack server."));
+        //emit info(i18n("Could not create a client on the existing jack server."));
         forceRestart("Could not create a client on the existing jack server.",5);
         break;
     }
@@ -510,6 +510,7 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
     timer->setInterval(1000);
     timer->setSingleShot(false);
     secondsleft = new int(timeout);
+    emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *secondsleft));
     connect(timer, &QTimer::timeout, this, [this,msg,timeout](){
         --*secondsleft;
         if(*secondsleft <= 0)

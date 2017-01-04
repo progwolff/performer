@@ -50,6 +50,7 @@ private:
     ~CarlaPatchBackend();
 #ifdef WITH_JACK
     const QStringList jackClients();
+    _jack_port* clientPort(const QString& port);
     static void connectionChanged(jack_port_id_t a, jack_port_id_t b, int connect, void *arg);
     static jack_client_t *m_client;
 #endif

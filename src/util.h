@@ -5,12 +5,6 @@
 #include <QFuture>
 #include <QtConcurrent>
 
-#ifdef WITH_KF5
-#include <KLocalizedString>
-#else
-#include "fallback.h"
-#endif
-
 #if defined(_MSC_VER)
     //  Microsoft 
     #define EXPORT __declspec(dllexport)
@@ -43,6 +37,26 @@ bool try_run(int timeout, T function, const char* name = "")
     {
         qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms" << name;
         funct.cancel();
+        return false;
+    }
+    return true;
+}
+
+/**
+ * calls a function and measures it's execution time.
+ * @param timeout timeout in ms
+ * @param function the function to execute
+ * @return true if function returned before timeout, false if function returned after timeout
+ */
+template<typename T>
+bool measure_run(int timeout, T function, const char* name = "")
+{
+    QTime timer;
+    timer.start();
+    function();
+    if(timer.elapsed() > timeout)
+    {
+        qDebug() << "Execution of function took " << timer.elapsed() << "ms" << name;
         return false;
     }
     return true;

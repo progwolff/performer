@@ -15,8 +15,6 @@
 
 #include "util.h"
 
-#define MAX_INSTANCES 3
-
 #ifdef WITH_JACK
 jack_client_t *CarlaPatchBackend::m_client = nullptr;
 #endif
@@ -218,7 +216,10 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
         QString name = activeBackend->clientName;
         clientNameLock.unlock();
         
-        QString jackclientname = QString::fromLatin1(jack_get_client_name(m_client));
+        QString jackclientname;
+        measure_run(500, [&jackclientname](){
+            jackclientname = QString::fromLatin1(jack_get_client_name(m_client));
+        },"jackconnect");
         
         if(!name.isEmpty())
         {
@@ -290,8 +291,8 @@ bool CarlaPatchBackend::freeJackClient()
     {
         try_run(500, [](){
             jack_client_close(m_client);
-            m_client = nullptr;
         },"freeJackClient");
+        m_client = nullptr;
         return true;
     }
     return false;
@@ -307,7 +308,7 @@ void CarlaPatchBackend::connectClient()
         try_run(500, [this](){
             for(const char* port : portlist)
             {
-                const char** conlist = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
+                const char** conlist = jack_port_get_connections(clientPort(port));
                 const char** cons = conlist;
                 while(cons && *cons)
                 {
@@ -437,8 +438,19 @@ void CarlaPatchBackend::preload()
             QString client = port.section(':', 0, 0).trimmed();
             if(!client.isEmpty())
             {
-                char* uuid;
-                uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                char* uuid = nullptr;
+                if(try_run(500, [&uuid,client](){
+                    jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                },"preClients"))
+                    uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                else
+                {
+                    clientInitMutex.unlock();
+                    emit progress(JACK_NO_SERVER);
+                    delete exec;
+                    exec = nullptr;
+                    return;
+                }
                 if(uuid)
                     preClients[client] = QString::fromLatin1(uuid);
             }
@@ -575,8 +587,13 @@ void CarlaPatchBackend::preload()
                         if(client.isEmpty())
                             continue;
                         
-                        char* uuid;
-                        uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                        char* uuid = nullptr;
+                        if(try_run(500, [&uuid,client](){
+                            jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                        },"postClients"))
+                            uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                        else
+                            break;
                         if(!uuid)
                             continue;
                         postClients[client] = QString::fromLatin1(uuid);
@@ -657,9 +674,9 @@ void CarlaPatchBackend::activate()
             qDebug() << "activated client " << name << " with patch " << patchfile;
         
             clientsLock.lockForRead();
-            for(CarlaPatchBackend* client : clients)
-                if(client != activeBackend)
-                    client->disconnectClient();
+            for(const QString& client : clients.keys())
+                if(clients[client] != activeBackend)
+                    disconnectClient(client);
             clientsLock.unlock();
             
             connectClient();
@@ -716,6 +733,16 @@ const QStringList CarlaPatchBackend::jackClients()
 #endif
 
 #ifdef WITH_JACK
+_jack_port* CarlaPatchBackend::clientPort(const QString& port)
+{
+    _jack_port* ret = nullptr;
+    const char *name = jack_get_client_name(m_client);
+    if(!name)
+        emit progress(JACK_NO_SERVER);
+    ret = jack_port_by_name(m_client, (QString::fromLatin1(name)+":"+port).toLatin1());
+    return ret;
+}
+
 bool CarlaPatchBackend::portBelongsToClient(const char* port, jack_client_t *client)
 {
     return portBelongsToClient(port, jack_get_client_name(client));
