@@ -7,7 +7,7 @@
   -->
   <!-- we don't want a menubar -->
  </MenuBar>
- <ToolBar noMerge="1" name="mainToolBar">
+ <ToolBar noMerge="1" name="okularToolBar">
   <text>Main Toolbar</text>
   <!--Action name="file_save_copy"/-->
   <!--Separator name="separator_0"/>
