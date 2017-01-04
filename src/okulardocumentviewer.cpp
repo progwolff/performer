@@ -21,9 +21,9 @@ m_part(nullptr)
 
         if (m_part)
         {
-            QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/okularui.rc");
+            QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kxmlgui5/performer/okularui.rc");
             
-            m_part->replaceXMLFile(file, "performer/okularui.rc", false);
+            m_part->replaceXMLFile(file, "kxmlgui5/performer/okularui.rc", false);
         }
         else
         {

@@ -496,7 +496,7 @@ Some actions in the toolbar of &performer; belong to the document viewer used. P
 <para>If Max &lt; Min, the corresponding actions value will be inverted. For example, if the vertical scroll action is assigned to a MIDI CC and Min &lt; Max for this action, increasing the controller value will scroll down the document. If Max &lt; Min, increasing the controller value will scroll up the document.</para>
 <para>The "Value" column shows the current value of an assigned MIDI CC.</para>
 
-<para>Besides setting a MIDI CC in the MIDI control dock widget, MIDI CCs can be mapped to actions by using the <xref linkend="context-midi-learn"/> in the context menu of the corresponding GUI widget.</para>
+<para>Besides setting a MIDI CC in the MIDI control dock widget, MIDI CCs can be mapped to actions by using the <xref linkend="context-midi-learn"/> action in the context menu of the corresponding GUI widget.</para>
 
 </sect2>
 
@@ -508,7 +508,7 @@ Most GUI widgets in &performer; are MIDI controllable (see <xref linkend="dock-m
 <variablelist>
 <varlistentry  id="context-midi-learn">
 <term><menuchoice>
-<guimenu>Context Menu</guimenu>
+<guimenu>Widget context Menu</guimenu>
 <guimenuitem>Learn MIDI CC</guimenuitem>
 </menuchoice></term>
 <listitem><para>After this menu entry was activated, the next MIDI CC message received at the control_gui-in port will be mapped to the widgets main action.</para></listitem>
@@ -516,7 +516,7 @@ Most GUI widgets in &performer; are MIDI controllable (see <xref linkend="dock-m
 
 <varlistentry  id="context-midi-remove">
 <term><menuchoice>
-<guimenu>Context Menu</guimenu>
+<guimenu>Widget context Menu</guimenu>
 <guimenuitem>Remove MIDI CC</guimenuitem>
 </menuchoice></term>
 <listitem><para>Removes a previously assigned MIDI CC from the widgets main action.</para></listitem>
