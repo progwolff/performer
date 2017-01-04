@@ -147,7 +147,7 @@ patent issues. -->
 <screeninfo>Here's a screenshot of &performer;</screeninfo>
 	<mediaobject>
 	  <imageobject>
-	    <imagedata fileref="../.screenshot.png" format="PNG"/>
+	    <imagedata fileref=".screenshot.png" format="PNG"/>
 	  </imageobject>
 	  <textobject>
 	    <phrase>Screenshot</phrase>
@@ -169,7 +169,7 @@ patent issues. -->
 <screeninfo>Patchbay</screeninfo>
 	<mediaobject>
 	  <imageobject>
-	    <imagedata fileref="../.images/connect.png" format="PNG"/>
+	    <imagedata fileref="connect.png" format="PNG"/>
 	  </imageobject>
 	  <textobject>
 	    <phrase>Patchbay</phrase>
@@ -195,7 +195,7 @@ Click the "Add" button. Change the name of the song to the name of a song you wa
 <screeninfo>Add song</screeninfo>
 	<mediaobject>
 	  <imageobject>
-	    <imagedata fileref="../.images/add.png" format="PNG"/>
+	    <imagedata fileref="add.png" format="PNG"/>
 	  </imageobject>
 	  <textobject>
 	    <phrase>Add</phrase>

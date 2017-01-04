@@ -163,6 +163,7 @@ if(ECM_FOUND)
     if(KF5DocTools_FOUND)
     
     FILE(GLOB_RECURSE DOC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/po/docs/*")
+    FILE(GLOB_RECURSE IMAGE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/.images/*")
     
     FOREACH(_docFile ${DOC_FILES})
     MESSAGE("found ${_docFile}")
@@ -175,6 +176,8 @@ if(ECM_FOUND)
             IF( _langCode )
                     
                     kdoctools_create_handbook(${CMAKE_CURRENT_SOURCE_DIR}/po/docs/${_langCode}/index.docbook INSTALL_DESTINATION ${KDE_INSTALL_DOCBUNDLEDIR}/${_langCode} SUBDIR performer)
+                    install(FILES ${IMAGE_FILES} DESTINATION ${KDE_INSTALL_DOCBUNDLEDIR}/${_langCode}/performer)
+                    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/.screenshot.png DESTINATION ${KDE_INSTALL_DOCBUNDLEDIR}/${_langCode}/performer)
 
             ENDIF( _langCode )
 
