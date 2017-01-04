@@ -521,6 +521,10 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
             if(!CarlaPatchBackend::jackClient())
             {
                 *secondsleft = timeout+1;
+                QProcess *exec = new QProcess(this);
+                exec->setEnvironment(QProcess::systemEnvironment());
+                exec->start("jackman");
+                connect(exec, SIGNAL(finished(int, QProcess::ExitStatus)), exec, SLOT(deleteLater()));
             }
             else
 #endif
