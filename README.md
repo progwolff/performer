@@ -11,10 +11,10 @@ Additionally Performer uses [Okular](https://github.com/KDE/okular) or QWebEngin
 
 ## Dependencies
 * Carla
+* python
 * qt5-base
 * qt5-declarative
 * qt5-tools (make)
-* python (make)
 * extra-cmake-modules (make, optional: KDE integration)
 * kdebase-runtime (optional: KDE integration)
 * kparts (optional: display notes or chords with okular)
