@@ -9,6 +9,9 @@
 #include <QToolButton>
 #include <QList>
 
+/**
+ * Document viewer widget based on Okular KPart
+ */
 class OkularDocumentViewer : public AbstractDocumentViewer
 {
 public:

@@ -24,7 +24,9 @@
 class SetlistMetadataPrivate;
 class QUrl;
 
-
+/**
+ * Metadata for setlist items (songs)
+ */
 class SetlistMetadata
 {
 public:

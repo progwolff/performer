@@ -7,6 +7,9 @@
 #include <QList>
 #include <QUrl>
 
+/**
+ * Base class for document viewer widgets
+ */
 class AbstractDocumentViewer : public QWidget
 {
 public:

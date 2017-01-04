@@ -24,6 +24,9 @@
 class SetlistMetadata;
 class AbstractPatchBackend;
 
+/**
+ * List model for setlists holding songs
+ */
 class SetlistModel: public QAbstractListModel
 {
     Q_OBJECT

@@ -158,6 +158,32 @@ ENDIF(NOT GETTEXT_MSGFMT_EXECUTABLE)
 add_subdirectory(src)
 
 if(ECM_FOUND)
+
+    find_package(KF5DocTools)
+    if(KF5DocTools_FOUND)
+    
+    FILE(GLOB_RECURSE DOC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/po/docs/*")
+    
+    FOREACH(_docFile ${DOC_FILES})
+    MESSAGE("found ${_docFile}")
+            STRING(REGEX REPLACE "\\/index.docbook$" "" _langCode ${_docFile} )
+            
+            GET_FILENAME_COMPONENT(_langCode ${_langCode} NAME)
+            
+            MESSAGE("langcode ${_langCode}")
+
+            IF( _langCode )
+                    
+                    kdoctools_create_handbook(${CMAKE_CURRENT_SOURCE_DIR}/po/docs/${_langCode}/index.docbook INSTALL_DESTINATION ${KDE_INSTALL_DOCBUNDLEDIR}/${_langCode} SUBDIR performer)
+
+            ENDIF( _langCode )
+
+    ENDFOREACH(_docFile ${DOC_FILES})
+    
+    endif()
+
+    
+
     install(FILES performer.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 
     ecm_install_icons(

@@ -61,6 +61,9 @@ namespace Ui {
     class Setlist;
 }
 
+/**
+ * Live performance audio session manager
+ */
 class Performer :
 #ifdef WITH_KPARTS
     public KParts::MainWindow

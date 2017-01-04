@@ -11,6 +11,9 @@
 
 class QProcess;
 
+/**
+ * Patch backend using Carla
+ */
 class CarlaPatchBackend : public AbstractPatchBackend
 {
         Q_OBJECT

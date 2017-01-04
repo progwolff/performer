@@ -10,6 +10,9 @@ class QWebEngineView;
 class QScrollArea;
 class QComboBox;
 
+/**
+ * Document viewer widget based on QWebEngine
+ */
 class QWebEngineDocumentViewer : public AbstractDocumentViewer
 {
 public:

@@ -40,7 +40,7 @@ int main (int argc, char *argv[])
     
     KAboutData aboutData(
                          // The program name used internally. (componentName)
-                         QStringLiteral("Performer"),
+                         QStringLiteral("performer"),
                          // A displayable program name string. (displayName)
                          i18n("Performer"),
                          // The program version string. (version)

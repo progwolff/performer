@@ -17,7 +17,9 @@
 #include <QAction>
 #include <QToolButton>
 
-
+/**
+ * Add MIDI learn functionality to QWidgets
+ */
 class MIDI : public QAbstractTableModel
 {
     Q_OBJECT

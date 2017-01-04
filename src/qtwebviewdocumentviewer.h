@@ -14,6 +14,9 @@ class QScrollArea;
 class QComboBox;
 class QQuickWidget;
 
+/**
+ * Document viewer widget based on QtWebView
+ */
 class QtWebViewDocumentViewer : public AbstractDocumentViewer
 {
     Q_OBJECT
