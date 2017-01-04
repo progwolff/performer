@@ -533,9 +533,9 @@ Most GUI widgets in &performer; are MIDI controllable (see <xref linkend="dock-m
 <chapter id="faq">
 <title>Questions and Answers</title>
 
-&reporting.bugs;
-&updating.documentation;
-
+<para>
+Please feel free to report any bugs or feature requests at <ulink url='https://github.com/progwolff/performer/'>the github repository</ulink>. 
+</para>
 <!--qandaset id="faqlist">
 <qandaentry>
 <question>
