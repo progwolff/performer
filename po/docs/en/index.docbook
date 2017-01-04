@@ -3,6 +3,8 @@
   <!-- Define an entity for your application if it is not part of KDE
        Git -->
   <!ENTITY performer "<application>Performer</application>">
+  <!ENTITY carla "<ulink url='http://kxstudio.linuxaudio.org/Applications:Carla'><application>Carla</application></ulink>">
+  <!ENTITY okular "<ulink url='help:/okular/'><application>Okular</application></ulink>">
   <!ENTITY kappname "&performer;"><!-- replace performer here
                                             do *not* replace kappname-->
   <!ENTITY i18n-translatable-entity "<application>Translatable Entity</application>">
@@ -70,7 +72,7 @@ $applicationname xx.yy for applications with independent release schedule (extra
 
 <abstract>
 <para>
-&performer; is a audio session manager for live performances.
+&performer; is an audio session manager for live performances.
 </para>
 </abstract>
 
@@ -127,7 +129,7 @@ problems. Basically a long version of the abstract.  Don't include a
 revision history. (see installation appendix comment) -->
 
 <para>
-&performer; lets you manage all the songs in your setlist as individual Carla patches and loads each of them when you need it. Additionally &performer; uses Okular or QWebEngine to display notes and chords of your songs.
+&performer; lets you manage all the songs in your setlist as individual &carla; patches and loads each of them when you need it. Additionally &performer; uses &okular;,  QWebEngine or QtWebView to display notes and chords of your songs.
 </para>
 </chapter>
 
@@ -162,7 +164,7 @@ patent issues. -->
 
 <para>Start Performer.</para>
 
-<para>Using command line tools or a jack patchbay like <ulink url="http://kxstudio.linuxaudio.org/Applications:Catia">Catia</ulink> connect the ports of Performer to the appropriate system ports or to the ports of other jack clients.</para>
+<para>Using command line tools or a jack patchbay like <ulink url="http://kxstudio.linuxaudio.org/Applications:Catia"><application>Catia</application></ulink> connect the ports of Performer to the appropriate system ports or to the ports of other jack clients.</para>
 
 <para>
 <screenshot>
@@ -179,16 +181,16 @@ patent issues. -->
 </para>
 
 <para>
-The Carla instances created by Performer will connect to the same ports Performer is connected to. 
+The &carla; instances created by Performer will connect to the same ports Performer is connected to. 
 </para>
 <para>
-Connect the events-in port to a MIDI input device. Ports connected to events-in will act as MIDI input for Carla instances created by Performer. 
+Connect the events-in port to a MIDI input device. Ports connected to events-in will act as MIDI input for &carla; instances created by Performer. 
 </para>
 <para>
 Connect the control_gui-in port to a MIDI input device that you want to use to control the GUI of Performer.
 </para>
 <para>
-Click the "Add" button. Change the name of the song to the name of a song you want to have in your setlist. Add a Carla patch file (.carxp) for this song. Add notes or chords (.pdf, .txt, .png, ...) for this song. They will be displayed when the song is active or when you click on it's entry in the setlist.
+Click the "Add" button. Change the name of the song to the name of a song you want to have in your setlist. Add a &carla; patch file (.carxp) for this song. Add notes or chords (.pdf, .txt, .png, ...) for this song. They will be displayed when the song is active or when you click on it's entry in the setlist.
 </para>
 <para>
 <screenshot>
@@ -204,7 +206,7 @@ Click the "Add" button. Change the name of the song to the name of a song you wa
 </screenshot>
 </para>
 <para>
-Right click the song's entry in the setlist. Choose "Play now". If you assigned a Carla patch to this song, a new instance of Carla will be created, loading the patch file. It's ports will be connected to the same ports Performer is connected to, allowing you to play this song.
+Right click the song's entry in the setlist. Choose "Play now". If you assigned a &carla; patch to this song, a new instance of &carla; will be created, loading the patch file. It's ports will be connected to the same ports Performer is connected to, allowing you to play this song.
 </para>
 <para>
 Add some more songs to your setlist. 
@@ -213,7 +215,7 @@ Add some more songs to your setlist.
 Save the setlist (<xref linkend="file-save"/>).
 </para>
 <para>
-Click "Next". A Carla instance for the next song in your setlist will be created. The Carla instances of the previous and of the next song are still preloaded, allowing you to quickly switch to one of these songs, but only the active song is connected to your system ports.
+Click "Next". A &carla; instance for the next song in your setlist will be created. The &carla; instances of the previous and of the next song are still preloaded, allowing you to quickly switch to one of these songs, but only the active song is connected to your system ports.
 </para>
 <para>
 Right click a GUI element like the "Next" button or the document viewer's scrollbar. In the shown MIDI learn context menu choose "Learn MIDI CC". Move a control of a MIDI device connected to the control_gui-in port. This control will be 
@@ -345,9 +347,9 @@ chapter of the &kde; Fundamentals documentation &performer; has these applicatio
 <varlistentry  id="settings-hide-carla">
 <term><menuchoice>
 <guimenu>Settings</guimenu>
-<guimenuitem>Hide Carla</guimenuitem>
+<guimenuitem>Hide &carla;</guimenuitem>
 </menuchoice></term>
-<listitem><para>Each song in a setlist of &performer; can have a Carla patch assigned. If a song is active, an instance of Carla will be started, loading the corresponding patch of the song. If this menu item is enabled, the instances of Carla started by &performer; are invisible. If it is disabled, the instances of Carla are shown as regular application windows.</para></listitem>
+<listitem><para>Each song in a setlist of &performer; can have a &carla; patch assigned. If a song is active, an instance of &carla; will be started, loading the corresponding patch of the song. If this menu item is enabled, the instances of &carla; started by &performer; are invisible. If it is disabled, the instances of &carla; are shown as regular application windows. Note that a change to this menu item only affects future instances of &carla;, not the currently active ones. Use <xref linkend="toolbar-panic"/> to reload all instances of &carla;.</para></listitem>
 </varlistentry>
 
 <varlistentry  id="settings-midi">
@@ -355,12 +357,173 @@ chapter of the &kde; Fundamentals documentation &performer; has these applicatio
 <guimenu>Settings</guimenu>
 <guimenuitem>Show MIDI controls</guimenuitem>
 </menuchoice></term>
-<listitem><para>Show a dock widget with settings for MIDI controls. MIDI CC messages received at the control_gui-in port can control actions of &performer;. The MIDI control dock widget can be used to map MIDI CC messages to actions of &performer;</para></listitem>
+<listitem><para>Show a dock widget with settings for MIDI controls (<xref linkend="dock-midi" endterm="dock-midi-title"/>).</para></listitem>
 </varlistentry>
 
 </variablelist>
 </para>
 
+</sect2>
+
+<sect2 id="toolbar">
+<title>The Toolbar</title>
+<para>
+Some actions in the toolbar of &performer; belong to the document viewer used. Please see the documentation of the corresponding viewer (&okular;, QWebEngine or QtWebView) for more information.
+</para>
+
+<para>Important toolbar actions in &performer; are:
+<variablelist>
+<varlistentry  id="toolbar-alwaysontop">
+<term><menuchoice>
+<guimenu>Toolbar</guimenu>
+<guimenuitem>Always on top</guimenuitem>
+</menuchoice></term>
+<listitem><para>See <xref linkend="settings-alwaysontop"/></para></listitem>
+</varlistentry>
+
+<varlistentry  id="toolbar-panic">
+<term><menuchoice>
+<guimenu>Toolbar</guimenu>
+<guimenuitem>Panic!</guimenuitem>
+</menuchoice></term>
+<listitem><para>As &performer; uses &carla; to load plugins and &carla; itself loads different plugins, there might be cases where something goes wrong. Pressing the Panic button terminates all instances of &carla; loaded by &performer; and reloads the active songs.</para></listitem>
+</varlistentry>
+
+</variablelist>
+</para>
+
+</sect2>
+
+<sect2 id="dock-setlist">
+<title>The Setlist dock widget</title>
+
+<para>&performer; organizes songs in a setlist. The songs in the current setlist are shown in the Setlist dock widget.</para>
+<para>Important actions in the Setlist dock widget are:
+<variablelist>
+<varlistentry  id="setlist-add">
+<term><menuchoice>
+<guimenu>Setlist</guimenu>
+<guimenuitem>Add</guimenuitem>
+</menuchoice></term>
+<listitem><para>Add a song to the setlist. Songs can be configured in <xref linkend="song-setup-form" endterm="song-setup-form-title"/></para></listitem>
+</varlistentry>
+
+<varlistentry  id="setlist-previous">
+<term><menuchoice>
+<guimenu>Setlist</guimenu>
+<guimenuitem>Previous</guimenuitem>
+</menuchoice></term>
+<listitem><para>Play the previous song in the setlist.</para></listitem>
+</varlistentry>
+
+<varlistentry  id="setlist-next">
+<term><menuchoice>
+<guimenu>Setlist</guimenu>
+<guimenuitem>Next</guimenuitem>
+</menuchoice></term>
+<listitem><para>Play the next song in the setlist.</para></listitem>
+</varlistentry>
+
+<varlistentry  id="context-playnow">
+<term><menuchoice>
+<guimenu>Song context menu</guimenu>
+<guimenuitem>Play now</guimenuitem>
+</menuchoice></term>
+<listitem><para>Play this song.</para></listitem>
+</varlistentry>
+
+<varlistentry  id="context-remove">
+<term><menuchoice>
+<guimenu>Song context menu</guimenu>
+<guimenuitem>Remove entry</guimenuitem>
+</menuchoice></term>
+<listitem><para>Remove this song.</para></listitem>
+</varlistentry>
+
+</variablelist>
+</para>
+
+<sect3 id="song-setup-form">
+<title id="song-setup-form-title">The song setup form</title>
+<para>Songs can be configured in the song setup form. The following entries exist:
+<variablelist>
+<varlistentry  id="song-preload">
+<term><menuchoice>
+<guimenu>Setup song</guimenu>
+<guimenuitem>Preload</guimenuitem>
+</menuchoice></term>
+<listitem><para>Preload the song. If disabled, the song will only be loaded if it is active.</para></listitem>
+</varlistentry>
+
+<varlistentry  id="song-title">
+<term><menuchoice>
+<guimenu>Setup song</guimenu>
+<guimenuitem>Title</guimenuitem>
+</menuchoice></term>
+<listitem><para>The name of the song.</para></listitem>
+</varlistentry>
+
+<varlistentry  id="song-patch">
+<term><menuchoice>
+<guimenu>Setup song</guimenu>
+<guimenuitem>Carla Patch</guimenuitem>
+</menuchoice></term>
+<listitem><para>The &carla; patch for the song.</para></listitem>
+</varlistentry>
+
+<varlistentry  id="song-notes">
+<term><menuchoice>
+<guimenu>Setup song</guimenu>
+<guimenuitem>Notes</guimenuitem>
+</menuchoice></term>
+<listitem><para>Notes or chords for this song.</para></listitem>
+</varlistentry>
+
+</variablelist>
+</para>
+
+</sect3>
+
+</sect2>
+
+<sect2 id="dock-midi">
+<title id="dock-midi-title">The MIDI control dock widget</title>
+
+<para>MIDI CC messages received at the control_gui-in port can control actions of &performer;. The MIDI control dock widget can be used to map MIDI CC messages to actions of &performer;. It can be shown or hidden with <xref linkend="settings-midi"/>.</para>
+
+<para>The "Action" column shows different actions in &performer; that can be controlled by MIDI CC messages. Enter a number between 0 and 127 in the "CC" column, to make the corresponding MIDI CC control an action in &performer;.</para> 
+<para>The "Min" and "Max" columns can be used to set the range of the MIDI controller used. For example, if a hardware MIDI controller sends CC 7, but sends only values between 20 and 100 for mechanical or other reasons, Min should be set to 20 and Max should be set to 100, to make the hardware controller control the full range of the action in &performer;.</para>
+<para>If Max &lt; Min, the corresponding actions value will be inverted. For example, if the vertical scroll action is assigned to a MIDI CC and Min &lt; Max for this action, increasing the controller value will scroll down the document. If Max &lt; Min, increasing the controller value will scroll up the document.</para>
+<para>The "Value" column shows the current value of an assigned MIDI CC.</para>
+
+<para>Besides setting a MIDI CC in the MIDI control dock widget, MIDI CCs can be mapped to actions by using the <xref linkend="context-midi-learn"/> in the context menu of the corresponding GUI widget.</para>
+
+</sect2>
+
+<sect2 id="context-midi">
+<title>The MIDI learn context menu</title>
+<para>
+Most GUI widgets in &performer; are MIDI controllable (see <xref linkend="dock-midi"/>). These widgets have a MIDI learn context menu, that makes it easy to assign MIDI CC messages to their corresponding actions:
+
+<variablelist>
+<varlistentry  id="context-midi-learn">
+<term><menuchoice>
+<guimenu>Context Menu</guimenu>
+<guimenuitem>Learn MIDI CC</guimenuitem>
+</menuchoice></term>
+<listitem><para>After this menu entry was activated, the next MIDI CC message received at the control_gui-in port will be mapped to the widgets main action.</para></listitem>
+</varlistentry>
+
+<varlistentry  id="context-midi-remove">
+<term><menuchoice>
+<guimenu>Context Menu</guimenu>
+<guimenuitem>Remove MIDI CC</guimenuitem>
+</menuchoice></term>
+<listitem><para>Removes a previously assigned MIDI CC from the widgets main action.</para></listitem>
+</varlistentry>
+
+</variablelist>
+</para>
 
 </sect2>
 
