@@ -529,6 +529,7 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
             else
 #endif
             {
+                CarlaPatchBackend::reconnect();
                 static_cast<QTimer*>(QObject::sender())->stop();
                 static_cast<QTimer*>(QObject::sender())->deleteLater();
                 delete secondsleft;

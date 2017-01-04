@@ -35,6 +35,7 @@ public slots:
     void activate() override;
     void deactivate() override;
     static void connections(QMap<QString,QStringList> connections);
+    static void reconnect();
     
 signals:
     void jackconnection(const char* a, const char* b, bool connect);
@@ -77,6 +78,8 @@ private:
     QString clientName;
     
     static QMap<QString,CarlaPatchBackend*> clients;
+    
+    static QMap<QString, QStringList> savedConnections;
     
     static const char portlist[6][11];
     static const char allportlist[7][15];

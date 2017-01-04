@@ -27,6 +27,7 @@ QReadWriteLock CarlaPatchBackend::activeBackendLock(QReadWriteLock::Recursive);
 QReadWriteLock CarlaPatchBackend::clientsLock(QReadWriteLock::Recursive);
 CarlaPatchBackend *CarlaPatchBackend::activeBackend = nullptr;
 QMap<QString,CarlaPatchBackend*> CarlaPatchBackend::clients;
+QMap<QString, QStringList> CarlaPatchBackend::savedConnections;
 
 const char CarlaPatchBackend::portlist[6][11]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"};
 const char CarlaPatchBackend::allportlist[7][15]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"};
@@ -66,7 +67,7 @@ jack_client_t *CarlaPatchBackend::jackClient()
             m_client = jack_client_open("Performer", JackNoStartServer, &status, NULL);
         }, "jack_client_open");
         
-        if (m_client == NULL) {
+        if (m_client == nullptr) {
             if (status & JackServerFailed) {
                 fprintf (stderr, "JACK server not running\n");
                 activeBackendLock.lockForRead();
@@ -130,7 +131,6 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
     QMap<QString, QStringList> ret;
     #ifdef WITH_JACK
     if(m_client)
-        
     try_run(500,[&ret](){
         for(const char* port : allportlist)
         {
@@ -146,6 +146,10 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
             jack_free(conmem);
         }
     }, "connections()");
+    else
+        ret = savedConnections;
+    
+    savedConnections = ret;
     
     #endif
     return ret;
@@ -154,6 +158,8 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
 void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
 {
     #ifdef WITH_JACK
+    
+    savedConnections = connections;
     
     try_run(500,[](){
         for(const char* port : allportlist)
@@ -182,6 +188,11 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
     },"connections(QMap) 2");
     
     #endif
+}
+
+void CarlaPatchBackend::reconnect()
+{
+    connections(savedConnections);
 }
 
 #ifdef WITH_JACK
@@ -305,31 +316,28 @@ void CarlaPatchBackend::connectClient()
     clientNameLock.lockForRead();
     if(!clientName.isEmpty())
     {
-        try_run(500, [this](){
+        QMap<QString, QStringList> cons = connections();
+        try_run(500, [this,cons](){
             for(const char* port : portlist)
-            {
-                const char** conlist = jack_port_get_connections(clientPort(port));
-                const char** cons = conlist;
-                while(cons && *cons)
+            {                
+                for(const QString& con : cons[port])
                 {
                     jack_port_t* portid = jack_port_by_name(m_client, (clientName+":"+port).toLatin1());
                     //qDebug() << "connect" << (clientName+":"+port).toLatin1() << "to" << *cons;
-                    if(portid && !jack_port_connected_to(portid, *cons))
+                    if(portid && !jack_port_connected_to(portid, con.toLatin1()))
                     {
                         if(jack_port_flags(portid) & JackPortIsOutput)
                         {
-                            jack_connect(m_client, (clientName+":"+port).toLatin1(), *cons);
-                            qDebug() << "connect client" << (clientName+":"+port).toLatin1() << *cons;
+                            jack_connect(m_client, (clientName+":"+port).toLatin1(), con.toLatin1());
+                            qDebug() << "connect client" << (clientName+":"+port).toLatin1() << con;
                         }
                         else
                         {
-                            jack_connect(m_client, *cons, (clientName+":"+port).toLatin1());
-                            qDebug() << "connect client" << *cons << (clientName+":"+port).toLatin1();
+                            jack_connect(m_client, con.toLatin1(), (clientName+":"+port).toLatin1());
+                            qDebug() << "connect client" << con << (clientName+":"+port).toLatin1();
                         }
                     }
-                    ++cons;
                 }
-                jack_free(conlist);
             }
         },"connectClient");
     }
