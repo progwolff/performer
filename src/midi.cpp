@@ -56,7 +56,7 @@ QAction* MIDI::setLearnable(QWidget* widget, const QString& text, const QString&
     }
     else
     {
-        qDebug() << "MIDI Actions are not implemented for this type of object." << name << text;
+        qWarning() << "MIDI Actions are not implemented for this type of object." << name << text;
         delete action;
         action = nullptr;
         return action;
@@ -447,7 +447,7 @@ void MIDI::midiContextMenuRequested(const QPoint& pos)
         }
     }
     else
-        qDebug() << "MIDI context menu not implemented for this type of object.";
+        qWarning() << "MIDI context menu not implemented for this type of object.";
 }
 
 void MIDI::learn(QAction* action)

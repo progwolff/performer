@@ -83,6 +83,7 @@ public slots:
     void loadConfig();
     void defaults();
     void loadFile(const QString& path);
+    void setStyle(const QString& style);
     
 private slots:
     void showContextMenu(QPoint);
@@ -129,6 +130,9 @@ private:
     QString m_path;
     QString notesdefaultpath;
     QString patchdefaultpath;
+    QString style;
+    QString defaultStyle;
+    QPalette defaultPalette;
     
     QToolButton* alwaysontopbutton;
     QAction* alwaysontopaction;

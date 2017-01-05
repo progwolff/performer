@@ -519,7 +519,7 @@ void CarlaPatchBackend::preload()
                 else 
                     emit progress(PROCESS_ERROR);
             }
-            qDebug() << static_cast<QProcess*>(QObject::sender())->readAllStandardError();
+            qCritical() << static_cast<QProcess*>(QObject::sender())->readAllStandardError();
             QObject::sender()->deleteLater();
         };
         connect(exec, &QProcess::errorOccurred, this, errorhandler);
@@ -623,7 +623,7 @@ void CarlaPatchBackend::preload()
                                 clientNameLock.unlock();
                                 clientsLock.unlock();
                                 connectClient();
-                                qDebug() << "started " << clientName;
+                                qInfo() << "started " << clientName;
                                 break;
                             }
                         }

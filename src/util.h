@@ -35,7 +35,7 @@ bool try_run(int timeout, T function, const char* name = "")
     while(timer.elapsed() < timeout && funct.isRunning()) QThread::msleep(10);
     if(funct.isRunning())
     {
-        qDebug() << "Canceled execution of function after" << timer.elapsed() << "ms" << name;
+        qWarning() << "Canceled execution of function after" << timer.elapsed() << "ms" << name;
         funct.cancel();
         return false;
     }
@@ -56,7 +56,7 @@ bool measure_run(int timeout, T function, const char* name = "")
     function();
     if(timer.elapsed() > timeout)
     {
-        qDebug() << "Execution of function took " << timer.elapsed() << "ms" << name;
+        qWarning() << "Execution of function took " << timer.elapsed() << "ms" << name;
         return false;
     }
     return true;

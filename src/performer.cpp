@@ -74,6 +74,9 @@ Performer::Performer(QWidget *parent) :
     
     prepareUi();
     
+    defaultStyle = QApplication::style()->objectName();
+    defaultPalette = QApplication::palette();
+    
     connect(this, SIGNAL(select(const QModelIndex&)), this, SLOT(songSelected(const QModelIndex&)), Qt::QueuedConnection);
     
     m_setlist->setListView->setModel(model);
@@ -163,6 +166,7 @@ Performer::Performer(QWidget *parent) :
     
     setHideBackend(hideBackend);
     setShowMIDI(showMIDI);
+    setStyle(style);
 }
 
 
@@ -196,7 +200,7 @@ Performer::~Performer()
 
 void Performer::error(const QString& msg)
 {
-    qDebug() << "error: " << msg;
+    qCritical() << "error: " << msg;
     QErrorMessage *box = new QErrorMessage(this);
     box->showMessage(msg);
     //box->deleteLater();
@@ -204,7 +208,7 @@ void Performer::error(const QString& msg)
 
 void Performer::info(const QString& msg)
 {
-    qDebug() << "info: " << msg;
+    qInfo() << "info: " << msg;
     statusBar()->showMessage(msg);
 }
 
@@ -526,6 +530,20 @@ void Performer::prepareUi()
     if(!settingsmenu)
         settingsmenu = new QMenu(i18n("Settings"), this);
     
+    QMenu *styleMenu = settingsmenu->addMenu(i18n("Style"));
+    action = new QAction(styleMenu);
+    action->setText(i18n("Default"));
+    connect(action, &QAction::triggered, this, [this](){setStyle("");}); 
+    styleMenu->addAction(action);   
+    styleMenu->addSeparator();
+    for(const QString& stylename : QStyleFactory::keys())
+    {
+        action = new QAction(styleMenu);
+        action->setText(stylename);
+        connect(action, &QAction::triggered, this, [this,stylename](){setStyle(stylename);}); 
+        styleMenu->addAction(action);        
+    }
+    
     alwaysontopaction = new QAction(this);
     alwaysontopaction->setText(i18n("&Always on top"));
     alwaysontopaction->setCheckable(true); 
@@ -554,6 +572,7 @@ void Performer::prepareUi()
     QAction *before = nullptr;
     if(settingsmenu->actions().size() > 1)
         before = settingsmenu->actions()[1];
+    settingsmenu->insertMenu(before, styleMenu);
     settingsmenu->insertActions(before, QList<QAction*>() << programchangeaction << alwaysontopaction << hidebackendaction << showmidiaction);
     
     if(existed)
@@ -626,6 +645,21 @@ void Performer::setShowMIDI(bool show)
     m_midiDock->setVisible(show);
 }
 
+void Performer::setStyle(const QString& stylename)
+{
+    if(!stylename.isEmpty() && !QStyleFactory::keys().contains(stylename))
+    {
+        qWarning() << "no such style" << stylename;
+        return;
+    }
+    style = stylename;
+    QApplication::setPalette(defaultPalette);
+    if(stylename.isEmpty())
+        QApplication::setStyle(QStyleFactory::create(defaultStyle));
+    else
+        QApplication::setStyle(QStyleFactory::create(stylename));
+}
+
 void Performer::loadConfig()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
@@ -665,6 +699,7 @@ void Performer::loadConfig()
     model->connections(connections);
     
     alwaysontop = config->group("window").readEntry("alwaysontop",false);
+    style = config->group("window").readEntry("style", QString());
     handleProgramChange = config->group("setlist").readEntry("programchange",true);
     hideBackend = config->group("setlist").readEntry("hidebackend",true);
     showMIDI = config->group("window").readEntry("showmidi",false);
@@ -712,6 +747,7 @@ void Performer::loadConfig()
     config.beginGroup("window");
     alwaysontop = config.value("alwaysontop",false).toBool();
     showMIDI = config.value("showmidi",false).toBool();
+    style = config.value("style",QString()).toString();
     config.endGroup();
     
     config.beginGroup("setlist");
@@ -750,6 +786,7 @@ void Performer::saveConfig()
     
     config->group("window").writeEntry("alwaysontop", alwaysontop);
     config->group("window").writeEntry("showmidi", showMIDI);
+    config->group("window").writeEntry("style", style);
     config->group("setlist").writeEntry("programchange", handleProgramChange);
     config->group("setlist").writeEntry("hidebackend", hideBackend); 
        
@@ -787,6 +824,7 @@ void Performer::saveConfig()
     config.beginGroup("window");
     config.setValue("alwaysontop", alwaysontop);
     config.setValue("showmidi", showMIDI);
+    config.setValue("style", style);
     config.endGroup();   
     
     config.beginGroup("setlist");

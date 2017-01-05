@@ -112,6 +112,12 @@ endif()
 
 set(QML_IMPORT_PATH "${QML_DIRS}" CACHE STRING "Qt Creator 4.1 extra qml import paths")
 
+option(LL_DEBUG "Print debug messages" ON)
+if(NOT LL_DEBUG)
+    add_definitions(-DQT_NO_DEBUG_OUTPUT)
+endif()
+
+
 add_definitions(-DTRANSLATION_DOMAIN=\"performer\")
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
