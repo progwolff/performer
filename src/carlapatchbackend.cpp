@@ -465,10 +465,13 @@ void CarlaPatchBackend::preload()
         }
         
         
-        QStringList env = QProcess::systemEnvironment();
-        env << "CARLA_DONT_MANAGE_CONNECTIONS=1";
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert("CARLA_DONT_MANAGE_CONNECTIONS","1");
+        QFileInfo fileinfo(patchfile);
+        qDebug() << "baseName" << fileinfo.baseName();
+        env.insert("CARLA_CLIENT_NAME","Carla-"+fileinfo.baseName());
         execLock.lockForWrite();
-        exec->setEnvironment(env);
+        exec->setProcessEnvironment(env);
         execLock.unlock();
         
         std::function<void()> exithandler =  [this]()
