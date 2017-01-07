@@ -149,6 +149,8 @@ private:
     bool hideBackend;
     bool showMIDI;
     
+    QModelIndex oldindex;
+    
 #ifndef WITH_KF5
     QToolBar* toolBar();
 #endif
