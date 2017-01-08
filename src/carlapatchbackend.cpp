@@ -528,7 +528,7 @@ void CarlaPatchBackend::preload()
         if(carlaPath.isEmpty())
             carlaPath = QStandardPaths::findExecutable("performer-carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) +"/Carla");
         if (carlaPath.isEmpty())
-            carlaPath = QStandardPaths::findExecutable("Carla");
+            carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "performer/carla");
         if (carlaPath.isEmpty())
             carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla");
         

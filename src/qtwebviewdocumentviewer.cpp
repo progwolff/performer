@@ -27,14 +27,6 @@ QtWebViewDocumentViewer::QtWebViewDocumentViewer(QMainWindow* parent)
     m_webviewarea = new QScrollArea(this);
     m_webview = new QQuickWidget(this);
     m_webviewarea->setWidget(m_webview);
-    if(!m_webview->source().isValid())
-    {
-        const QString qmlPath = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/webview.qml");
-        m_webview->setContentsMargins(0,0,0,0);
-        m_webview->setSource(QUrl::fromLocalFile(qmlPath));
-        m_webview->show();
-        m_webview->updateGeometry();
-    }
     m_webview->setEnabled(true);
     m_zoombox = new QComboBox(this);
     m_zoombox->addItem(i18n("Automatic zoom"));
@@ -69,6 +61,21 @@ QtWebViewDocumentViewer::~QtWebViewDocumentViewer()
 
 void QtWebViewDocumentViewer::load(QUrl url)
 {
+	if (!m_webview)
+		return;
+
+	if (!m_webview->source().isValid())
+	{
+		const QString qmlPath = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/webview.qml");
+		m_webview->setContentsMargins(0, 0, 0, 0);
+		m_webview->setSource(QUrl::fromLocalFile(qmlPath));
+		m_webview->show();
+		m_webview->updateGeometry();
+	}
+	
+	if (!m_webview->rootObject())
+		return;
+
     m_zoombox->setEnabled(false);
     QMimeDatabase db;
     QMimeType type = db.mimeTypeForFile(url.toLocalFile());
