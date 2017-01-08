@@ -9,6 +9,13 @@ Live performance audio session manager using [Carla](https://github.com/falktx/C
 Performer lets you manage all the songs in your setlist as individual carla patches and loads each of them when you need it.
 Additionally Performer uses [Okular](https://github.com/KDE/okular) or QWebEngine to display notes and chords of your songs.
 
+## Features
+* Loads carla patches for songs and connects them when they are active
+* Displays notes or chords for songs
+* Detects crashed instances of Carla or the Jack server and restarts them
+* MIDI controllable
+* Qt style selectable
+
 ## Dependencies
 * Carla
 * python

@@ -155,7 +155,7 @@ Performer::Performer(QWidget *parent) :
     
     connect(model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
     connect(model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
-    
+    connect(model, &SetlistModel::rowsAboutToBeInserted, this, [this](){oldindex = QModelIndex();});
     
     loadConfig();
     
@@ -220,7 +220,8 @@ void Performer::prefer()
     m_setlist->setListView->model()->dropMimeData(NULL, Qt::DropAction(), index.row()-1, index.column(), index.parent());
     m_setlist->setListView->model()->removeRows(index.row(), 1, index.parent());
     index = m_setlist->setListView->model()->index(index.row()-1, index.column());
-    m_setlist->setListView->setCurrentIndex(index);
+    oldindex = QModelIndex();
+    songSelected(index);
 }
 
 void Performer::defer()
@@ -231,7 +232,8 @@ void Performer::defer()
     m_setlist->setListView->model()->dropMimeData(NULL, Qt::DropAction(), index.row()+2, index.column(), index.parent());
     m_setlist->setListView->model()->removeRows(index.row(), 1, index.parent());
     index = m_setlist->setListView->model()->index(index.row()+1, index.column());
-    m_setlist->setListView->setCurrentIndex(index);
+    oldindex = QModelIndex();
+    songSelected(index);
 }
 
 void Performer::remove()
@@ -241,7 +243,11 @@ void Performer::remove()
         return;
     m_setlist->setListView->model()->removeRow(index.row());
     m_setlist->setListView->clearSelection();
-    m_setlist->setListView->setCurrentIndex(QModelIndex());
+    oldindex = QModelIndex();
+    if(model->index(index.row(),0).isValid())
+        songSelected(model->index(0,index.row()));
+    else if(model->index(0,0).isValid())
+        songSelected(model->index(0,0));    
     //emit saveconfig();
 }
 
@@ -353,7 +359,6 @@ void Performer::songSelected(const QModelIndex& index)
     if(!ind.isValid())
         return;
 
-    static QModelIndex oldindex;
     m_setlist->setListView->setCurrentIndex(oldindex);
     updateSelected();
     m_setlist->setListView->setCurrentIndex(index);
