@@ -85,7 +85,7 @@ void CarlaPatchBackend::createPatch(const QString& path)
         return;
 
     QByteArray result = database.readAllStandardOutput();
-    QString resultstring = QString::fromLatin1(result);
+    QString resultstring = QString::fromLocal8Bit(result);
     resultstring = resultstring.split("selected:").last();
     QStringList resultList = resultstring.split(',');
     if(resultList.size() < 4)
@@ -298,7 +298,7 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
         for(const char* port : allportlist)
         {
             QStringList conlist;
-            const char** conmem = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1()));
+            const char** conmem = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":"+port).toLocal8Bit()));
             const char** cons = conmem;
             while(cons && *cons)
             {
@@ -327,7 +327,7 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
     try_run(500,[](){
         for(const char* port : allportlist)
         {
-            jack_port_t* portid = jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
+            jack_port_t* portid = jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":"+port).toLocal8Bit());
             if(portid)
                 jack_port_disconnect(m_client, portid); 
         }
@@ -338,13 +338,13 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
         {
             for(const QString& con : connections[port])
             {
-                jack_port_t* portid = jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
+                jack_port_t* portid = jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":"+port).toLocal8Bit());
                 if(portid)
                 {
                     if(jack_port_flags(portid) & JackPortIsOutput)
-                        jack_connect(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1(), con.toLatin1());
+                        jack_connect(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":"+port).toLocal8Bit(), con.toLocal8Bit());
                     else
-                        jack_connect(m_client, con.toLatin1(), (QString::fromLatin1(jack_get_client_name(m_client))+":"+port).toLatin1());
+                        jack_connect(m_client, con.toLocal8Bit(), (QString::fromLocal8Bit(jack_get_client_name(m_client))+":"+port).toLocal8Bit());
                 }
             }
         }
@@ -392,13 +392,13 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
         
         QString jackclientname;
         measure_run(500, [&jackclientname](){
-            jackclientname = QString::fromLatin1(jack_get_client_name(m_client));
+            jackclientname = QString::fromLocal8Bit(jack_get_client_name(m_client));
         },"jackconnect");
         
         if(!name.isEmpty())
         {
             //qDebug() << "connect" << a << b << connect;
-            if(connect && QString::fromLatin1(a).contains(name+":"))
+            if(connect && QString::fromLocal8Bit(a).contains(name+":"))
             {
                 try_run(500,[a,b,name,jackclientname](){
                     jack_port_t* portid = jack_port_by_name(m_client, replace(a, name+":", jackclientname+":"));
@@ -406,7 +406,7 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
                         jack_disconnect(m_client, a, b);
                 },"jackconnect");
             }
-            else if(connect && QString::fromLatin1(b).contains(name+":"))
+            else if(connect && QString::fromLocal8Bit(b).contains(name+":"))
             {
                 try_run(500,[a,b,name,jackclientname](){
                     jack_port_t* portid = jack_port_by_name(m_client, a);
@@ -414,7 +414,7 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
                         jack_disconnect(m_client, a, b);
                 },"jackconnect");
             }
-            else if(!connect && QString::fromLatin1(a).contains(jackclientname+":"))
+            else if(!connect && QString::fromLocal8Bit(a).contains(jackclientname+":"))
             {
                 try_run(500,[a,b,name,jackclientname](){
                     jack_port_t* portid = jack_port_by_name(m_client, replace(a, jackclientname+":", name+":"));
@@ -422,7 +422,7 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
                         jack_disconnect(m_client, replace(a, jackclientname+":", name+":"), b);
                 },"jackconnect");
             }
-            else if(!connect && QString::fromLatin1(b).contains(jackclientname+":"))
+            else if(!connect && QString::fromLocal8Bit(b).contains(jackclientname+":"))
             {
                 try_run(500,[a,b,name,jackclientname](){
                     jack_port_t* portid = jack_port_by_name(m_client, a);
@@ -438,7 +438,7 @@ void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
             if(connect 
                 && clients[backendname] != activeBackend 
                 && backendname != activeBackend->clientName
-                && (QString::fromLatin1(a).contains(backendname+":") || QString::fromLatin1(b).contains(backendname+":"))
+                && (QString::fromLocal8Bit(a).contains(backendname+":") || QString::fromLocal8Bit(b).contains(backendname+":"))
             )
             { 
                 try_run(500,[a,b](){
@@ -486,19 +486,19 @@ void CarlaPatchBackend::connectClient()
             {                
                 for(const QString& con : cons[port])
                 {
-                    jack_port_t* portid = jack_port_by_name(m_client, (name+":"+port).toLatin1());
-                    //qDebug() << "connect" << (name+":"+port).toLatin1() << "to" << *cons;
-                    if(portid && !jack_port_connected_to(portid, con.toLatin1()))
+                    jack_port_t* portid = jack_port_by_name(m_client, (name+":"+port).toLocal8Bit());
+                    //qDebug() << "connect" << (name+":"+port).toLocal8Bit() << "to" << *cons;
+                    if(portid && !jack_port_connected_to(portid, con.toLocal8Bit()))
                     {
                         if(jack_port_flags(portid) & JackPortIsOutput)
                         {
-                            jack_connect(m_client, (name+":"+port).toLatin1(), con.toLatin1());
-                            //qDebug() << "connect client" << (name+":"+port).toLatin1() << con;
+                            jack_connect(m_client, (name+":"+port).toLocal8Bit(), con.toLocal8Bit());
+                            //qDebug() << "connect client" << (name+":"+port).toLocal8Bit() << con;
                         }
                         else
                         {
-                            jack_connect(m_client, con.toLatin1(), (name+":"+port).toLatin1());
-                            //qDebug() << "connect client" << con << (name+":"+port).toLatin1();
+                            jack_connect(m_client, con.toLocal8Bit(), (name+":"+port).toLocal8Bit());
+                            //qDebug() << "connect client" << con << (name+":"+port).toLocal8Bit();
                         }
                     }
                 }
@@ -530,7 +530,7 @@ void CarlaPatchBackend::disconnectClient(const QString& clientname)
         try_run(500,[name,client](){
             for(const char* port : portlist)
             {
-                jack_port_t* portid = jack_port_by_name(client, (name+":"+port).toLatin1());
+                jack_port_t* portid = jack_port_by_name(client, (name+":"+port).toLocal8Bit());
                 if(portid)
                     jack_port_disconnect(client, portid); 
             }
@@ -612,9 +612,9 @@ void CarlaPatchBackend::preload()
             {
                 char* uuid = nullptr;
                 if(try_run(500, [&uuid,client](){
-                    jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                    jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
                 },"preClients"))
-                    uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                    uuid = jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
                 else
                 {
                     clientInitMutex.unlock();
@@ -624,7 +624,7 @@ void CarlaPatchBackend::preload()
                     return;
                 }
                 if(uuid)
-                    preClients[client] = QString::fromLatin1(uuid);
+                    preClients[client] = QString::fromLocal8Bit(uuid);
             }
         }
         
@@ -633,7 +633,7 @@ void CarlaPatchBackend::preload()
         env.insert("CARLA_DONT_MANAGE_CONNECTIONS","1");
         QFileInfo fileinfo(patchfile);
         qDebug() << "baseName" << fileinfo.baseName();
-        env.insert("CARLA_CLIENT_NAME","Carla-"+fileinfo.baseName());
+        env.insert("CARLA_CLIENT_NAME","Carla-"+fileinfo.baseName().toLocal8Bit());
         execLock.lockForWrite();
         exec->setProcessEnvironment(env);
         execLock.unlock();
@@ -730,7 +730,7 @@ void CarlaPatchBackend::preload()
                 execLock.lockForRead();
                 QString newoutput;
                 if(exec)
-                    newoutput = QString::fromLatin1(exec->readAllStandardOutput());
+                    newoutput = QString::fromLocal8Bit(exec->readAllStandardOutput());
                 execLock.unlock();
                 qDebug() << newoutput;
                 stdoutstr += newoutput;
@@ -764,15 +764,15 @@ void CarlaPatchBackend::preload()
                         
                         char* uuid = nullptr;
                         if(try_run(500, [&uuid,client](){
-                            jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                            jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
                         },"postClients"))
-                            uuid = jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                            uuid = jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
                         else
                             break;
                         if(!uuid)
                             continue;
-                        postClients[client] = QString::fromLatin1(uuid);
-                        //qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLatin1());
+                        postClients[client] = QString::fromLocal8Bit(uuid);
+                        //qDebug() << "client" << client << "detected with uuid" << jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
                         
                         if (!pre.contains(port) || (preClients[client] != postClients[client]))
                         {
@@ -894,7 +894,7 @@ const QStringList CarlaPatchBackend::jackClients()
         const char **ports = portlist;
         
         for (int i = 0; ports && ports[i]; ++i) 
-            if(QString::fromLatin1(ports[i]).contains("Carla"))
+            if(QString::fromLocal8Bit(ports[i]).contains("Carla"))
                 ret << ports[i];
         
         jack_free(portlist);
@@ -914,7 +914,7 @@ _jack_port* CarlaPatchBackend::clientPort(const QString& port)
     const char *name = jack_get_client_name(m_client);
     if(!name)
         emit progress(JACK_NO_SERVER);
-    ret = jack_port_by_name(m_client, (QString::fromLatin1(name)+":"+port).toLatin1());
+    ret = jack_port_by_name(m_client, (QString::fromLocal8Bit(name)+":"+port).toLocal8Bit());
     return ret;
 }
 
@@ -925,12 +925,12 @@ bool CarlaPatchBackend::portBelongsToClient(const char* port, jack_client_t *cli
 
 bool CarlaPatchBackend::portBelongsToClient(const char* port, const char *client)
 {
-    return portBelongsToClient(port, QString::fromLatin1(client));
+    return portBelongsToClient(port, QString::fromLocal8Bit(client));
 }
 
 bool CarlaPatchBackend::portBelongsToClient(const char* port, const QString &client)
 {
-    return QString::fromLatin1(port).startsWith(client+":");
+    return QString::fromLocal8Bit(port).startsWith(client+":");
 }
 
 int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
@@ -939,7 +939,7 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
     
     jack_midi_event_t in_event;
     // get the port data
-    void* port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLatin1(jack_get_client_name(m_client))+":control_gui-in").toLatin1()), nframes);
+    void* port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":control_gui-in").toLocal8Bit()), nframes);
     
     // input: get number of events, and process them.
     jack_nframes_t event_count = jack_midi_get_event_count(port_buf);

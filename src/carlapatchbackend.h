@@ -48,7 +48,7 @@ private slots:
 #ifdef WITH_JACK
     void jackconnect(const char* a, const char* b, bool connect);
     void connectClient();
-    void disconnectClient(const QString& clientname = "");
+    void disconnectClient(const QString& clientname = QString());
 #endif
     
 private:

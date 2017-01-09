@@ -5,6 +5,9 @@ set(QT_MIN_VERSION "0.1.0")
 
 SET(CMAKE_CXX_FLAGS "-std=c++0x")
 
+add_definitions(-DTRANSLATION_DOMAIN=\"performer\")
+add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
+
 find_package(Qt5 ${QT_MIN_VERSION} 
     CONFIG REQUIRED COMPONENTS 
     Core 
@@ -117,9 +120,6 @@ if(NOT LL_DEBUG)
     add_definitions(-DQT_NO_DEBUG_OUTPUT)
 endif()
 
-
-add_definitions(-DTRANSLATION_DOMAIN=\"performer\")
-add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
 FIND_PROGRAM(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
 FIND_PROGRAM(BASH_EXECUTABLE bash)

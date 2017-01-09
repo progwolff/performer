@@ -5,10 +5,10 @@
 
 QByteArray replace(const char* str, const char* a, const char* b)
 {
-    return replace(str, QString::fromLatin1(a), QString::fromLatin1(b));
+    return replace(str, QString::fromLocal8Bit(a), QString::fromLocal8Bit(b));
 }
 
 QByteArray replace(const char* str, const QString& a, const QString& b)
 {
-    return QString::fromLatin1(str).replace(a, b).toLatin1();
+    return QString::fromLocal8Bit(str).replace(a, b).toLatin1();
 }

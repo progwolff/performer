@@ -94,7 +94,10 @@ void SetlistModel::createBackend(AbstractPatchBackend*& backend, int index)
         connect(backend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
     }
     else
+    {
+        qDebug() << "file does not exist:" << m_setlist[index].patch().toLocalFile();
         backend = nullptr;
+    }
 }
 
 void SetlistModel::removeBackend(AbstractPatchBackend*& backend)
