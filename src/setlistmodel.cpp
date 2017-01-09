@@ -391,11 +391,13 @@ void SetlistModel::playPrevious()
     m_nextbackend = m_activebackend;
     m_activebackend = m_previousbackend;
     m_previousbackend = nullptr;
-    if(previousindex >= 0 && previousindex <=  m_setlist.size()-1)
-        createBackend(m_previousbackend, previousindex);
     
     if(m_activebackend)
         QMetaObject::invokeMethod(m_activebackend, "activate", Qt::QueuedConnection);
+    
+    if(previousindex >= 0 && previousindex <=  m_setlist.size()-1)
+        createBackend(m_previousbackend, previousindex);
+    
     if(m_previousbackend && m_setlist[previousindex].preload())
         QMetaObject::invokeMethod(m_previousbackend, "preload", Qt::QueuedConnection);
     if(m_nextbackend && m_setlist[nextindex].preload())
@@ -424,11 +426,13 @@ void SetlistModel::playNext()
     m_previousbackend = m_activebackend;
     m_activebackend = m_nextbackend;
     m_nextbackend = nullptr;
+    
+    if(m_activebackend)
+        QMetaObject::invokeMethod(m_activebackend, "activate", Qt::QueuedConnection);
+    
     if(nextindex >= 0 && nextindex <= m_setlist.size()-1)
         createBackend(m_nextbackend, nextindex);
 
-    if(m_activebackend)
-        QMetaObject::invokeMethod(m_activebackend, "activate", Qt::QueuedConnection);
     if(m_previousbackend && m_setlist[previousindex].preload())
         QMetaObject::invokeMethod(m_previousbackend, "preload", Qt::QueuedConnection);
     if(m_nextbackend && m_setlist[nextindex].preload())
