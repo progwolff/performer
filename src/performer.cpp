@@ -270,7 +270,18 @@ void Performer::showContextMenu(QPoint pos)
         if(!model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
             action->setEnabled(false);
         if(index.data(SetlistModel::ActiveRole).toBool() && index.data(SetlistModel::ProgressRole).toInt() > 0)
-            action->setEnabled(false);
+        {
+            action->setText(i18n("Reload"));
+            action->setIcon(QIcon::fromTheme("view-refresh", QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
+        }
+        
+        if(index.data(SetlistModel::EditableRole).toBool())
+        {
+            myMenu.addSeparator();
+            action = myMenu.addAction(QIcon::fromTheme("document-edit", QApplication::style()->standardIcon(QStyle::SP_FileLinkIcon)), i18n("Edit patch"), this, [this,index](){model->edit(index);});
+            if(!model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
+                action->setEnabled(false);
+        }
         
         myMenu.addSeparator();
         

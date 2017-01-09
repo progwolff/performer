@@ -44,6 +44,14 @@ public:
      * @return a map which assignes each port of Performer to a list of ports
      */
     static QMap<QString,QStringList> connections();
+  
+    /**
+     * return the path to an executable that can be used to edit patches.
+     * The editor must be able to edit a patch by calling \"\<editor\> \<patchname\>\". 
+     * @return an editor that can be used to edit patches or an empty string if no such editor exists
+     */
+    virtual const QString editor() = 0;
+
     
 signals:
     /**

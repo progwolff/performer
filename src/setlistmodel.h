@@ -38,7 +38,8 @@ public:
         NotesRole,
         PreloadRole,
         ActiveRole,
-        ProgressRole
+        ProgressRole,
+        EditableRole
     };
 
     explicit SetlistModel(QObject *parent=0);
@@ -70,6 +71,7 @@ public slots:
     void connections(QMap<QString,QStringList> connections);
     void panic();
     void setHideBackend(bool hide);
+    void edit(const QModelIndex& index);
 
 signals:
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);

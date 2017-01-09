@@ -231,6 +231,10 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
         return (index.row()==activeindex);
     case SetlistModel::ProgressRole:
         return metadata.progress();
+    case SetlistModel::EditableRole:
+        if(m_activebackend && !m_activebackend->editor().isEmpty())
+            return true;
+        return false;
     }
 
     return QVariant();
@@ -444,6 +448,15 @@ void SetlistModel::playNext()
     removeBackend(oldpreviousbackend);
 
     emit dataChanged(index(0,0), index(m_setlist.count()-1,0));
+}
+
+void SetlistModel::edit(const QModelIndex& index)
+{
+    if(m_activebackend && !m_activebackend->editor().isEmpty())
+    {
+        QProcess::startDetached(m_activebackend->editor(), QStringList() << index.data(PatchRole).toUrl().toLocalFile());
+        qDebug() << "edit" << index.data(PatchRole).toUrl().toLocalFile();
+    }
 }
 
 bool SetlistModel::fileExists(const QString& file) const

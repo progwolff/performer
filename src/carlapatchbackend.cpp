@@ -55,6 +55,19 @@ CarlaPatchBackend::~CarlaPatchBackend()
     delete exec;
 }
 
+const QString CarlaPatchBackend::editor()
+{
+    QString carlaPath = QStandardPaths::findExecutable("performer-carla");
+    if(carlaPath.isEmpty())
+        carlaPath = QStandardPaths::findExecutable("performer-carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) +"/Carla");
+    if (carlaPath.isEmpty())
+        carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "performer/carla");
+    if (carlaPath.isEmpty())
+        carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla");
+    
+    return carlaPath;
+}
+
 #ifdef WITH_JACK
 jack_client_t *CarlaPatchBackend::jackClient()
 {

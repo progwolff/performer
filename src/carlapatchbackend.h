@@ -28,6 +28,8 @@ public:
     
     static QMap<QString,QStringList> connections();
     
+    const QString editor() override;
+    
 public slots:
     
     void kill() override;
