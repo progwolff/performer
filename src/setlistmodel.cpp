@@ -393,7 +393,7 @@ void SetlistModel::playPrevious()
     m_previousbackend = nullptr;
     
     if(m_activebackend)
-        QMetaObject::invokeMethod(m_activebackend, "activate", Qt::QueuedConnection);
+        m_activebackend->activate();
     
     if(previousindex >= 0 && previousindex <=  m_setlist.size()-1)
         createBackend(m_previousbackend, previousindex);
@@ -428,7 +428,7 @@ void SetlistModel::playNext()
     m_nextbackend = nullptr;
     
     if(m_activebackend)
-        QMetaObject::invokeMethod(m_activebackend, "activate", Qt::QueuedConnection);
+        m_activebackend->activate();
     
     if(nextindex >= 0 && nextindex <= m_setlist.size()-1)
         createBackend(m_nextbackend, nextindex);
