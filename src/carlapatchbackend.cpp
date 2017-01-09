@@ -14,6 +14,7 @@
 #endif
 
 #include "util.h"
+#include <QMetaObject>
 
 #ifdef WITH_JACK
 jack_client_t *CarlaPatchBackend::m_client = nullptr;
@@ -853,7 +854,7 @@ void CarlaPatchBackend::activate()
             clientsLock.lockForRead();
             for(const QString& client : clients.keys())
                 if(clients[client] != activeBackend)
-                    disconnectClient(client);
+                    QMetaObject::invokeMethod(this, "disconnectClient", Qt::QueuedConnection, Q_ARG(const QString&, client));
             clientsLock.unlock();
         }
         activeBackendLock.unlock();

@@ -80,11 +80,13 @@ signals:
     void info(const QString& msg);
     void jackClientState(int s);
 
-private:
-    QList<SetlistMetadata> m_setlist;
+private slots:
     void createBackend(AbstractPatchBackend*& backend, int index);
     void removeBackend(AbstractPatchBackend*& backend);
     void forceRestart(const char* msg, int timeout);
+    
+private:
+    QList<SetlistMetadata> m_setlist;
 
     int movedindex;
     int activeindex,previousindex,nextindex;

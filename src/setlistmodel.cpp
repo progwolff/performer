@@ -49,6 +49,7 @@
 #include <qbrush.h>
 
 #include <QTimer>
+#include <QMetaObject>
 
 SetlistModel::SetlistModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -413,7 +414,7 @@ void SetlistModel::playPrevious()
     if(oldactivebackend)
         QMetaObject::invokeMethod(oldactivebackend, "deactivate", Qt::QueuedConnection);
     
-    removeBackend(oldnextbackend);
+    QMetaObject::invokeMethod(oldnextbackend, "kill", Qt::QueuedConnection);
 
     emit dataChanged(index(0,0), index(m_setlist.count()-1,0));
 }
@@ -448,7 +449,7 @@ void SetlistModel::playNext()
     if(oldactivebackend)
         QMetaObject::invokeMethod(oldactivebackend, "deactivate", Qt::QueuedConnection);
     
-    removeBackend(oldpreviousbackend);
+    QMetaObject::invokeMethod(oldpreviousbackend, "kill", Qt::QueuedConnection);
 
     emit dataChanged(index(0,0), index(m_setlist.count()-1,0));
 }
