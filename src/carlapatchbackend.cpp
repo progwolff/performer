@@ -317,24 +317,25 @@ void CarlaPatchBackend::connectClient()
     if(!clientName.isEmpty())
     {
         QMap<QString, QStringList> cons = connections();
-        try_run(500, [this,cons](){
+        QString name = clientName;
+        try_run(500, [this,cons,name](){
             for(const char* port : portlist)
             {                
                 for(const QString& con : cons[port])
                 {
-                    jack_port_t* portid = jack_port_by_name(m_client, (clientName+":"+port).toLatin1());
-                    //qDebug() << "connect" << (clientName+":"+port).toLatin1() << "to" << *cons;
+                    jack_port_t* portid = jack_port_by_name(m_client, (name+":"+port).toLatin1());
+                    //qDebug() << "connect" << (name+":"+port).toLatin1() << "to" << *cons;
                     if(portid && !jack_port_connected_to(portid, con.toLatin1()))
                     {
                         if(jack_port_flags(portid) & JackPortIsOutput)
                         {
-                            jack_connect(m_client, (clientName+":"+port).toLatin1(), con.toLatin1());
-                            qDebug() << "connect client" << (clientName+":"+port).toLatin1() << con;
+                            jack_connect(m_client, (name+":"+port).toLatin1(), con.toLatin1());
+                            //qDebug() << "connect client" << (name+":"+port).toLatin1() << con;
                         }
                         else
                         {
-                            jack_connect(m_client, con.toLatin1(), (clientName+":"+port).toLatin1());
-                            qDebug() << "connect client" << con << (clientName+":"+port).toLatin1();
+                            jack_connect(m_client, con.toLatin1(), (name+":"+port).toLatin1());
+                            //qDebug() << "connect client" << con << (name+":"+port).toLatin1();
                         }
                     }
                 }

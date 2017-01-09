@@ -380,12 +380,10 @@ void SetlistModel::playPrevious()
 {
     if(activeindex <= 0)
         return;
-
-    removeBackend(m_nextbackend);
-
-    if(m_activebackend)
-        QMetaObject::invokeMethod(m_activebackend, "deactivate", Qt::QueuedConnection);
-
+    
+    AbstractPatchBackend *oldactivebackend = m_activebackend;
+    AbstractPatchBackend *oldnextbackend = m_nextbackend;
+    
     --previousindex;
     --activeindex;
     --nextindex;
@@ -395,13 +393,18 @@ void SetlistModel::playPrevious()
     m_previousbackend = nullptr;
     if(previousindex >= 0 && previousindex <=  m_setlist.size()-1)
         createBackend(m_previousbackend, previousindex);
-
+    
     if(m_activebackend)
         QMetaObject::invokeMethod(m_activebackend, "activate", Qt::QueuedConnection);
     if(m_previousbackend && m_setlist[previousindex].preload())
         QMetaObject::invokeMethod(m_previousbackend, "preload", Qt::QueuedConnection);
     if(m_nextbackend && m_setlist[nextindex].preload())
         QMetaObject::invokeMethod(m_nextbackend, "preload", Qt::QueuedConnection);
+
+    if(oldactivebackend)
+        QMetaObject::invokeMethod(oldactivebackend, "deactivate", Qt::QueuedConnection);
+    
+    removeBackend(oldnextbackend);
 
     emit dataChanged(index(0,0), index(m_setlist.count()-1,0));
 }
@@ -410,11 +413,9 @@ void SetlistModel::playNext()
 {
     if(activeindex < 0 || activeindex >= m_setlist.size()-1)
         return;
-
-    removeBackend(m_previousbackend);
-
-    if(m_activebackend)
-        QMetaObject::invokeMethod(m_activebackend, "deactivate", Qt::QueuedConnection);
+    
+    AbstractPatchBackend *oldactivebackend = m_activebackend;
+    AbstractPatchBackend *oldpreviousbackend = m_previousbackend;
 
     ++previousindex;
     ++activeindex;
@@ -432,6 +433,11 @@ void SetlistModel::playNext()
         QMetaObject::invokeMethod(m_previousbackend, "preload", Qt::QueuedConnection);
     if(m_nextbackend && m_setlist[nextindex].preload())
         QMetaObject::invokeMethod(m_nextbackend, "preload", Qt::QueuedConnection);
+    
+    if(oldactivebackend)
+        QMetaObject::invokeMethod(oldactivebackend, "deactivate", Qt::QueuedConnection);
+    
+    removeBackend(oldpreviousbackend);
 
     emit dataChanged(index(0,0), index(m_setlist.count()-1,0));
 }
