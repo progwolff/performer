@@ -42,9 +42,9 @@ $ make
 ```
 ### Windows [Experimental]
 
-Install [JACK2](http://jackaudio.org/downloads/).
+Download and extract the zip file from Releases to C:\Program Files (x86).
 
-Install [Qt5](https://www.qt.io/download-open-source/).
+To update to the latest git version:
 
 In cmd.exe type:
 ```
