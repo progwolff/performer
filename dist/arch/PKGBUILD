@@ -10,7 +10,7 @@ depends=('carla' 'python' 'qt5-base' 'qt5-declarative')
 makedepends=('git' 'cmake' 'qt5-tools')
 optdepends=('kdebase-runtime: KDE integration'
     'extra-cmake-modules: KDE integration'
-    'okular-git: display notes or chords' 
+    'okular: display notes or chords' 
     'kparts: display notes or chords with okular'
     'qt5-webengine: display notes or chords'
     'jackman: automatically restart unresponsive jack server')
