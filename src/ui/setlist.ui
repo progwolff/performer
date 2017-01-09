@@ -182,34 +182,21 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
           <string>Carla Patch</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="KUrlRequester" name="patchrequester">
-         <property name="toolTip">
-          <string>Carla patch for the song</string>
-         </property>
-         <property name="filter">
-          <string notr="true">*.carxp</string>
-         </property>
-         <property name="mode">
-          <set>KFile::ExistingOnly|KFile::File|KFile::LocalOnly</set>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Notes</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="KUrlRequester" name="notesrequester">
          <property name="toolTip">
           <string>Notes or chords for the song</string>
@@ -217,6 +204,59 @@
          <property name="filter">
           <string/>
          </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QFrame" name="frame">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="KUrlRequester" name="patchrequester">
+            <property name="toolTip">
+             <string>Carla patch for the song</string>
+            </property>
+            <property name="filter">
+             <string notr="true">*.carxp</string>
+            </property>
+            <property name="mode">
+             <set>KFile::ExistingOnly|KFile::File|KFile::LocalOnly</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="createpatchbutton">
+            <property name="toolTip">
+             <string>Create a new patch</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset theme="list-add"/>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>

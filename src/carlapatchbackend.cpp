@@ -68,6 +68,156 @@ const QString CarlaPatchBackend::editor()
     return carlaPath;
 }
 
+void CarlaPatchBackend::createPatch(const QString& path)
+{
+    QString carlaPath = QStandardPaths::findExecutable("performer-carla-database");
+    if(carlaPath.isEmpty())
+        return;
+    
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    QProcess database;
+    database.setProcessEnvironment(env);
+    database.start(carlaPath);
+    if (!database.waitForStarted(2000))
+        return;
+
+    if (!database.waitForFinished(-1))
+        return;
+
+    QByteArray result = database.readAllStandardOutput();
+    QString resultstring = QString::fromLatin1(result);
+    resultstring = resultstring.split("selected:").last();
+    QStringList resultList = resultstring.split(',');
+    if(resultList.size() < 4)
+        return;
+    
+    QString plugin = resultList[2];
+    QString label = resultList[3];
+    QString name = "performer";
+    QString type = "";
+    switch(resultList[1].toInt())
+    {
+        case 0:
+            type = "NONE"; break;
+        case 1:
+            type = "INTERNAL"; break;
+        case 2:
+            type = "LADSPA"; break;
+        case 3:
+            type = "DSSI"; break;
+        case 4:
+            type = "LV2"; break;
+        case 5:
+            type = "VST2"; break;
+        case 6:
+            type = "VST3"; break;
+        case 7:
+            type = "AU"; break;
+        case 8:
+            type = "GIG"; break;
+        case 9:
+            type = "SF2"; break;
+        case 10:
+            type = "SFZ"; break;
+        case 11:
+            type = "JACK"; break;
+    }
+
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+
+    QTextStream out(&file);
+    
+    out <<  "<?xml version='1.0' encoding='UTF-8'?>"
+            "<!DOCTYPE CARLA-PROJECT>"
+            "<CARLA-PROJECT VERSION='2.0'>"
+            ""
+            " <!-- "+label+" -->"
+            " <Plugin>"
+            "  <Info>"
+            "   <Type>"+type+"</Type>"
+            "   <Name>"+name+"</Name>"
+            "   <Binary>"+plugin+"</Binary>"
+            "   <Label>"+label+"</Label>"
+            "  </Info>"
+            ""
+            "  <Data>"
+            "   <Active>Yes</Active>"
+            "  </Data>"
+            " </Plugin>"
+            ""
+            " <Patchbay>"
+            "  <Connection>"
+            "   <Source>Audio Input:Left</Source>"
+            "   <Target>"+name+":input_1</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>Audio Input:Right</Source>"
+            "   <Target>"+name+":input_2</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>Midi Input:events-out</Source>"
+            "   <Target>"+name+":events-in</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":output_1</Source>"
+            "   <Target>Audio Output:Left</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":output_2</Source>"
+            "   <Target>Audio Output:Right</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":out-left</Source>"
+            "   <Target>Audio Output:Left</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":out-right</Source>"
+            "   <Target>Audio Output:Right</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":out L</Source>"
+            "   <Target>Audio Output:Left</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":Out L</Source>"
+            "   <Target>Audio Output:Left</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":Out R</Source>"
+            "   <Target>Audio Output:Right</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":out R</Source>"
+            "   <Target>Audio Output:Right</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":events-out</Source>"
+            "   <Target>Midi Output:events-in</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":output</Source>"
+            "   <Target>Audio Output:Left</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":output</Source>"
+            "   <Target>Audio Output:Right</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":Output</Source>"
+            "   <Target>Audio Output:Left</Target>"
+            "  </Connection>"
+            "  <Connection>"
+            "   <Source>"+name+":Output</Source>"
+            "   <Target>Audio Output:Right</Target>"
+            "  </Connection>"
+            " </Patchbay>"
+            ""
+            "</CARLA-PROJECT>";
+
+}
+
 #ifdef WITH_JACK
 jack_client_t *CarlaPatchBackend::jackClient()
 {

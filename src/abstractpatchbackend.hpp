@@ -51,7 +51,12 @@ public:
      * @return an editor that can be used to edit patches or an empty string if no such editor exists
      */
     virtual const QString editor() = 0;
-
+    
+    /**
+     * Create a new patch for this backend
+     * @param path the file path of the new patch
+     */
+    virtual void createPatch(const QString& path) = 0;
     
 signals:
     /**

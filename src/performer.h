@@ -88,6 +88,7 @@ public slots:
 private slots:
     void showContextMenu(QPoint);
     void addSong();
+    void createPatch();
     void songSelected(const QModelIndex&);
     void updateSelected();
     void prefer();

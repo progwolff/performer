@@ -72,6 +72,7 @@ public slots:
     void panic();
     void setHideBackend(bool hide);
     void edit(const QModelIndex& index);
+    void createPatch(const QString& path) const;
 
 signals:
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);

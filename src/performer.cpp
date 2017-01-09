@@ -145,6 +145,8 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
     connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
     
+    connect(m_setlist->createpatchbutton, SIGNAL(clicked()), SLOT(createPatch()));
+    
     connect(m_setlist->setListView, SIGNAL(activated(QModelIndex)), SLOT(songSelected(QModelIndex)));
     connect(m_setlist->setListView, SIGNAL(clicked(QModelIndex)), SLOT(songSelected(QModelIndex)));
 
@@ -359,6 +361,30 @@ void Performer::addSong()
     int index = model->add(i18n("New Song"), QVariantMap());
     m_setlist->setListView->setCurrentIndex(model->index(index,0));
     songSelected(model->index(index,0));
+}
+
+void Performer::createPatch()
+{
+    QString path = patchdefaultpath;
+    if(path.isEmpty())
+        path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    
+    path += "/"+m_setlist->nameEdit->text();
+    
+    QString filepath = path+".carxp";
+    for(int i=0; model->fileExists(filepath); ++i)
+    {
+        filepath = path+QString::number(i)+".carxp";
+    }
+    model->createPatch(filepath);
+    
+#ifdef WITH_KF5
+    m_setlist->patchrequester->setText(filepath);
+#else
+    m_setlist->patchrequestedit->setText(filepath);
+#endif
+    updateSelected();
+    model->playNow(oldindex);
 }
 
 void Performer::songSelected(const QModelIndex& index)

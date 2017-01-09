@@ -465,6 +465,12 @@ bool SetlistModel::fileExists(const QString& file) const
     return (check_file.exists() && check_file.isFile());
 }
 
+void SetlistModel::createPatch(const QString& path) const
+{
+    if(m_activebackend)
+        m_activebackend->createPatch(path);
+}
+
 QModelIndex SetlistModel::activeIndex() const
 {
     return index(activeindex,0);

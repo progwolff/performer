@@ -218,12 +218,28 @@
           </item>
           <item>
            <widget class="QToolButton" name="patchrequestbutton">
+            <property name="toolTip">
+             <string>Load an existing patch file</string>
+            </property>
             <property name="text">
              <string>...</string>
             </property>
             <property name="icon">
              <iconset theme="inode-directory">
               <normaloff>.</normaloff>.</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="createpatchbutton">
+            <property name="toolTip">
+             <string>Create a new patch</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset theme="list-add"/>
             </property>
            </widget>
           </item>

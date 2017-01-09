@@ -30,6 +30,8 @@ public:
     
     const QString editor() override;
     
+    void createPatch(const QString& path) override;
+    
 public slots:
     
     void kill() override;
