@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-02 20:02+0100\n"
+"POT-Creation-Date: 2017-01-10 13:02+0100\n"
 "PO-Revision-Date: 2016-11-13 19:33+0100\n"
 "Last-Translator: Julian Wolff <wolff@julianwolff.de>\n"
 "Language-Team: DE <wolff@julianwolff.de>\n"
@@ -433,7 +433,7 @@ msgstr "Poly ein / Mono aus"
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
 #. i18n: file: ui/setlist_without_kde.ui:109
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
-#: performer.cpp:88 rc.cpp:18 rc.cpp:60
+#: performer.cpp:93 rc.cpp:18 rc.cpp:63
 msgid "Previous"
 msgstr "Zurück"
 
@@ -441,23 +441,23 @@ msgstr "Zurück"
 #. i18n: ectx: property (text), widget (QToolButton, nextButton)
 #. i18n: file: ui/setlist_without_kde.ui:128
 #. i18n: ectx: property (text), widget (QToolButton, nextButton)
-#: performer.cpp:92 rc.cpp:21 rc.cpp:63
+#: performer.cpp:97 rc.cpp:21 rc.cpp:66
 msgid "Next"
 msgstr "Vor"
 
-#: performer.cpp:101
+#: performer.cpp:106
 msgid "Always on top"
 msgstr "Immer im Vordergrund"
 
-#: performer.cpp:108
+#: performer.cpp:113
 msgid "Terminate and reload all Carla instances."
 msgstr "Beende alle Carla-Instanzen und lade sie neu."
 
-#: performer.cpp:109
+#: performer.cpp:114
 msgid "Panic!"
 msgstr "Panik!"
 
-#: performer.cpp:117 performer.cpp:132
+#: performer.cpp:122 performer.cpp:137
 msgid ""
 "Performer was built without Jack. Rebuild Performer with Jack to enable "
 "loading Carla patches."
@@ -465,7 +465,7 @@ msgstr ""
 "Performer wurde ohne Jack kompiliert. Kompilieren Sie Performer erneut unter "
 "Verwendung von Jack, um das Laden von Carla Patches zu ermöglichen."
 
-#: performer.cpp:121 performer.cpp:137
+#: performer.cpp:126 performer.cpp:142
 msgid ""
 "Performer was built without KParts, QWebEngine or QtWebView. Rebuild "
 "Performer with one of these dependencies to enable displaying notes."
@@ -474,147 +474,162 @@ msgstr ""
 "Kompilieren Sie Performer erneut unter Verwendung einer dieser Komponenten, "
 "um die Darstellung von Notizen zu ermöglichen."
 
-#: performer.cpp:257
+#: performer.cpp:271
 msgid "Play now"
 msgstr "Jetzt spielen"
 
-#: performer.cpp:265
+#: performer.cpp:276
+msgid "Reload"
+msgstr "Neu laden"
+
+#: performer.cpp:283
+msgid "Edit patch"
+msgstr "Patch bearbeiten"
+
+#: performer.cpp:290
 msgid "Prefer"
 msgstr "Vorziehen"
 
-#: performer.cpp:269
+#: performer.cpp:294
 msgid "Defer"
 msgstr "Zurückstellen"
 
-#: performer.cpp:275
+#: performer.cpp:300
 msgid "Remove entry"
 msgstr "Eintrag löschen"
 
-#: performer.cpp:323
+#: performer.cpp:348
 msgid "Carla Patch (*.carxp)"
 msgstr "Carla Patch (*.carxp)"
 
-#: performer.cpp:336
+#: performer.cpp:361
 msgid "New Song"
 msgstr "Neuer Song"
 
-#: performer.cpp:356
+#: performer.cpp:404
 msgid "Set up %1"
 msgstr "%1 einrichten"
 
-#: performer.cpp:405
+#: performer.cpp:453
 msgid "Okular KPart not found"
 msgstr "Okular KPart wurde nicht gefunden"
 
-#: performer.cpp:421
+#: performer.cpp:469
 msgid "Previous page"
 msgstr "Vorherige Seite"
 
-#: performer.cpp:421
+#: performer.cpp:469
 msgid "Next page"
 msgstr "Nächste Seite"
 
-#: performer.cpp:443
+#: performer.cpp:491
 msgid "Zoom"
 msgstr ""
 
-#: performer.cpp:479
+#: performer.cpp:527
 msgid "File"
 msgstr "Datei"
 
-#: performer.cpp:482
+#: performer.cpp:530
 msgid "&New"
 msgstr "&Neu"
 
-#: performer.cpp:489
+#: performer.cpp:537
 msgid "&Open"
 msgstr "&Öffnen"
 
-#: performer.cpp:496
+#: performer.cpp:544
 msgid "&Save"
 msgstr "&Speichern"
 
-#: performer.cpp:503
+#: performer.cpp:551
 msgid "&Save as"
 msgstr "&Speichern unter"
 
-#: performer.cpp:525
+#: performer.cpp:573
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: performer.cpp:528
+#: performer.cpp:575
+msgid "Style"
+msgstr "Stil"
+
+#: performer.cpp:577
+msgid "Default"
+msgstr "Standard"
+
+#: performer.cpp:590
 msgid "&Always on top"
 msgstr "Immer im &Vordergrund"
 
-#: performer.cpp:534
+#: performer.cpp:596
 msgid "&MIDI Program Changes"
 msgstr "&MIDI Programmwechsel"
 
-#: performer.cpp:535
+#: performer.cpp:597
 msgid "If activated, the setlist will react to MIDI Program Change messages."
 msgstr "Falls aktiviert, reagiert die Setliste auf MIDI Programmwechsel."
 
-#: performer.cpp:540
+#: performer.cpp:602
 msgid "&Hide Carla"
 msgstr "&Verstecke Carla"
 
-#: performer.cpp:541
+#: performer.cpp:603
 msgid "If activated, Carla instances will not be visible."
 msgstr "Falls aktiviert, sind Instanzen von Carla nicht sichtbar."
 
-#: performer.cpp:546
+#: performer.cpp:608
 msgid "Show &MIDI controls"
 msgstr "Zeige &MIDI-Steuerung"
 
-#: performer.cpp:547
+#: performer.cpp:609
 msgid "If activated, a MIDI controls configuration view will be visible."
 msgstr ""
 "Falls aktiviert, ist die Konfigurationsansicht für die MIDI-Steuerung "
 "sichtbar."
 
-#: performer.cpp:565
+#: performer.cpp:628
 msgid "Performer Toolbar"
 msgstr "Performer-Werkzeugleiste"
 
-#: performer.cpp:578
+#: performer.cpp:641
 msgid "Scroll vertical"
 msgstr "Vertikal scrollen"
 
-#: performer.cpp:582
+#: performer.cpp:645
 msgid "Scroll horizontal"
 msgstr "Horizontal scrollen"
 
-#: performer.cpp:809
+#: performer.cpp:891
 msgid "Setlists (*.pfm)"
 msgstr "Setlisten (*.pfm)"
 
-#: performer.cpp:877
+#: performer.cpp:959
 msgid "Save File As..."
 msgstr "Speichern unter..."
 
-#: qtwebviewdocumentviewer.cpp:40 qwebenginedocumentviewer.cpp:32
+#: qtwebviewdocumentviewer.cpp:32 qwebenginedocumentviewer.cpp:32
 msgid "Automatic zoom"
 msgstr "Automatisch einpassen"
 
-#: qtwebviewdocumentviewer.cpp:41 qwebenginedocumentviewer.cpp:33
+#: qtwebviewdocumentviewer.cpp:33 qwebenginedocumentviewer.cpp:33
 msgid "Original size"
 msgstr "Originalgröße"
 
-#: qtwebviewdocumentviewer.cpp:42 qwebenginedocumentviewer.cpp:34
+#: qtwebviewdocumentviewer.cpp:34 qwebenginedocumentviewer.cpp:34
 msgid "Page size"
 msgstr "Ganze Seite"
 
-#: qtwebviewdocumentviewer.cpp:43 qwebenginedocumentviewer.cpp:35
+#: qtwebviewdocumentviewer.cpp:35 qwebenginedocumentviewer.cpp:35
 msgid "Page width"
 msgstr "Seitenbreite"
 
-#: setlistmodel.cpp:182
+#: setlistmodel.cpp:187
 msgid "Could not find a running jack server. Can't load Carla patches."
 msgstr ""
-"Konnte keinen laufenden Jack-Server finden. Kann Carla "
-"Patches nicht laden."
+"Konnte keinen laufenden Jack-Server finden. Kann Carla Patches nicht laden."
 
-#: setlistmodel.cpp:185 setlistmodel.cpp:523
+#: setlistmodel.cpp:190
 msgid ""
 "Could not create a client on the existing jack server. Can't load Carla "
 "patches."
@@ -622,48 +637,45 @@ msgstr ""
 "Konnte keinen Client unter dem laufenden Jack-Server erzeugen. Kann Carla "
 "Patches nicht laden."
 
-#: setlistmodel.cpp:188
+#: setlistmodel.cpp:193
 msgid "Carla failed to start."
 msgstr "Carla konnte nicht gestartet werden."
 
-#: setlistmodel.cpp:191
+#: setlistmodel.cpp:196
 msgid "Carla crashed."
 msgstr "Carla ist abgestürzt."
 
-#: setlistmodel.cpp:194
+#: setlistmodel.cpp:199
 msgid "Carla has been terminated."
 msgstr "Carla wurde beendet."
 
-#: setlistmodel.cpp:200
+#: setlistmodel.cpp:205
 msgid "Waiting for other songs to start up..."
 msgstr "Warte darauf, dass andere Songs geladen werden..."
 
-#: setlistmodel.cpp:203
+#: setlistmodel.cpp:208
 msgid "Starting Carla process..."
 msgstr "Starte Carla..."
 
-#: setlistmodel.cpp:206
+#: setlistmodel.cpp:211
 msgid "Starting Carla JACK client..."
 msgstr "Starte Jack-Client für Carla..."
 
-#: setlistmodel.cpp:209
+#: setlistmodel.cpp:214
 msgid "Loading plugins..."
 msgstr "Lade Plugins..."
 
-#: setlistmodel.cpp:212
+#: setlistmodel.cpp:217
 msgid "Ready to play."
 msgstr "Bereit zum Spielen."
 
-#: setlistmodel.cpp:465
+#: setlistmodel.cpp:498
 msgid "Failed to start Carla process."
 msgstr "Konnte Carla nicht starten."
 
-#: setlistmodel.cpp:487 setlistmodel.cpp:516
-msgid ""
-"Could not find a running jack server. Will retry to connect to server in %1 "
-"seconds."
-msgstr ""
-"Konnte keinen laufenden Jack-Server finden. Versuche es in %1 nocheinmal."
+#: setlistmodel.cpp:546 setlistmodel.cpp:575
+msgid "Will retry to connect to server in %1 seconds."
+msgstr "Versuche in %1 nocheinmal, eine Verbindung zum Server aufzubauen."
 
 #. i18n: file: okularui.rc:11
 #. i18n: ectx: ToolBar (okularToolBar)
@@ -675,7 +687,7 @@ msgstr "Hauptwerkzeugleiste"
 #. i18n: ectx: property (windowTitle), widget (QDockWidget, Setlist)
 #. i18n: file: ui/setlist_without_kde.ui:20
 #. i18n: ectx: property (windowTitle), widget (QDockWidget, Setlist)
-#: rc.cpp:6 rc.cpp:48
+#: rc.cpp:6 rc.cpp:51
 msgid "Se&tlist"
 msgstr "Se&tliste"
 
@@ -687,7 +699,7 @@ msgstr "Se&tliste"
 #. i18n: ectx: property (toolTip), widget (QListView, setListView)
 #. i18n: file: ui/setlist_without_kde.ui:39
 #. i18n: ectx: property (whatsThis), widget (QListView, setListView)
-#: rc.cpp:9 rc.cpp:12 rc.cpp:51 rc.cpp:54
+#: rc.cpp:9 rc.cpp:12 rc.cpp:54 rc.cpp:57
 msgid "A list of songs"
 msgstr "Eine Liste von Songs"
 
@@ -695,7 +707,7 @@ msgstr "Eine Liste von Songs"
 #. i18n: ectx: property (text), widget (QToolButton, addButton)
 #. i18n: file: ui/setlist_without_kde.ui:86
 #. i18n: ectx: property (text), widget (QToolButton, addButton)
-#: rc.cpp:15 rc.cpp:57
+#: rc.cpp:15 rc.cpp:60
 msgid "Add"
 msgstr "Hinzufügen"
 
@@ -703,7 +715,7 @@ msgstr "Hinzufügen"
 #. i18n: ectx: property (title), widget (QGroupBox, setupBox)
 #. i18n: file: ui/setlist_without_kde.ui:150
 #. i18n: ectx: property (title), widget (QGroupBox, setupBox)
-#: rc.cpp:24 rc.cpp:66
+#: rc.cpp:24 rc.cpp:69
 msgid "Song Setup"
 msgstr "Song einrichten"
 
@@ -711,17 +723,18 @@ msgstr "Song einrichten"
 #. i18n: ectx: property (toolTip), widget (QCheckBox, preloadBox)
 #. i18n: file: ui/setlist_without_kde.ui:171
 #. i18n: ectx: property (toolTip), widget (QCheckBox, preloadBox)
-#: rc.cpp:27 rc.cpp:69
+#: rc.cpp:27 rc.cpp:72
 msgid ""
 "Preload the song. If disabled, the song will only be loaded if it is active."
 msgstr ""
-"Lade den Song vor. Falls deaktiviert, wird der Song erst geladen, wenn er aktiv ist."
+"Lade den Song vor. Falls deaktiviert, wird der Song erst geladen, wenn er "
+"aktiv ist."
 
 #. i18n: file: ui/setlist.ui:174
 #. i18n: ectx: property (text), widget (QCheckBox, preloadBox)
 #. i18n: file: ui/setlist_without_kde.ui:174
 #. i18n: ectx: property (text), widget (QCheckBox, preloadBox)
-#: rc.cpp:30 rc.cpp:72
+#: rc.cpp:30 rc.cpp:75
 msgid "Preload"
 msgstr "Vorladen"
 
@@ -735,48 +748,62 @@ msgstr "Name des Songs"
 #. i18n: ectx: property (text), widget (QLabel, label)
 #. i18n: file: ui/setlist_without_kde.ui:184
 #. i18n: ectx: property (text), widget (QLabel, label)
-#: rc.cpp:36 rc.cpp:75
+#: rc.cpp:36 rc.cpp:78
 msgid "Carla Patch"
 msgstr "Carla Patch"
 
 #. i18n: file: ui/setlist.ui:195
-#. i18n: ectx: property (toolTip), widget (KUrlRequester, patchrequester)
-#. i18n: file: ui/setlist_without_kde.ui:200
-#. i18n: ectx: property (toolTip), widget (QFrame, frame)
-#: rc.cpp:39 rc.cpp:78
-msgid "Carla patch for the song"
-msgstr "Carla Patch des Songs"
-
-#. i18n: file: ui/setlist.ui:208
 #. i18n: ectx: property (text), widget (QLabel, label_2)
-#. i18n: file: ui/setlist_without_kde.ui:236
+#. i18n: file: ui/setlist_without_kde.ui:252
 #. i18n: ectx: property (text), widget (QLabel, label_2)
-#: rc.cpp:42 rc.cpp:84
+#: rc.cpp:39 rc.cpp:93
 msgid "Notes"
 msgstr "Notizen"
 
-#. i18n: file: ui/setlist.ui:215
+#. i18n: file: ui/setlist.ui:202
 #. i18n: ectx: property (toolTip), widget (KUrlRequester, notesrequester)
-#. i18n: file: ui/setlist_without_kde.ui:252
+#. i18n: file: ui/setlist_without_kde.ui:268
 #. i18n: ectx: property (toolTip), widget (QFrame, frame_2)
-#: rc.cpp:45 rc.cpp:87
+#: rc.cpp:42 rc.cpp:96
 msgid "Notes or chords for the song"
 msgstr "Notizen für den Song"
 
+#. i18n: file: ui/setlist.ui:236
+#. i18n: ectx: property (toolTip), widget (KUrlRequester, patchrequester)
+#. i18n: file: ui/setlist_without_kde.ui:200
+#. i18n: ectx: property (toolTip), widget (QFrame, frame)
+#: rc.cpp:45 rc.cpp:81
+msgid "Carla patch for the song"
+msgstr "Carla Patch des Songs"
+
+#. i18n: file: ui/setlist.ui:249
+#. i18n: ectx: property (toolTip), widget (QToolButton, createpatchbutton)
+#. i18n: file: ui/setlist_without_kde.ui:236
+#. i18n: ectx: property (toolTip), widget (QToolButton, createpatchbutton)
+#: rc.cpp:48 rc.cpp:90
+msgid "Create a new patch"
+msgstr "Erstelle einen neuen Patch"
+
 #. i18n: file: ui/setlist_without_kde.ui:222
+#. i18n: ectx: property (toolTip), widget (QToolButton, patchrequestbutton)
+#: rc.cpp:84
+msgid "Load an existing patch file"
+msgstr "Lade eine existierende Datei"
+
+#. i18n: file: ui/setlist_without_kde.ui:225
 #. i18n: ectx: property (text), widget (QToolButton, patchrequestbutton)
-#. i18n: file: ui/setlist_without_kde.ui:270
+#. i18n: file: ui/setlist_without_kde.ui:286
 #. i18n: ectx: property (text), widget (QToolButton, notesrequestbutton)
-#: rc.cpp:81 rc.cpp:90
+#: rc.cpp:87 rc.cpp:99
 msgid "..."
 msgstr "..."
 
-#: rc.cpp:91
+#: rc.cpp:100
 msgctxt "NAME OF TRANSLATORS"
 msgid "Your names"
 msgstr "Julian Wolff"
 
-#: rc.cpp:92
+#: rc.cpp:101
 msgctxt "EMAIL OF TRANSLATORS"
 msgid "Your emails"
 msgstr "wolff@julianwolff.de"

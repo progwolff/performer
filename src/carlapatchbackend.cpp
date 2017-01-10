@@ -850,13 +850,8 @@ void CarlaPatchBackend::activate()
             qDebug() << "activated client " << name << " with patch " << patchfile;
         
             connectClient();
-            
-            clientsLock.lockForRead();
-            for(const QString& client : clients.keys())
-                if(clients[client] != activeBackend)
-                    QMetaObject::invokeMethod(this, "disconnectClient", Qt::QueuedConnection, Q_ARG(const QString&, client));
-            clientsLock.unlock();
         }
+        
         activeBackendLock.unlock();
     }
     else
