@@ -80,6 +80,7 @@ signals:
     void error(const QString& msg);
     void info(const QString& msg);
     void jackClientState(int s);
+    void changed();
 
 private slots:
     void createBackend(AbstractPatchBackend*& backend, int index);

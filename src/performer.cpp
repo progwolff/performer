@@ -122,8 +122,8 @@ Performer::Performer(QWidget *parent) :
     
     m_setlist->setupBox->setVisible(false);
 #ifdef WITH_KF5
-    connect(m_setlist->patchrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
-    connect(m_setlist->notesrequester, SIGNAL(urlSelected(const QUrl &)), SLOT(updateSelected()));
+    connect(m_setlist->patchrequester, &KUrlRequester::urlSelected, this, [this](){updateSelected(); setWindowModified(true);});
+    connect(m_setlist->notesrequester, &KUrlRequester::urlSelected, this, [this](){updateSelected(); setWindowModified(true);});
 #ifndef WITH_JACK
     m_setlist->patchrequester->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
     m_setlist->patchrequester->setEnabled(false);
@@ -133,8 +133,8 @@ Performer::Performer(QWidget *parent) :
     m_setlist->notesrequester->setEnabled(false);
 #endif
 #else
-    connect(m_setlist->patchrequestbutton, SIGNAL(clicked()), SLOT(requestPatch()));
-    connect(m_setlist->notesrequestbutton, SIGNAL(clicked()), SLOT(requestNotes()));
+    connect(m_setlist->patchrequestbutton, &QToolButton::clicked, this, [this](){requestPatch(); setWindowModified(true);});
+    connect(m_setlist->notesrequestbutton, &QToolButton::clicked, this, [this](){requestPatch(); setWindowModified(true);});
     m_setlist->patchrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     m_setlist->notesrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
 #ifndef WITH_JACK
@@ -148,8 +148,8 @@ Performer::Performer(QWidget *parent) :
     m_setlist->patchrequestbutton->setToolTip(i18n("Performer was built without KParts, QWebEngine or QtWebView. Rebuild Performer with one of these dependencies to enable displaying notes."));
 #endif
 #endif
-    connect(m_setlist->preloadBox, SIGNAL(stateChanged(int)), SLOT(updateSelected()));
-    connect(m_setlist->nameEdit, SIGNAL(textEdited(const QString &)), SLOT(updateSelected()));
+    connect(m_setlist->preloadBox, &QCheckBox::stateChanged, this, [this](){updateSelected(); setWindowModified(true);});
+    connect(m_setlist->nameEdit, &QLineEdit::textEdited, this, [this](){updateSelected(); setWindowModified(true);});
     
     connect(m_setlist->createpatchbutton, SIGNAL(clicked()), SLOT(createPatch()));
     
@@ -163,6 +163,7 @@ Performer::Performer(QWidget *parent) :
     
     connect(model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
     connect(model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
+    connect(model, &SetlistModel::changed, this, [this](){setWindowModified(true);});
     connect(model, &SetlistModel::rowsAboutToBeInserted, this, [this](){oldindex = QModelIndex();});
     
     loadConfig();
