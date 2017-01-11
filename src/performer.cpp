@@ -65,7 +65,6 @@ Performer::Performer(QWidget *parent) :
     ,handleProgramChange(true)
     ,hideBackend(true)
     ,showMIDI(false)
-    ,hasChanges(false)
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
@@ -74,6 +73,8 @@ Performer::Performer(QWidget *parent) :
     QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(QApplication::instance(), SIGNAL(commitDataRequest(QSessionManager&)), this, SLOT(askSaveChanges(QSessionManager&)), Qt::DirectConnection);
     connect(QApplication::instance(), SIGNAL(saveStateRequest(QSessionManager&)), this, SLOT(askSaveChanges(QSessionManager&)), Qt::DirectConnection);
+
+    setWindowFilePath(i18n("unknown.pfm"));
     
     model = new SetlistModel(this);
     
@@ -206,7 +207,7 @@ Performer::~Performer()
 
 void Performer::closeEvent(QCloseEvent *event)
 {
-    if(!hasChanges)
+    if(!isWindowModified())
         return;
     
     int ret = QMessageBox::warning(
@@ -218,7 +219,8 @@ void Performer::closeEvent(QCloseEvent *event)
     switch (ret) 
     {
     case QMessageBox::Save:
-        saveFile();
+        if(!saveFile())
+            event->ignore();
         break;
     case QMessageBox::Discard:
         break;
@@ -254,7 +256,7 @@ void Performer::prefer()
     index = m_setlist->setListView->model()->index(index.row()-1, index.column());
     oldindex = QModelIndex();
     songSelected(index);
-    hasChanges = true;
+    setWindowModified(true);
 }
 
 void Performer::defer()
@@ -267,7 +269,7 @@ void Performer::defer()
     index = m_setlist->setListView->model()->index(index.row()+1, index.column());
     oldindex = QModelIndex();
     songSelected(index);
-    hasChanges = true;
+    setWindowModified(true);
 }
 
 void Performer::remove()
@@ -283,7 +285,7 @@ void Performer::remove()
     else if(model->index(0,0).isValid())
         songSelected(model->index(0,0));    
     //emit saveconfig();
-    hasChanges = true;
+    setWindowModified(true);
 }
 
 void Performer::showContextMenu(QPoint pos)
@@ -394,7 +396,7 @@ void Performer::addSong()
     int index = model->add(i18n("New Song"), QVariantMap());
     m_setlist->setListView->setCurrentIndex(model->index(index,0));
     songSelected(model->index(index,0));
-    hasChanges = true;
+    setWindowModified(true);
 }
 
 void Performer::createPatch()
@@ -419,7 +421,7 @@ void Performer::createPatch()
 #endif
     updateSelected();
     model->playNow(oldindex);
-    hasChanges = true;
+    setWindowModified(true);
 }
 
 void Performer::songSelected(const QModelIndex& index)
@@ -929,12 +931,15 @@ void Performer::loadFile()
 
 void Performer::loadFile(const QString& path)
 {
-    closeEvent(nullptr);
+    QCloseEvent close;
+    closeEvent(&close);
+    if(!close.isAccepted())
+        return;
     
     if(path.isEmpty())
         return;
     
-    m_path = path;
+    setWindowFilePath(path);
     
     model->reset();
 #ifdef WITH_KF5
@@ -989,25 +994,26 @@ void Performer::loadFile(const QString& path)
     }
     set.endGroup();
 #endif
-    hasChanges = false;
+    setWindowModified(false);
 }
 
-void Performer::saveFileAs()
+bool Performer::saveFileAs()
 {
     QString filename = QFileDialog::getSaveFileName(Q_NULLPTR, i18n("Save File As..."));
     if(!filename.isEmpty())
-        saveFile(filename);
+        return saveFile(filename);
+    else
+        return false;
 }
 
-void Performer::saveFile(const QString& path)
+bool Performer::saveFile(const QString& path)
 {
     QString filename = path;
-    if(path.isEmpty())
-        filename = m_path;
+    if(path.isEmpty() && windowFilePath() != i18n("unknown.pfm"))
+        filename = windowFilePath();
     if(filename.isEmpty())
     {
-        saveFileAs();
-        return;
+        return saveFileAs();
     }
 #ifdef WITH_KF5
     KSharedConfigPtr set = KSharedConfig::openConfig(filename);
@@ -1046,15 +1052,18 @@ void Performer::saveFile(const QString& path)
 
     set.sync();
 #endif
-    hasChanges = false;
+    setWindowModified(false);
+    if(filename.endsWith(".autosave"))
+        setWindowFilePath(filename.left(filename.lastIndexOf(".autosave")));
+    return true;
 }
 
 void Performer::autosave()
 {
-    QString filepath = m_path+".autosave";
+    QString filepath = windowFilePath()+".autosave";
     for(int i=0; model->fileExists(filepath); ++i)
     {
-        filepath = m_path+QString::number(i)+".autosave";
+        filepath = windowFilePath()+QString::number(i)+".autosave";
     }
     saveFile(filepath);
     qDebug() << "saved to " << filepath;

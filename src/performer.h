@@ -97,8 +97,8 @@ private slots:
     void defer();
     void remove();
     void autosave();
-    void saveFile(const QString& path=QString());
-    void saveFileAs();
+    bool saveFile(const QString& path=QString());
+    bool saveFileAs();
     void loadFile();
     
     void receiveMidiEvent(unsigned char status, unsigned char data1, unsigned char data2);
@@ -135,8 +135,7 @@ private:
     MIDI *midi;
     
     SetlistModel *model;
-    
-    QString m_path;
+
     QString notesdefaultpath;
     QString patchdefaultpath;
     QString style;
@@ -157,8 +156,6 @@ private:
     bool handleProgramChange;
     bool hideBackend;
     bool showMIDI;
-    
-    bool hasChanges;
     
     QModelIndex oldindex;
     
