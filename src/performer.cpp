@@ -65,10 +65,15 @@ Performer::Performer(QWidget *parent) :
     ,handleProgramChange(true)
     ,hideBackend(true)
     ,showMIDI(false)
+    ,hasChanges(false)
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
 #endif   
+    
+    QGuiApplication::setFallbackSessionManagementEnabled(false);
+    connect(QApplication::instance(), SIGNAL(commitDataRequest(QSessionManager&)), this, SLOT(askSaveChanges(QSessionManager&)), Qt::DirectConnection);
+    connect(QApplication::instance(), SIGNAL(saveStateRequest(QSessionManager&)), this, SLOT(askSaveChanges(QSessionManager&)), Qt::DirectConnection);
     
     model = new SetlistModel(this);
     
@@ -174,8 +179,7 @@ Performer::Performer(QWidget *parent) :
 
 Performer::~Performer() 
 {
-    saveConfig();
-    
+    saveConfig();   
     //for(QAction* action : midi_cc_actions)
     //    delete action;
     
@@ -198,6 +202,32 @@ Performer::~Performer()
 
     delete m_setlist;
     m_setlist = nullptr;
+}
+
+void Performer::closeEvent(QCloseEvent *event)
+{
+    if(!hasChanges)
+        return;
+    
+    int ret = QMessageBox::warning(
+                this,
+                i18n("Performer"),
+                i18n("Save changes to setlist?"),
+                QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+    switch (ret) 
+    {
+    case QMessageBox::Save:
+        saveFile();
+        break;
+    case QMessageBox::Discard:
+        break;
+    case QMessageBox::Cancel:
+        event->ignore();
+        break;
+    default:
+        autosave();
+    }
 }
 
 void Performer::error(const QString& msg)
@@ -224,6 +254,7 @@ void Performer::prefer()
     index = m_setlist->setListView->model()->index(index.row()-1, index.column());
     oldindex = QModelIndex();
     songSelected(index);
+    hasChanges = true;
 }
 
 void Performer::defer()
@@ -236,6 +267,7 @@ void Performer::defer()
     index = m_setlist->setListView->model()->index(index.row()+1, index.column());
     oldindex = QModelIndex();
     songSelected(index);
+    hasChanges = true;
 }
 
 void Performer::remove()
@@ -251,6 +283,7 @@ void Performer::remove()
     else if(model->index(0,0).isValid())
         songSelected(model->index(0,0));    
     //emit saveconfig();
+    hasChanges = true;
 }
 
 void Performer::showContextMenu(QPoint pos)
@@ -361,6 +394,7 @@ void Performer::addSong()
     int index = model->add(i18n("New Song"), QVariantMap());
     m_setlist->setListView->setCurrentIndex(model->index(index,0));
     songSelected(model->index(index,0));
+    hasChanges = true;
 }
 
 void Performer::createPatch()
@@ -385,6 +419,7 @@ void Performer::createPatch()
 #endif
     updateSelected();
     model->playNow(oldindex);
+    hasChanges = true;
 }
 
 void Performer::songSelected(const QModelIndex& index)
@@ -894,6 +929,8 @@ void Performer::loadFile()
 
 void Performer::loadFile(const QString& path)
 {
+    closeEvent(nullptr);
+    
     if(path.isEmpty())
         return;
     
@@ -952,6 +989,7 @@ void Performer::loadFile(const QString& path)
     }
     set.endGroup();
 #endif
+    hasChanges = false;
 }
 
 void Performer::saveFileAs()
@@ -1008,7 +1046,18 @@ void Performer::saveFile(const QString& path)
 
     set.sync();
 #endif
-    
+    hasChanges = false;
+}
+
+void Performer::autosave()
+{
+    QString filepath = m_path+".autosave";
+    for(int i=0; model->fileExists(filepath); ++i)
+    {
+        filepath = m_path+QString::number(i)+".autosave";
+    }
+    saveFile(filepath);
+    qDebug() << "saved to " << filepath;
 }
 
 #ifndef WITH_KF5
@@ -1020,5 +1069,30 @@ QToolBar* Performer::toolBar()
     return toolbar;
 }
 #endif
+
+void Performer::askSaveChanges(QSessionManager& manager)
+{
+    if (manager.allowsInteraction()) {
+        int ret = QMessageBox::warning(
+                    this,
+                    i18n("Performer"),
+                    i18n("Save changes to setlist?"),
+                    QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+
+        switch (ret) 
+        {
+        case QMessageBox::Save:
+            manager.release();
+            saveFile();
+        case QMessageBox::Discard:
+            break;
+        case QMessageBox::Cancel:
+        default:
+            manager.cancel();
+        }
+    } else {
+        autosave();
+    }
+}
 
 #include "performer.moc"

@@ -57,6 +57,7 @@
 class SetlistModel;
 class QStyledItemDelegate;
 class QAbstractScrollArea;
+class QSessionManager;
 
 namespace Ui {
     class Setlist;
@@ -95,6 +96,7 @@ private slots:
     void prefer();
     void defer();
     void remove();
+    void autosave();
     void saveFile(const QString& path=QString());
     void saveFileAs();
     void loadFile();
@@ -109,6 +111,8 @@ private slots:
     void setHideBackend(bool hide);
     void setShowMIDI(bool show);
     
+    void askSaveChanges(QSessionManager& manager);
+    
 #ifndef WITH_KF5
     void requestPatch();
     void requestNotes();
@@ -116,6 +120,9 @@ private slots:
     
 signals:
     void select(const QModelIndex& index);
+    
+protected:
+    void closeEvent(QCloseEvent *event) override;
     
 private:
     void prepareUi();
@@ -150,6 +157,8 @@ private:
     bool handleProgramChange;
     bool hideBackend;
     bool showMIDI;
+    
+    bool hasChanges;
     
     QModelIndex oldindex;
     
