@@ -431,7 +431,7 @@ msgstr "Poly ein / Mono aus"
 
 #: performer.cpp:77 performer.cpp:1021
 msgid "unknown.pfm"
-msgstr ""
+msgstr "unbekannt.pfm"
 
 #. i18n: file: ui/setlist.ui:109
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
@@ -480,7 +480,7 @@ msgstr ""
 
 #: performer.cpp:223 performer.cpp:1097
 msgid "Save changes to setlist?"
-msgstr ""
+msgstr "Änderungen an der Setliste speichern?"
 
 #: performer.cpp:315
 msgid "Play now"
