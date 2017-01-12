@@ -786,7 +786,10 @@ void CarlaPatchBackend::preload()
                         },"postClients"))
                             uuid = jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
                         else
+                        {
                             QTimer::singleShot(500, outputhandler);
+                            break;
+                        }
                         if(!uuid)
                             continue;
                         postClients[client] = QString::fromLocal8Bit(uuid);
