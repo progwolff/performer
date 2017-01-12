@@ -880,6 +880,12 @@ void CarlaPatchBackend::activate()
         QTimer::singleShot(200, this, SLOT(activate()));
     }
     
+    clientsLock.lockForRead();
+    for(const QString& client: clients.keys())
+        if(clients[client] != this)
+            disconnectClient(client);
+    clientsLock.unlock();
+    
     #endif
 }
 
