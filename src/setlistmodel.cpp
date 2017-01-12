@@ -330,8 +330,6 @@ bool SetlistModel::removeRows(int row, int /*count*/, const QModelIndex& /*paren
         movedindex = -1;
         
         playNow(index(activeindex,0));
-        
-        emit changed();
     }
     else
     {
@@ -339,6 +337,8 @@ bool SetlistModel::removeRows(int row, int /*count*/, const QModelIndex& /*paren
     }
 
     endInsertRows();
+    
+    emit changed();
 
     return true;
 }

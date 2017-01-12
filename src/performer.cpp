@@ -163,8 +163,14 @@ Performer::Performer(QWidget *parent) :
     
     connect(model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
     connect(model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
-    connect(model, &SetlistModel::changed, this, [this](){setWindowModified(true);});
-    connect(model, &SetlistModel::rowsAboutToBeInserted, this, [this](){oldindex = QModelIndex();});
+    connect(model, &SetlistModel::changed, this, [this](){
+        setWindowModified(true); 
+        if(m_setlist->setListView->model()->rowCount() == 0)
+            m_setlist->setupBox->setVisible(false);
+    });
+    connect(model, &SetlistModel::rowsAboutToBeInserted, this, [this](){
+        oldindex = QModelIndex();
+    });
     
     loadConfig();
     
@@ -287,6 +293,8 @@ void Performer::remove()
         songSelected(model->index(0,0));    
     //emit saveconfig();
     setWindowModified(true);
+    if(m_setlist->setListView->model()->rowCount() == 0)
+        m_setlist->setupBox->setVisible(false);
 }
 
 void Performer::showContextMenu(QPoint pos)
