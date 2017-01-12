@@ -180,7 +180,7 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ToolTipRole:
         if(index.row()==activeindex)
-            tooltip = "Active Song. ";
+            tooltip = i18n("Active Song. ");
         switch(metadata.progress())
         {
             case AbstractPatchBackend::JACK_NO_SERVER:
