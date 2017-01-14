@@ -54,6 +54,7 @@ public:
     
 #ifdef WITH_JACK
     static jack_client_t *jackClient();
+    static bool freeJackClient();
 #endif
     
     /**
@@ -119,6 +120,14 @@ public slots:
      * After calling this, the patch should not output any sounds.
      */
     virtual void deactivate() = 0;
+    
+    /**
+     * Reconnect all ports of Performer to match the last known configuration.
+     * Should be reimplemented in a backend to restore connections after a server crash.
+     */
+    static void reconnect()
+    {
+    }
     
     /**
      * Choose if backends should be hidden or shown

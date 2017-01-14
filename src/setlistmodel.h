@@ -42,6 +42,10 @@ public:
         ProgressRole,
         EditableRole
     };
+    
+    enum Backend {
+        Carla = 0
+    };
 
     explicit SetlistModel(QObject *parent=0);
     virtual ~SetlistModel();
@@ -88,6 +92,10 @@ private slots:
     void forceRestart(const char* msg, int timeout);
     
 private:
+    bool createJackClient();
+    bool freeJackClient();
+    void reconnect();
+    
     QList<SetlistMetadata> m_setlist;
 
     int movedindex;
@@ -96,6 +104,9 @@ private:
     AbstractPatchBackend *m_activebackend,*m_previousbackend,*m_nextbackend;
     
     int *secondsleft;
+    
+    Backend backend;
+    
 };
 
 #endif //SETLISTMODEL_H

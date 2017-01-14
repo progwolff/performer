@@ -57,6 +57,7 @@ SetlistModel::SetlistModel(QObject *parent)
     , m_previousbackend(nullptr)
     , m_nextbackend(nullptr)
     , secondsleft(nullptr)
+    , backend(Carla)
 {
     movedindex = -1;
     activeindex = -1;
@@ -65,11 +66,10 @@ SetlistModel::SetlistModel(QObject *parent)
 
     connect(this, SIGNAL(jackClientState(int)), this, SLOT(updateProgress(int)), Qt::QueuedConnection);
     
-    
     reset();
 
 #ifdef WITH_JACK
-    if(!CarlaPatchBackend::jackClient())
+    if(!createJackClient())
         emit jackClientState(AbstractPatchBackend::JACK_NO_SERVER);
 #endif
 
@@ -81,23 +81,29 @@ SetlistModel::~SetlistModel()
     removeBackend(m_previousbackend);
     removeBackend(m_nextbackend);
 #ifdef WITH_JACK
-    while(!CarlaPatchBackend::freeJackClient());
+    while(!freeJackClient());
 #endif
 }
 
-void SetlistModel::createBackend(AbstractPatchBackend*& backend, int index)
+void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
 {
     if(fileExists(m_setlist[index].patch().toLocalFile()))
     {
         qDebug() << "creating backend for" << m_setlist[index].patch().toLocalFile();
-        backend = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile());
-        connect(backend, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
-        connect(backend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
+        
+        switch(backend)
+        {
+            case Carla:
+                instance = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile());
+        }
+        
+        connect(instance, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
+        connect(instance, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
     }
     else
     {
         qDebug() << "file does not exist:" << m_setlist[index].patch().toLocalFile();
-        backend = nullptr;
+        instance = nullptr;
     }
 }
 
@@ -258,7 +264,13 @@ void SetlistModel::reset()
     removeBackend(m_previousbackend);
     removeBackend(m_nextbackend);
     
-    m_activebackend = new CarlaPatchBackend("");
+    switch(backend)
+    {
+        case Carla:
+            m_activebackend = new CarlaPatchBackend("");
+            break;
+    }
+    
     m_activebackend->activate();
     connect(m_activebackend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
 
@@ -341,16 +353,6 @@ bool SetlistModel::removeRows(int row, int /*count*/, const QModelIndex& /*paren
     emit changed();
 
     return true;
-}
-
-QMap<QString,QStringList> SetlistModel::connections() const
-{
-    return CarlaPatchBackend::connections();
-}
-
-void SetlistModel::connections(QMap<QString,QStringList> connections)
-{
-    CarlaPatchBackend::connections(connections);
 }
 
 void SetlistModel::panic()
@@ -517,7 +519,7 @@ void SetlistModel::updateProgress(int p)
         removeBackend(m_nextbackend);
         removeBackend(m_activebackend);
 #ifdef WITH_JACK
-        while(!CarlaPatchBackend::freeJackClient());
+        while(!freeJackClient());
 #endif
         //emit info(i18n("Could not find a running jack server."));
         forceRestart("Could not find a running jack server.", 5);
@@ -553,7 +555,7 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
             emit info("");
                 
 #ifdef WITH_JACK
-            if(!CarlaPatchBackend::jackClient())
+            if(!createJackClient())
             {
                 *secondsleft = timeout+1;
                 QProcess *exec = new QProcess(this);
@@ -564,7 +566,7 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
             else
 #endif
             {
-                CarlaPatchBackend::reconnect();
+                reconnect();
                 static_cast<QTimer*>(QObject::sender())->stop();
                 static_cast<QTimer*>(QObject::sender())->deleteLater();
                 delete secondsleft;
@@ -582,5 +584,64 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
 
 void SetlistModel::setHideBackend(bool hide)
 {
-    CarlaPatchBackend::setHideBackend(hide);
+    switch(backend)
+    {
+        case Carla:
+            CarlaPatchBackend::setHideBackend(hide);
+            break;
+    }
+}
+
+bool SetlistModel::createJackClient()
+{
+#ifdef WITH_JACK
+    switch(backend)
+    {
+        case Carla:
+            return CarlaPatchBackend::jackClient();
+    }
+    return false;
+#endif
+}
+
+bool SetlistModel::freeJackClient()
+{
+#ifdef WITH_JACK
+    switch(backend)
+    {
+        case Carla:
+            return CarlaPatchBackend::freeJackClient();
+    }
+    return false;
+#endif
+}
+
+void SetlistModel::connections(QMap<QString,QStringList> connections)
+{
+    switch(backend)
+    {
+        case Carla:
+            CarlaPatchBackend::connections(connections);
+            break;
+    }
+}
+
+QMap<QString,QStringList> SetlistModel::connections() const
+{
+    switch(backend)
+    {
+        case Carla:
+            return CarlaPatchBackend::connections();
+    }
+    return QMap<QString,QStringList>();
+}
+
+void SetlistModel::reconnect()
+{
+    switch(backend)
+    {
+        case Carla:
+            CarlaPatchBackend::reconnect();
+            break;
+    }
 }
