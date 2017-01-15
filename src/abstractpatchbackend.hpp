@@ -48,8 +48,9 @@ public:
      * Create a patch backend instance and assign a patch file
      * @param patchfile the patch file to assign to this backend instance
      */
-    AbstractPatchBackend(const QString& patchfile)
+    AbstractPatchBackend(const QString& patchfile, const QString& displayname = QString())
         :patchfile(patchfile)
+        ,displayname(displayname)
     {};
     
 #ifdef WITH_JACK
@@ -141,6 +142,7 @@ public slots:
 protected:
     
     QString patchfile;
+    QString displayname;
     
 protected:
     /**

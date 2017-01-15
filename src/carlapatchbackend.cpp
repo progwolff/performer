@@ -26,6 +26,8 @@
 #include <QtConcurrent>
 #include <QApplication>
 
+#include <string>
+
 #ifdef WITH_JACK
 #include <jack/midiport.h>
 #endif
@@ -46,12 +48,13 @@ QReadWriteLock CarlaPatchBackend::clientsLock(QReadWriteLock::Recursive);
 CarlaPatchBackend *CarlaPatchBackend::activeBackend = nullptr;
 QMap<QString,CarlaPatchBackend*> CarlaPatchBackend::clients;
 QMap<QString, QStringList> CarlaPatchBackend::savedConnections;
+QString CarlaPatchBackend::programName;
 
 const char CarlaPatchBackend::portlist[6][11]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"};
 const char CarlaPatchBackend::allportlist[7][15]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"};
 
-CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile)
-: AbstractPatchBackend(patchfile)
+CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile, const QString& displayname)
+: AbstractPatchBackend(patchfile, displayname)
 , clientNameLock(QReadWriteLock::Recursive)
 , execLock(QReadWriteLock::Recursive)
 , exec(nullptr)
@@ -279,7 +282,7 @@ jack_client_t *CarlaPatchBackend::jackClient()
                     
                     jack_set_port_connect_callback(m_client, &CarlaPatchBackend::connectionChanged, NULL);
                     
-                    jack_set_process_callback(m_client, &CarlaPatchBackend::receiveMidiEvents, NULL);
+                    jack_set_process_callback(m_client, &CarlaPatchBackend::processMidiEvents, NULL);
                     
                     jack_on_shutdown(m_client, &CarlaPatchBackend::serverLost, NULL);
                     
@@ -870,6 +873,8 @@ void CarlaPatchBackend::activate()
             qDebug() << "activated client " << name << " with patch " << patchfile;
         
             connectClient();
+            
+            programName = displayname;
         }
         
         activeBackendLock.unlock();
@@ -955,7 +960,7 @@ bool CarlaPatchBackend::portBelongsToClient(const char* port, const QString &cli
     return QString::fromLocal8Bit(port).startsWith(client+":");
 }
 
-int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
+int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
 {
     Q_UNUSED(arg);
     
@@ -979,8 +984,35 @@ int CarlaPatchBackend::receiveMidiEvents(jack_nframes_t nframes, void* arg)
         }
     }
     
+    port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":events-out").toLocal8Bit()), nframes);
+    jack_midi_clear_buffer(port_buf);
+    //send program name if it changed
+    if(!programName.isEmpty())
+    {
+        qDebug() << "sending program name " << programName;
+        unsigned char* buffer = jack_midi_event_reserve(port_buf, 0, 6+programName.length());
+      
+        // F0 7E 7F 05 03 00 01 00 0B 54 65 73 74 20 53 61 6D 70 6C 65 F7
+        if(buffer)
+        {
+            buffer[0] = 0xF0; //sysex
+            buffer[1] = 0x7E; //non real-time
+            buffer[2] = 0x01; //all devices
+            buffer[3] = 0x06; //general information
+            buffer[4] = 0x02; //identity reply
+            strcpy((char*)&buffer[5], programName.toLocal8Bit().constData());
+            buffer[5+programName.length()] = 0xF7; //sysex end
+            programName = QString();
+        }
+        else
+            qWarning() << "could not reserve midi output buffer";
+    }
+    
+    
     return 0;
 }
+
+
 #endif
 
 

@@ -94,7 +94,7 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
         switch(backend)
         {
             case Carla:
-                instance = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile());
+                instance = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile(), m_setlist[index].name());
         }
         
         connect(instance, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));

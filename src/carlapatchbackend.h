@@ -36,7 +36,7 @@ class CarlaPatchBackend : public AbstractPatchBackend
         Q_OBJECT
     
 public:
-    CarlaPatchBackend(const QString& patchfile);
+    CarlaPatchBackend(const QString& patchfile, const QString& displayname = QString());
     
 #ifdef WITH_JACK
     static jack_client_t *jackClient();
@@ -85,7 +85,7 @@ private:
     static CarlaPatchBackend *activeBackend;
     
 #ifdef WITH_JACK
-    static int receiveMidiEvents(jack_nframes_t nframes, void* arg);
+    static int processMidiEvents(jack_nframes_t nframes, void* arg);
     static void serverLost(void* arg);
 #endif
     
@@ -104,6 +104,8 @@ private:
     
     static const char portlist[6][11];
     static const char allportlist[7][15];
+    
+    static QString programName;
     
     int numPlugins;
     int pluginsLoaded;
