@@ -70,7 +70,9 @@ Performer::Performer(QWidget *parent) :
     KLocalizedString::setApplicationDomain("performer");
 #endif   
     
+#if not (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
     QGuiApplication::setFallbackSessionManagementEnabled(false);
+#endif
     connect(QApplication::instance(), SIGNAL(commitDataRequest(QSessionManager&)), this, SLOT(askSaveChanges(QSessionManager&)), Qt::DirectConnection);
     connect(QApplication::instance(), SIGNAL(saveStateRequest(QSessionManager&)), this, SLOT(askSaveChanges(QSessionManager&)), Qt::DirectConnection);
 
@@ -312,7 +314,8 @@ void Performer::showContextMenu(QPoint pos)
         QMenu myMenu;
         QAction *action;
         
-        action = myMenu.addAction(QIcon::fromTheme("media-playback-start", QApplication::style()->standardIcon(QStyle::SP_MediaPlay)), i18n("Play now"), this, [this,index](){model->playNow(index);});
+        action = myMenu.addAction(QIcon::fromTheme("media-playback-start", QApplication::style()->standardIcon(QStyle::SP_MediaPlay)), i18n("Play now"));
+        connect(action, &QAction::triggered, this, [this,index](){model->playNow(index);});
         if(!model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
             action->setEnabled(false);
         if(index.data(SetlistModel::ActiveRole).toBool() && index.data(SetlistModel::ProgressRole).toInt() > 0)
@@ -324,7 +327,8 @@ void Performer::showContextMenu(QPoint pos)
         if(index.data(SetlistModel::EditableRole).toBool())
         {
             myMenu.addSeparator();
-            action = myMenu.addAction(QIcon::fromTheme("document-edit", QApplication::style()->standardIcon(QStyle::SP_FileLinkIcon)), i18n("Edit patch"), this, [this,index](){model->edit(index);});
+            action = myMenu.addAction(QIcon::fromTheme("document-edit", QApplication::style()->standardIcon(QStyle::SP_FileLinkIcon)), i18n("Edit patch"));
+            connect(action, &QAction::triggered, this, [this,index](){model->edit(index);});
             if(!model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
                 action->setEnabled(false);
         }
