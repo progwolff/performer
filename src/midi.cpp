@@ -442,16 +442,19 @@ void MIDI::midiContextMenuRequested(const QPoint& pos)
             
             if(cc <= 127)
             {
-                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc), this, [](){});
+                action = myMenu.addAction(QIcon::fromTheme("tag-assigned", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("CC %1 Assigned", cc));
+                connect(action, &QAction::triggered, this, [](){});
                 action->setEnabled(false);
                 myMenu.addSeparator();
             }
-            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"), this, [sender,this](){
+            action = myMenu.addAction(QIcon::fromTheme("configure-shortcuts", QApplication::style()->standardIcon(QStyle::SP_CommandLink)), i18n("Learn MIDI CC"));
+            connect(action, &QAction::triggered, this, [sender,this](){
                 resetCc(sender->actions()[0]); 
                 learn(sender->actions()[0]);
                 emit status(i18n("Learning MIDI CC for action %1", sender->actions()[0]->text()));
             });
-            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"), this, [sender,this](){
+            action = myMenu.addAction(QIcon::fromTheme("remove", QApplication::style()->standardIcon(QStyle::SP_TrashIcon)), i18n("Clear MIDI CC"));
+            connect(action, &QAction::triggered, this, [sender,this](){
                 resetCc(sender->actions()[0]);
                 emit status(i18n("MIDI CC cleared for action %1", sender->actions()[0]->text()));
             });
