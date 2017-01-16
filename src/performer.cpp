@@ -70,7 +70,7 @@ Performer::Performer(QWidget *parent) :
     KLocalizedString::setApplicationDomain("performer");
 #endif   
     
-#if not (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
     QGuiApplication::setFallbackSessionManagementEnabled(false);
 #endif
     connect(QApplication::instance(), SIGNAL(commitDataRequest(QSessionManager&)), this, SLOT(askSaveChanges(QSessionManager&)), Qt::DirectConnection);
