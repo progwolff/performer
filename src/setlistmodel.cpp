@@ -600,8 +600,8 @@ bool SetlistModel::createJackClient()
         case Carla:
             return CarlaPatchBackend::jackClient();
     }
-    return false;
 #endif
+    return false;
 }
 
 bool SetlistModel::freeJackClient()
@@ -612,8 +612,8 @@ bool SetlistModel::freeJackClient()
         case Carla:
             return CarlaPatchBackend::freeJackClient();
     }
-    return false;
 #endif
+    return false;
 }
 
 void SetlistModel::connections(QMap<QString,QStringList> connections)

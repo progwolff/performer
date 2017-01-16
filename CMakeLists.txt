@@ -39,7 +39,6 @@ if(ECM_FOUND)
         #ConfigWidgets
         KIO
         GlobalAccel
-        Declarative
         #XmlGui
         OPTIONAL_COMPONENTS
         Parts

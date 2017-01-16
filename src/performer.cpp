@@ -30,7 +30,6 @@
 #include <KAboutData>
 #include <KLocalizedString>
 #include <KMessageBox>
-#include <kdeclarative.h>
 #include <KToolBar>
 #include <KSharedConfig>
 #include <KConfig>

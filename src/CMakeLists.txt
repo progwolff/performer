@@ -70,7 +70,6 @@ if(WITH_KF5)
         #KF5::ConfigWidgets
         KF5::KIOWidgets
         KF5::I18n
-        KF5::Declarative
         #KF5::XmlGui
         KF5::CoreAddons
         KF5::GlobalAccel
