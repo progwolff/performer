@@ -604,13 +604,13 @@ void CarlaPatchBackend::kill()
 
 void CarlaPatchBackend::preload()
 {
+    #ifdef WITH_JACK
     if(!m_client)
     {
         emit progress(JACK_OPEN_FAILED);
         return;
     }
     
-    #ifdef WITH_JACK
     execLock.lockForRead();
     bool hasexec = exec;
     execLock.unlock();
