@@ -205,6 +205,8 @@ if(ECM_FOUND)
     install(FILES x-performer-setlist.xml DESTINATION ${XDG_MIME_INSTALL_DIR})
     
     feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+elseif(UNIX)
+    install(FILES performer.desktop DESTINATION /usr/share/applications)
 endif(ECM_FOUND)
 
 find_package(SharedMimeInfo ${SMI_MIN_VERSION})

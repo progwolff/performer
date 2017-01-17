@@ -46,6 +46,9 @@ add_qt_android_apk(performer_apk performer
 elseif(WIN32)
 add_executable(performer WIN32 main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
 else()
+if(NOT WITH_KF5)
+include(GNUInstallDirs)
+endif()
 add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
 endif()
 
@@ -158,8 +161,8 @@ if(WITH_QTWEBVIEW)
 endif()
 
 if(WITH_JACK)
-    install(FILES backend/performer-carla.py DESTINATION ${CMAKE_INSTALL_PREFIX}/share/carla RENAME performer-carla)
-    install(FILES backend/performer-carla-database.py DESTINATION ${CMAKE_INSTALL_PREFIX}/share/carla RENAME performer-carla-database)
+    install(FILES backend/performer-carla.py DESTINATION ${CMAKE_INSTALL_DATADIR}/carla RENAME performer-carla)
+    install(FILES backend/performer-carla-database.py DESTINATION ${CMAKE_INSTALL_DATADIR}/carla RENAME performer-carla-database)
     install(
         FILES backend/performer-carla DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME performer-carla 
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
