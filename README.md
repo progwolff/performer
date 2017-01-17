@@ -54,7 +54,7 @@ Copy the installed libraries:
 cp -ap ~/Qt5.7.0/5.7/gcc_64/lib/* /usr/lib/x86_64-linux-gnu/
 ```
 
-Build and install performer:
+Build and install Performer:
 ```
 $ git clone git@github.com:progwolff/performer.git
 $ mkdir build && cd build
