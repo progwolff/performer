@@ -48,12 +48,13 @@ $ ./qt-opensource-linux-x64-5.7.0.run
 
 Install Qt to ~/Qt5.7.0, skip login, make sure to install Qt WebEngine
 
+Copy the installed libraries:
 
 ```
 cp -ap ~/Qt5.7.0/5.7/gcc_64/lib/* /usr/lib/x86_64-linux-gnu/
 ```
 
-
+Build and install performer:
 ```
 $ git clone git@github.com:progwolff/performer.git
 $ mkdir build && cd build
