@@ -59,6 +59,8 @@ cp -ap ~/Qt5.7.0/5.7/gcc_64/lib/* /usr/lib/x86_64-linux-gnu/
 $ git clone git@github.com:progwolff/performer.git
 $ mkdir build && cd build
 $ cmake -DCMAKE_INSTALL_PREFIX=/usr -DQt5_DIR=~/Qt5.7.0/5.7/gcc_64/lib/cmake/Qt5 -DJACK_LIBRARIES=/usr/lib/x86_64-linux-gnu/libjack.so -DJACK_INCLUDEDIR=/usr/include ..
+$ make
+$ sudo make install
 ```
 
 ### Other Linux Distros
