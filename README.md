@@ -33,6 +33,28 @@ Additionally Performer uses [Okular](https://github.com/KDE/okular) or QWebEngin
 ### Arch Linux
 Install performer-git from AUR
 
+### KXStudio / Ubuntu 14.04
+I just installed KXStudio.
+
+To build Performer with a document viewer on KXStudio or Ubuntu 14 run:
+```
+$ sudo apt-get install build-essential
+$ sudo apt-get install git
+$ sudo apt-get install cmake
+$ sudo apt-get install pkgconf
+$ sudo apt-get install libjack-jackd2-dev
+$ wget http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run
+$ chmod +x qt-opensource-linux-x64-5.7.0.run
+$ ./qt-opensource-linux-x64-5.7.0.run
+```
+Install qt to ~/Qt5.7.0, skip login, make sure to install Qt WebEngine
+
+```
+$ git clone git@github.com:progwolff/performer.git
+$ mkdir build && cd build
+$ cmake -DCMAKE_INSTALL_PREFIX=/usr -DQt5_DIR=~/Qt5.7.0/5.7/gcc_64/lib/cmake/Qt5 ..
+```
+
 ### Other Linux Distros
 ```
 $ mkdir build && cd build

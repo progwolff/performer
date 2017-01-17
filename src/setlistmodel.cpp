@@ -548,7 +548,7 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
     timer->setSingleShot(false);
     secondsleft = new int(timeout);
     emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *secondsleft));
-    connect(timer, &QTimer::timeout, this, [this,msg,timeout](){
+    connect(timer, &QTimer::timeout, this, [this,msg,timeout,timer](){
         --*secondsleft;
         if(*secondsleft <= 0)
         {
@@ -567,8 +567,8 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
 #endif
             {
                 reconnect();
-                static_cast<QTimer*>(QObject::sender())->stop();
-                static_cast<QTimer*>(QObject::sender())->deleteLater();
+                timer->stop();
+                timer->deleteLater();
                 delete secondsleft;
                 secondsleft = nullptr;
                 panic();

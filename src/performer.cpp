@@ -135,7 +135,7 @@ Performer::Performer(QWidget *parent) :
 #endif
 #else
     connect(m_setlist->patchrequestbutton, &QToolButton::clicked, this, [this](){requestPatch(); setWindowModified(true);});
-    connect(m_setlist->notesrequestbutton, &QToolButton::clicked, this, [this](){requestPatch(); setWindowModified(true);});
+    connect(m_setlist->notesrequestbutton, &QToolButton::clicked, this, [this](){requestNotes(); setWindowModified(true);});
     m_setlist->patchrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     m_setlist->notesrequestbutton->setIcon(QIcon::fromTheme("document-open", QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
 #ifndef WITH_JACK
