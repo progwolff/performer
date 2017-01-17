@@ -34,7 +34,6 @@ Additionally Performer uses [Okular](https://github.com/KDE/okular) or QWebEngin
 Install performer-git from AUR
 
 ### KXStudio / Ubuntu 14.04
-I just installed KXStudio.
 
 To build Performer with a document viewer on KXStudio or Ubuntu 14 run:
 ```
