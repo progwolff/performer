@@ -41,18 +41,24 @@ To build Performer with a document viewer on KXStudio or Ubuntu 14 run:
 $ sudo apt-get install build-essential
 $ sudo apt-get install git
 $ sudo apt-get install cmake
-$ sudo apt-get install pkgconf
 $ sudo apt-get install libjack-jackd2-dev
 $ wget http://download.qt.io/official_releases/qt/5.7/5.7.0/qt-opensource-linux-x64-5.7.0.run
 $ chmod +x qt-opensource-linux-x64-5.7.0.run
 $ ./qt-opensource-linux-x64-5.7.0.run
 ```
-Install qt to ~/Qt5.7.0, skip login, make sure to install Qt WebEngine
+
+Install Qt to ~/Qt5.7.0, skip login, make sure to install Qt WebEngine
+
+
+```
+cp -ap ~/Qt5.7.0/5.7/gcc_64/lib/* /usr/lib/x86_64-linux-gnu/
+```
+
 
 ```
 $ git clone git@github.com:progwolff/performer.git
 $ mkdir build && cd build
-$ cmake -DCMAKE_INSTALL_PREFIX=/usr -DQt5_DIR=~/Qt5.7.0/5.7/gcc_64/lib/cmake/Qt5 ..
+$ cmake -DCMAKE_INSTALL_PREFIX=/usr -DQt5_DIR=~/Qt5.7.0/5.7/gcc_64/lib/cmake/Qt5 -DJACK_LIBRARIES=/usr/lib/x86_64-linux-gnu/libjack.so -DJACK_INCLUDEDIR=/usr/include ..
 ```
 
 ### Other Linux Distros

@@ -664,7 +664,7 @@ void CarlaPatchBackend::preload()
             execLock.lockForRead();
             QProcess *p = exec;
             execLock.unlock();
-            if(QObject::sender() == p)
+            //if(QObject::sender() == p)
             {
                 clientNameLock.lockForWrite();
                 if(clientName.isEmpty())
@@ -677,7 +677,8 @@ void CarlaPatchBackend::preload()
                 execLock.unlock();
                 emit progress(PROCESS_EXIT);
             }
-            QObject::sender()->deleteLater();
+            //QObject::sender()->deleteLater();
+            p->deleteLater();
         };
         connect(exec, static_cast<void (QProcess::*)(int,QProcess::ExitStatus)>(&QProcess::finished), this, exithandler);
         
@@ -686,7 +687,7 @@ void CarlaPatchBackend::preload()
             execLock.lockForRead();
             QProcess *p = exec;
             execLock.unlock();
-            if(QObject::sender() == p)
+            //if(QObject::sender() == p)
             {
                 clientNameLock.lockForWrite();
                 if(clientName.isEmpty())
@@ -707,8 +708,8 @@ void CarlaPatchBackend::preload()
                 else 
                     emit progress(PROCESS_ERROR);
             }
-            qCritical() << static_cast<QProcess*>(QObject::sender())->readAllStandardError();
-            QObject::sender()->deleteLater();
+            qCritical() << p->readAllStandardError();
+            p->deleteLater();
         };
         connect(exec, &QProcess::errorOccurred, this, errorhandler);
         
