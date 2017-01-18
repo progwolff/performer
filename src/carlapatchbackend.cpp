@@ -53,6 +53,13 @@ QString CarlaPatchBackend::programName;
 const char CarlaPatchBackend::portlist[6][11]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"};
 const char CarlaPatchBackend::allportlist[7][15]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"};
 
+const char CarlaPatchBackend::inputleftnames[1][8]{"input_1"};
+const char CarlaPatchBackend::inputrightnames[1][8]{"input_2"};
+const char CarlaPatchBackend::outputleftnames[6][9]{"output_1", "out-left", "out L", "Out L", "output", "Output"};
+const char CarlaPatchBackend::outputrightnames[6][10]{"output_2", "out-right", "out R", "Out R", "output", "Output"};
+const char CarlaPatchBackend::midiinputnames[1][10]{"events-in"};
+const char CarlaPatchBackend::midioutputnames[1][11]{"events-out"};  
+
 CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile, const QString& displayname)
 : AbstractPatchBackend(patchfile, displayname)
 , clientNameLock(QReadWriteLock::Recursive)
@@ -154,13 +161,13 @@ void CarlaPatchBackend::createPatch(const QString& path)
             "<!DOCTYPE CARLA-PROJECT>"
             "<CARLA-PROJECT VERSION='2.0'>"
             ""
-            " <!-- "+label+" -->"
+            " <!-- " << label << " -->"
             " <Plugin>"
             "  <Info>"
-            "   <Type>"+type+"</Type>"
-            "   <Name>"+name+"</Name>"
-            "   <Binary>"+plugin+"</Binary>"
-            "   <Label>"+label+"</Label>"
+            "   <Type>" << type << "</Type>"
+            "   <Name>" << name << "</Name>"
+            "   <Binary>" << plugin << "</Binary>"
+            "   <Label>" << label << "</Label>"
             "  </Info>"
             ""
             "  <Data>"
@@ -168,72 +175,50 @@ void CarlaPatchBackend::createPatch(const QString& path)
             "  </Data>"
             " </Plugin>"
             ""
-            " <Patchbay>"
-            "  <Connection>"
+            " <Patchbay>";
+    for(const char* left : inputleftnames)
+    {
+        out << "  <Connection>"
             "   <Source>Audio Input:Left</Source>"
-            "   <Target>"+name+":input_1</Target>"
-            "  </Connection>"
-            "  <Connection>"
+            "   <Target>" << name << ":" << left << "</Target>"
+            "  </Connection>";
+    }
+    for(const char* right : inputrightnames)
+    {
+        out << "  <Connection>"
             "   <Source>Audio Input:Right</Source>"
-            "   <Target>"+name+":input_2</Target>"
-            "  </Connection>"
-            "  <Connection>"
+            "   <Target>" << name << ":"  << right << "</Target>"
+            "  </Connection>";
+    }
+    for(const char* left : outputleftnames)
+    {
+        out << "  <Connection>"
+            "   <Source>" << name << ":"  << left << "</Source>"
+            "   <Target>Audio Output:Left</Target>"
+            "  </Connection>";
+    }
+    for(const char* right : outputrightnames)
+    {
+        out << "  <Connection>"
+            "   <Source>" << name << ":"  << right << "</Source>"
+            "   <Target>Audio Output:Right</Target>"
+            "  </Connection>";
+    }
+    for(const char* midi : midiinputnames)
+    {
+        out << "  <Connection>"
             "   <Source>Midi Input:events-out</Source>"
-            "   <Target>"+name+":events-in</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":output_1</Source>"
-            "   <Target>Audio Output:Left</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":output_2</Source>"
-            "   <Target>Audio Output:Right</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":out-left</Source>"
-            "   <Target>Audio Output:Left</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":out-right</Source>"
-            "   <Target>Audio Output:Right</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":out L</Source>"
-            "   <Target>Audio Output:Left</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":Out L</Source>"
-            "   <Target>Audio Output:Left</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":Out R</Source>"
-            "   <Target>Audio Output:Right</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":out R</Source>"
-            "   <Target>Audio Output:Right</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":events-out</Source>"
+            "   <Target>" << name << ":"  << midi << "</Target>"
+            "  </Connection>";
+    }
+    for(const char* midi : midioutputnames)
+    {
+        out << "  <Connection>"
+            "   <Source>" << name << ":"  << midi << "</Source>"
             "   <Target>Midi Output:events-in</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":output</Source>"
-            "   <Target>Audio Output:Left</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":output</Source>"
-            "   <Target>Audio Output:Right</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":Output</Source>"
-            "   <Target>Audio Output:Left</Target>"
-            "  </Connection>"
-            "  <Connection>"
-            "   <Source>"+name+":Output</Source>"
-            "   <Target>Audio Output:Right</Target>"
-            "  </Connection>"
-            " </Patchbay>"
+            "  </Connection>";
+    }
+    out <<  " </Patchbay>"
             ""
             "</CARLA-PROJECT>";
 
