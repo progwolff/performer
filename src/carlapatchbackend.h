@@ -102,14 +102,14 @@ private:
     
     static QMap<QString, QStringList> savedConnections;
     
-    static const char portlist[6][11];
-    static const char allportlist[7][15];
-    static const char inputleftnames[1][8];
-    static const char inputrightnames[1][8];
-    static const char outputleftnames[6][9];
-    static const char outputrightnames[6][10];
-    static const char midiinputnames[1][10];
-    static const char midioutputnames[1][11];    
+    static const char portlist[][11];
+    static const char allportlist[][15];
+    static const char inputleftnames[][14];
+    static const char inputrightnames[][14];
+    static const char outputleftnames[][15];
+    static const char outputrightnames[][15];
+    static const char midiinputnames[][10];
+    static const char midioutputnames[][11];    
     
     static QString programName;
     

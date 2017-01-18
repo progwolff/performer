@@ -53,12 +53,12 @@ QString CarlaPatchBackend::programName;
 const char CarlaPatchBackend::portlist[6][11]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"};
 const char CarlaPatchBackend::allportlist[7][15]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"};
 
-const char CarlaPatchBackend::inputleftnames[1][8]{"input_1"};
-const char CarlaPatchBackend::inputrightnames[1][8]{"input_2"};
-const char CarlaPatchBackend::outputleftnames[6][9]{"output_1", "out-left", "out L", "Out L", "output", "Output"};
-const char CarlaPatchBackend::outputrightnames[6][10]{"output_2", "out-right", "out R", "Out R", "output", "Output"};
-const char CarlaPatchBackend::midiinputnames[1][10]{"events-in"};
-const char CarlaPatchBackend::midioutputnames[1][11]{"events-out"};  
+const char CarlaPatchBackend::inputleftnames[][14]{"input_1", "in L", "In L", "input", "Input", "Audio Input 1"};
+const char CarlaPatchBackend::inputrightnames[][14]{"input_2", "in R", "In R", "output", "Output", "Audio Input 2"};
+const char CarlaPatchBackend::outputleftnames[][15]{"output_1", "out-left", "out L", "Out L", "output", "Output", "Audio Output 1"};
+const char CarlaPatchBackend::outputrightnames[][15]{"output_2", "out-right", "out R", "Out R", "output", "Output", "Audio Output 2"};
+const char CarlaPatchBackend::midiinputnames[][10]{"events-in"};
+const char CarlaPatchBackend::midioutputnames[][11]{"events-out"};  
 
 CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile, const QString& displayname)
 : AbstractPatchBackend(patchfile, displayname)
