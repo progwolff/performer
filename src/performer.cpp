@@ -417,6 +417,10 @@ void Performer::createPatch()
     if(path.isEmpty())
         path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     
+    QDir dir(path);
+    if (!dir.exists())
+        dir.mkdir(".");
+    
     path += "/"+m_setlist->nameEdit->text();
     
     QString filepath = path+".carxp";
