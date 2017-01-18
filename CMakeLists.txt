@@ -136,6 +136,10 @@ ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE)
 	MESSAGE("installing localization from ${CMAKE_CURRENT_SOURCE_DIR}/po")
         FILE(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/po/*.po")
         SET(GMO_FILES)
+        
+        if(NOT KDE_INSTALL_LOCALEDIR)
+            set(KDE_INSTALL_LOCALEDIR "${CMAKE_INSTALL_PREFIX}/share/locale")
+        endif()
 
         FOREACH(_poFile ${PO_FILES})
 		MESSAGE("found ${_poFile}")
