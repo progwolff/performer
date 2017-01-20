@@ -643,53 +643,8 @@ void CarlaPatchBackend::preload()
         
         execLock.lockForWrite();
         exec->setProcessEnvironment(env);
-        QProcess *p = exec;
-        std::function<void()> exithandler =  [this,p]()
-        {
-            if(p)
-            {
-                clientNameLock.lockForWrite();
-                if(clientName.isEmpty())
-                    clientInitMutex.unlock();
-                else
-                    clientName = "";
-                clientNameLock.unlock();
-                execLock.lockForWrite();
-                exec = nullptr;
-                execLock.unlock();
-                emit progress(PROCESS_EXIT);
-            }
-            p->deleteLater();
-        };
-        connect(exec, static_cast<void (QProcess::*)(int,QProcess::ExitStatus)>(&QProcess::finished), this, exithandler);
-        
-        std::function<void(QProcess::ProcessError)> errorhandler = [this,p](QProcess::ProcessError err)
-        {
-            if(p)
-            {
-                clientNameLock.lockForWrite();
-                if(clientName.isEmpty())
-                    clientInitMutex.unlock();
-                execLock.lockForWrite();
-                exec = nullptr;
-                execLock.unlock();
-                clientName = "";
-                clientNameLock.unlock();
-                if (err == QProcess::FailedToStart)
-                {
-                    emit progress(PROCESS_FAILEDTOSTART);
-                    activeBackendLock.lockForWrite();
-                    if (this == activeBackend)
-                        activeBackend = nullptr;
-                    activeBackendLock.unlock();
-                }
-                else 
-                    emit progress(PROCESS_ERROR);
-            }
-            qCritical() << p->readAllStandardError();
-            p->deleteLater();
-        };
-        connect(exec, &QProcess::errorOccurred, this, errorhandler);
+        connect(exec, SIGNAL(finished()), this, SLOT(clientExit()));
+        connect(exec, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(clientError(QProcess::ProcessError)));
         execLock.unlock();
         
         QString carlaPath = QStandardPaths::findExecutable("performer-carla");
@@ -819,6 +774,57 @@ void CarlaPatchBackend::preload()
         QTimer::singleShot(200, this, SLOT(preload()));
     #endif
     
+}
+
+void CarlaPatchBackend::clientExit()
+{
+    execLock.lockForRead();
+    QProcess *p = exec;
+    execLock.unlock();
+    if(QObject::sender() == p)
+    {
+        clientNameLock.lockForWrite();
+        if(clientName.isEmpty())
+            clientInitMutex.unlock();
+        else
+            clientName = "";
+        clientNameLock.unlock();
+        execLock.lockForWrite();
+        exec = nullptr;
+        execLock.unlock();
+        emit progress(PROCESS_EXIT);
+    }
+    QObject::sender()->deleteLater();
+}
+
+void CarlaPatchBackend::clientError(QProcess::ProcessError err)
+{
+    execLock.lockForRead();
+    QProcess *p = exec;
+    execLock.unlock();
+    if(QObject::sender() == p)
+    {
+        clientNameLock.lockForWrite();
+        if(clientName.isEmpty())
+            clientInitMutex.unlock();
+        execLock.lockForWrite();
+        exec = nullptr;
+        execLock.unlock();
+        clientName = "";
+        clientNameLock.unlock();
+        if (err == QProcess::FailedToStart)
+        {
+            emit progress(PROCESS_FAILEDTOSTART);
+            activeBackendLock.lockForWrite();
+            if (this == activeBackend)
+                activeBackend = nullptr;
+            activeBackendLock.unlock();
+        }
+        else 
+            emit progress(PROCESS_ERROR);
+    }
+    qCritical() << static_cast<QProcess*>(QObject::sender())->readAllStandardError();
+    QObject::sender()->deleteLater();
 }
 
 void CarlaPatchBackend::activate()

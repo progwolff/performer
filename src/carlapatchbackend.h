@@ -25,8 +25,7 @@
 #include <QReadWriteLock>
 
 #include <QThread>
-
-class QProcess;
+#include <QProcess>
 
 /**
  * Patch backend using Carla
@@ -67,6 +66,9 @@ private slots:
     void connectClient();
     void disconnectClient(const QString& clientname = QString());
 #endif
+    
+    void clientExit();
+    void clientError(QProcess::ProcessError err);
     
 private:
     ~CarlaPatchBackend();
