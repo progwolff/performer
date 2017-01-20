@@ -643,7 +643,7 @@ void CarlaPatchBackend::preload()
         
         execLock.lockForWrite();
         exec->setProcessEnvironment(env);
-        connect(exec, SIGNAL(finished()), this, SLOT(clientExit()));
+        connect(exec, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(clientExit()));
         connect(exec, SIGNAL(errorOccurred(QProcess::ProcessError)), this, SLOT(clientError(QProcess::ProcessError)));
         execLock.unlock();
         
