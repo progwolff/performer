@@ -114,6 +114,7 @@ private:
     static const char midioutputnames[][11];    
     
     static QString programName;
+    static QList<int> midiMessages;
     
     int numPlugins;
     int pluginsLoaded;

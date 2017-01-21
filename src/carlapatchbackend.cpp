@@ -49,6 +49,7 @@ CarlaPatchBackend *CarlaPatchBackend::activeBackend = nullptr;
 QMap<QString,CarlaPatchBackend*> CarlaPatchBackend::clients;
 QMap<QString, QStringList> CarlaPatchBackend::savedConnections;
 QString CarlaPatchBackend::programName;
+QList<int> CarlaPatchBackend::midiMessages;
 
 const char CarlaPatchBackend::portlist[6][11]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"};
 const char CarlaPatchBackend::allportlist[7][15]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"};
@@ -961,12 +962,10 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
         for(unsigned int i=0; i<event_count; i++)
         {
             jack_midi_event_get(&in_event, port_buf, i);
-            activeBackendLock.lockForRead();
-            if(activeBackend && (IS_MIDICC(in_event.buffer[0]) || IS_MIDIPC(in_event.buffer[0])))
+            if(IS_MIDICC(in_event.buffer[0]) || IS_MIDIPC(in_event.buffer[0]))
             {
-                activeBackend->emit midiEvent(in_event.buffer[0], in_event.buffer[1], in_event.buffer[2]);
+                midiMessages << in_event.buffer[0] << in_event.buffer[1] << in_event.buffer[2];
             }
-            activeBackendLock.unlock();
         }
     }
     
@@ -994,6 +993,16 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
             qWarning() << "could not reserve midi output buffer";
     }
     
+    activeBackendLock.lockForRead();
+    if(activeBackend)
+    for(int i = 0; i < midiMessages.size()-2; ++i)
+    {
+        int a = midiMessages.takeFirst();
+        int b = midiMessages.takeFirst();
+        int c = midiMessages.takeFirst();
+        activeBackend->emit midiEvent(a, b, c);
+    }
+    activeBackendLock.unlock();
     
     return 0;
 }
