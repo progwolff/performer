@@ -296,6 +296,87 @@ void CarlaPatchBackend::serverLost(void* arg)
 }
 #endif
 
+#ifdef WITH_JACK
+void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, int connect, void* arg)
+{
+    Q_UNUSED(arg);
+    
+    const char *name_a,*name_b;
+    name_a = jack_port_name(jack_port_by_id(m_client, a));
+    name_b = jack_port_name(jack_port_by_id(m_client, b));
+    
+    if(!name_a || !name_b)
+        return;
+    activeBackendLock.lockForRead();
+    if(activeBackend)
+    {
+        activeBackend->emit jackconnection(name_a, name_b, connect);
+    }
+    activeBackendLock.unlock();
+}
+#endif
+
+int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
+{
+    Q_UNUSED(arg);
+    
+    jack_midi_event_t in_event;
+    // get the port data
+    void* port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":control_gui-in").toLocal8Bit()), nframes);
+    
+    // input: get number of events, and process them.
+    jack_nframes_t event_count = jack_midi_get_event_count(port_buf);
+    if(event_count > 0)
+    {
+        for(unsigned int i=0; i<event_count; i++)
+        {
+            jack_midi_event_get(&in_event, port_buf, i);
+            if(IS_MIDICC(in_event.buffer[0]) || IS_MIDIPC(in_event.buffer[0]))
+            {
+                midiMessages << in_event.buffer[0] << in_event.buffer[1] << in_event.buffer[2];
+            }
+        }
+    }
+    
+    port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":events-out").toLocal8Bit()), nframes);
+    jack_midi_clear_buffer(port_buf);
+    //send program name if it changed
+    if(!programName.isEmpty())
+    {
+        qDebug() << "sending program name " << programName;
+        unsigned char* buffer = jack_midi_event_reserve(port_buf, 0, 6+programName.length());
+      
+        // F0 7E 7F 05 03 00 01 00 0B 54 65 73 74 20 53 61 6D 70 6C 65 F7
+        if(buffer)
+        {
+            buffer[0] = 0xF0; //sysex
+            buffer[1] = 0x7E; //non real-time
+            buffer[2] = 0x01; //all devices
+            buffer[3] = 0x06; //general information
+            buffer[4] = 0x02; //identity reply
+            strcpy((char*)&buffer[5], programName.toLocal8Bit().constData());
+            buffer[5+programName.length()] = 0xF7; //sysex end
+            programName = QString();
+        }
+        else
+            qWarning() << "could not reserve midi output buffer";
+    }
+    
+    activeBackendLock.lockForRead();
+    if(activeBackend)
+    for(int i = 0; i < midiMessages.size()-2; ++i)
+    {
+        int a = midiMessages.takeFirst();
+        int b = midiMessages.takeFirst();
+        int c = midiMessages.takeFirst();
+        activeBackend->emit midiEvent(a, b, c);
+    }
+    activeBackendLock.unlock();
+    
+    return 0;
+}
+
+
 QMap<QString,QStringList> CarlaPatchBackend::connections()
 {
     QMap<QString, QStringList> ret;
@@ -365,25 +446,6 @@ void CarlaPatchBackend::reconnect()
     connections(savedConnections);
 }
 
-#ifdef WITH_JACK
-void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, int connect, void* arg)
-{
-    Q_UNUSED(arg);
-    
-    const char *name_a,*name_b;
-    name_a = jack_port_name(jack_port_by_id(m_client, a));
-    name_b = jack_port_name(jack_port_by_id(m_client, b));
-    
-    if(!name_a || !name_b)
-        return;
-    activeBackendLock.lockForRead();
-    if(activeBackend)
-    {
-        activeBackend->emit jackconnection(name_a, name_b, connect);
-    }
-    activeBackendLock.unlock();
-}
-#endif
 
 #ifdef WITH_JACK
 void CarlaPatchBackend::jackconnect(const char* a, const char* b, bool connect)
@@ -947,65 +1009,7 @@ bool CarlaPatchBackend::portBelongsToClient(const char* port, const QString &cli
     return QString::fromLocal8Bit(port).startsWith(client+":");
 }
 
-int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
-{
-    Q_UNUSED(arg);
-    
-    jack_midi_event_t in_event;
-    // get the port data
-    void* port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":control_gui-in").toLocal8Bit()), nframes);
-    
-    // input: get number of events, and process them.
-    jack_nframes_t event_count = jack_midi_get_event_count(port_buf);
-    if(event_count > 0)
-    {
-        for(unsigned int i=0; i<event_count; i++)
-        {
-            jack_midi_event_get(&in_event, port_buf, i);
-            if(IS_MIDICC(in_event.buffer[0]) || IS_MIDIPC(in_event.buffer[0]))
-            {
-                midiMessages << in_event.buffer[0] << in_event.buffer[1] << in_event.buffer[2];
-            }
-        }
-    }
-    
-    port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":events-out").toLocal8Bit()), nframes);
-    jack_midi_clear_buffer(port_buf);
-    //send program name if it changed
-    if(!programName.isEmpty())
-    {
-        qDebug() << "sending program name " << programName;
-        unsigned char* buffer = jack_midi_event_reserve(port_buf, 0, 6+programName.length());
-      
-        // F0 7E 7F 05 03 00 01 00 0B 54 65 73 74 20 53 61 6D 70 6C 65 F7
-        if(buffer)
-        {
-            buffer[0] = 0xF0; //sysex
-            buffer[1] = 0x7E; //non real-time
-            buffer[2] = 0x01; //all devices
-            buffer[3] = 0x06; //general information
-            buffer[4] = 0x02; //identity reply
-            strcpy((char*)&buffer[5], programName.toLocal8Bit().constData());
-            buffer[5+programName.length()] = 0xF7; //sysex end
-            programName = QString();
-        }
-        else
-            qWarning() << "could not reserve midi output buffer";
-    }
-    
-    activeBackendLock.lockForRead();
-    if(activeBackend)
-    for(int i = 0; i < midiMessages.size()-2; ++i)
-    {
-        int a = midiMessages.takeFirst();
-        int b = midiMessages.takeFirst();
-        int c = midiMessages.takeFirst();
-        activeBackend->emit midiEvent(a, b, c);
-    }
-    activeBackendLock.unlock();
-    
-    return 0;
-}
+
 
 
 #endif

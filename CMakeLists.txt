@@ -39,6 +39,7 @@ if(ECM_FOUND)
         #ConfigWidgets
         KIO
         GlobalAccel
+        Crash
         #XmlGui
         OPTIONAL_COMPONENTS
         Parts

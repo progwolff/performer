@@ -83,7 +83,6 @@ public:
 public slots:
     void saveConfig();
     void loadConfig();
-    void defaults();
     void loadFile(const QString& path);
     void setStyle(const QString& style);
     
@@ -128,40 +127,40 @@ private:
     void prepareUi();
     void setupPageViewActions();
     
+#ifndef WITH_KF5
+    QToolBar* toolBar();
+#endif
+    
     Ui::Setlist *m_setlist;
     QDockWidget *m_dock;
     QDockWidget *m_midiDock;
     
-    MIDI *midi;
+    MIDI *m_midi;
     
-    SetlistModel *model;
+    SetlistModel *m_model;
 
-    QString notesdefaultpath;
-    QString patchdefaultpath;
-    QString style;
-    QString defaultStyle;
-    QPalette defaultPalette;
+    QString m_notesDefaultPath;
+    QString m_patchDefaultPath;
+    QString m_style;
+    QString m_defaultStyle;
+    QPalette m_defaultPalette;
     
-    QToolButton* alwaysontopbutton;
-    QAction* alwaysontopaction;
-    QAction* programchangeaction;
-    QAction* hidebackendaction;
-    QAction* showmidiaction;
+    QToolButton* m_alwaysOnTopButton;
+    QAction* m_alwaysOnTopAction;
+    QAction* m_programChangeAction;
+    QAction* m_hideBackendAction;
+    QAction* m_showMIDIAction;
     
-    QPointer<QAbstractScrollArea> pageView;
+    QPointer<QAbstractScrollArea> m_pageView;
     
     AbstractDocumentViewer* m_viewer;
     
-    bool alwaysontop;
-    bool handleProgramChange;
-    bool hideBackend;
-    bool showMIDI;
+    bool m_alwaysOnTop;
+    bool m_handleProgramChange;
+    bool m_hideBackend;
+    bool m_showMIDI;
     
-    QModelIndex oldindex;
-    
-#ifndef WITH_KF5
-    QToolBar* toolBar();
-#endif
+    QModelIndex m_oldIndex;
 };
 
 

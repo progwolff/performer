@@ -58,12 +58,12 @@ Performer::Performer(QWidget *parent) :
     QMainWindow(parent)
 #endif
     ,m_setlist(new Ui::Setlist)
-    ,pageView(nullptr)
+    ,m_pageView(nullptr)
     ,m_viewer(nullptr)
-    ,alwaysontop(false)
-    ,handleProgramChange(true)
-    ,hideBackend(true)
-    ,showMIDI(false)
+    ,m_alwaysOnTop(false)
+    ,m_handleProgramChange(true)
+    ,m_hideBackend(true)
+    ,m_showMIDI(false)
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
@@ -77,16 +77,16 @@ Performer::Performer(QWidget *parent) :
 
     setWindowFilePath(i18n("unknown.pfm"));
     
-    model = new SetlistModel(this);
+    m_model = new SetlistModel(this);
     
     prepareUi();
     
-    defaultStyle = QApplication::style()->objectName();
-    defaultPalette = QApplication::palette();
+    m_defaultStyle = QApplication::style()->objectName();
+    m_defaultPalette = QApplication::palette();
     
     connect(this, SIGNAL(select(const QModelIndex&)), this, SLOT(songSelected(const QModelIndex&)), Qt::QueuedConnection);
     
-    m_setlist->setListView->setModel(model);
+    m_setlist->setListView->setModel(m_model);
 
     m_setlist->setListView->setItemDelegate(new RemoveSelectionDelegate);
     
@@ -97,29 +97,29 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->addButton, SIGNAL(clicked()), SLOT(addSong()));
     m_setlist->addButton->setIcon(QIcon::fromTheme("list-add"));//, QApplication::style()->standardIcon(QStyle::SP_DialogOpenButton)));
     
-    midi->setLearnable(m_setlist->previousButton, i18n("Previous"), "Previous", this);
-    connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){model->playPrevious(); emit select(QModelIndex());});  
+    m_midi->setLearnable(m_setlist->previousButton, i18n("Previous"), "Previous", this);
+    connect(m_setlist->previousButton, &QToolButton::clicked, this, [this](){m_model->playPrevious(); emit select(QModelIndex());});  
     m_setlist->previousButton->setEnabled(true);  
     
-    midi->setLearnable(m_setlist->nextButton, i18n("Next"), "Next", this);
-    connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){model->playNext(); emit select(QModelIndex());});    
+    m_midi->setLearnable(m_setlist->nextButton, i18n("Next"), "Next", this);
+    connect(m_setlist->nextButton, &QToolButton::clicked, this, [this](){m_model->playNext(); emit select(QModelIndex());});    
     m_setlist->nextButton->setEnabled(true);
    
-    alwaysontopbutton = new QToolButton(toolBar());
-    alwaysontopbutton->setCheckable(true); 
-    toolBar()->addWidget(alwaysontopbutton);
-    alwaysontopbutton->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
-    alwaysontopbutton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    midi->setLearnable(alwaysontopbutton, i18n("Always on top"), "Alwaysontop", this);
-    connect(alwaysontopbutton, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));  
+    m_alwaysOnTopButton = new QToolButton(toolBar());
+    m_alwaysOnTopButton->setCheckable(true); 
+    toolBar()->addWidget(m_alwaysOnTopButton);
+    m_alwaysOnTopButton->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
+    m_alwaysOnTopButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_midi->setLearnable(m_alwaysOnTopButton, i18n("Always on top"), "Alwaysontop", this);
+    connect(m_alwaysOnTopButton, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));  
     
     QToolButton *toolButton = new QToolButton(toolBar());
     toolBar()->addWidget(toolButton);
     toolButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolButton->setIcon(QIcon::fromTheme("dialog-warning", QApplication::style()->standardIcon(QStyle::SP_MessageBoxWarning)));
     toolButton->setToolTip(i18n("Terminate and reload all Carla instances."));
-    midi->setLearnable(toolButton, i18n("Panic!"), "Panic", this);
-    connect(toolButton, SIGNAL(clicked()), model, SLOT(panic()));
+    m_midi->setLearnable(toolButton, i18n("Panic!"), "Panic", this);
+    connect(toolButton, SIGNAL(clicked()), m_model, SLOT(panic()));
     
     m_setlist->setupBox->setVisible(false);
 #ifdef WITH_KF5
@@ -157,32 +157,32 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->setListView, SIGNAL(activated(QModelIndex)), SLOT(songSelected(QModelIndex)));
     connect(m_setlist->setListView, SIGNAL(clicked(QModelIndex)), SLOT(songSelected(QModelIndex)));
 
-    connect(model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), this, SLOT(receiveMidiEvent(unsigned char,unsigned char,unsigned char)));
-    connect(model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), midi, SLOT(message(unsigned char,unsigned char,unsigned char)));
+    connect(m_model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), this, SLOT(receiveMidiEvent(unsigned char,unsigned char,unsigned char)));
+    connect(m_model, SIGNAL(midiEvent(unsigned char,unsigned char,unsigned char)), m_midi, SLOT(message(unsigned char,unsigned char,unsigned char)));
     
-    connect(midi, SIGNAL(status(const QString&)), this, SLOT(info(const QString&)));
+    connect(m_midi, SIGNAL(status(const QString&)), this, SLOT(info(const QString&)));
     
-    connect(model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
-    connect(model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
-    connect(model, &SetlistModel::changed, this, [this](){
+    connect(m_model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
+    connect(m_model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
+    connect(m_model, &SetlistModel::changed, this, [this](){
         setWindowModified(true); 
         if(m_setlist->setListView->model()->rowCount() == 0)
             m_setlist->setupBox->setVisible(false);
     });
-    connect(model, &SetlistModel::rowsAboutToBeInserted, this, [this](){
-        oldindex = QModelIndex();
+    connect(m_model, &SetlistModel::rowsAboutToBeInserted, this, [this](){
+        m_oldIndex = QModelIndex();
     });
     
     loadConfig();
     
-    alwaysontop = !alwaysontop;
-    setAlwaysOnTop(!alwaysontop);
+    m_alwaysOnTop = !m_alwaysOnTop;
+    setAlwaysOnTop(!m_alwaysOnTop);
     
-    setHandleProgramChanges(handleProgramChange);
+    setHandleProgramChanges(m_handleProgramChange);
     
-    setHideBackend(hideBackend);
-    setShowMIDI(showMIDI);
-    setStyle(style);
+    setHideBackend(m_hideBackend);
+    setShowMIDI(m_showMIDI);
+    setStyle(m_style);
 }
 
 
@@ -192,11 +192,11 @@ Performer::~Performer()
     //for(QAction* action : midi_cc_actions)
     //    delete action;
     
-    delete model;
-    model = nullptr;
+    delete m_model;
+    m_model = nullptr;
     
-    delete midi;
-    midi = nullptr;
+    delete m_midi;
+    m_midi = nullptr;
     
 #ifndef WITH_KPARTS
     delete m_viewer;
@@ -262,7 +262,7 @@ void Performer::prefer()
     m_setlist->setListView->model()->dropMimeData(NULL, Qt::DropAction(), index.row()-1, index.column(), index.parent());
     m_setlist->setListView->model()->removeRows(index.row(), 1, index.parent());
     index = m_setlist->setListView->model()->index(index.row()-1, index.column());
-    oldindex = QModelIndex();
+    m_oldIndex = QModelIndex();
     songSelected(index);
     setWindowModified(true);
 }
@@ -275,7 +275,7 @@ void Performer::defer()
     m_setlist->setListView->model()->dropMimeData(NULL, Qt::DropAction(), index.row()+2, index.column(), index.parent());
     m_setlist->setListView->model()->removeRows(index.row(), 1, index.parent());
     index = m_setlist->setListView->model()->index(index.row()+1, index.column());
-    oldindex = QModelIndex();
+    m_oldIndex = QModelIndex();
     songSelected(index);
     setWindowModified(true);
 }
@@ -287,11 +287,11 @@ void Performer::remove()
         return;
     m_setlist->setListView->model()->removeRow(index.row());
     m_setlist->setListView->clearSelection();
-    oldindex = QModelIndex();
-    if(model->index(index.row(),0).isValid())
-        songSelected(model->index(0,index.row()));
-    else if(model->index(0,0).isValid())
-        songSelected(model->index(0,0));    
+    m_oldIndex = QModelIndex();
+    if(m_model->index(index.row(),0).isValid())
+        songSelected(m_model->index(0,index.row()));
+    else if(m_model->index(0,0).isValid())
+        songSelected(m_model->index(0,0));    
     //emit saveconfig();
     setWindowModified(true);
     if(m_setlist->setListView->model()->rowCount() == 0)
@@ -314,8 +314,8 @@ void Performer::showContextMenu(QPoint pos)
         QAction *action;
         
         action = myMenu.addAction(QIcon::fromTheme("media-playback-start", QApplication::style()->standardIcon(QStyle::SP_MediaPlay)), i18n("Play now"));
-        connect(action, &QAction::triggered, this, [this,index](){model->playNow(index);});
-        if(!model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
+        connect(action, &QAction::triggered, this, [this,index](){m_model->playNow(index);});
+        if(!m_model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
             action->setEnabled(false);
         if(index.data(SetlistModel::ActiveRole).toBool() && index.data(SetlistModel::ProgressRole).toInt() > 0)
         {
@@ -327,8 +327,8 @@ void Performer::showContextMenu(QPoint pos)
         {
             myMenu.addSeparator();
             action = myMenu.addAction(QIcon::fromTheme("document-edit", QApplication::style()->standardIcon(QStyle::SP_FileLinkIcon)), i18n("Edit patch"));
-            connect(action, &QAction::triggered, this, [this,index](){model->edit(index);});
-            if(!model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
+            connect(action, &QAction::triggered, this, [this,index](){m_model->edit(index);});
+            if(!m_model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
                 action->setEnabled(false);
         }
         
@@ -356,10 +356,10 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
     Q_UNUSED(data2)
     if(IS_MIDIPC(status))
     {
-        if(handleProgramChange)
+        if(m_handleProgramChange)
         {
             if(m_setlist->setListView->model()->rowCount() > data1)
-                model->playNow(model->index(data1,0));
+                m_model->playNow(m_model->index(data1,0));
         }
     }
 }
@@ -369,23 +369,23 @@ void Performer::updateSelected()
 #ifdef WITH_KF5
     QVariantMap map;
     map.insert("patch", m_setlist->patchrequester->url());
-    patchdefaultpath = m_setlist->patchrequester->url().toLocalFile().section('/',0,-2);
-    if(!patchdefaultpath.isEmpty())
-        m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
+    m_patchDefaultPath = m_setlist->patchrequester->url().toLocalFile().section('/',0,-2);
+    if(!m_patchDefaultPath.isEmpty())
+        m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(m_patchDefaultPath));
     map.insert("notes", m_setlist->notesrequester->url());
-    notesdefaultpath = m_setlist->notesrequester->url().toLocalFile().section('/',0,-2);
-    if(!notesdefaultpath.isEmpty())
-        m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(notesdefaultpath));
+    m_notesDefaultPath = m_setlist->notesrequester->url().toLocalFile().section('/',0,-2);
+    if(!m_notesDefaultPath.isEmpty())
+        m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(m_notesDefaultPath));
     map.insert("preload", m_setlist->preloadBox->isChecked());
     map.insert("name", m_setlist->nameEdit->text());
-    model->update(m_setlist->setListView->currentIndex(), map);
+    m_model->update(m_setlist->setListView->currentIndex(), map);
 #else
     QVariantMap map;
     map.insert("patch", QUrl::fromLocalFile(m_setlist->patchrequestedit->text()));
     map.insert("notes", QUrl::fromLocalFile(m_setlist->notesrequestedit->text()));
     map.insert("preload", m_setlist->preloadBox->isChecked());
     map.insert("name", m_setlist->nameEdit->text());
-    model->update(m_setlist->setListView->currentIndex(), map);
+    m_model->update(m_setlist->setListView->currentIndex(), map);
 #endif
 }
 
@@ -405,15 +405,15 @@ void Performer::requestNotes()
 
 void Performer::addSong()
 {
-    int index = model->add(i18n("New Song"), QVariantMap());
-    m_setlist->setListView->setCurrentIndex(model->index(index,0));
-    songSelected(model->index(index,0));
+    int index = m_model->add(i18n("New Song"), QVariantMap());
+    m_setlist->setListView->setCurrentIndex(m_model->index(index,0));
+    songSelected(m_model->index(index,0));
     setWindowModified(true);
 }
 
 void Performer::createPatch()
 {
-    QString path = patchdefaultpath;
+    QString path = m_patchDefaultPath;
     if(path.isEmpty())
         path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
     
@@ -424,11 +424,11 @@ void Performer::createPatch()
     path += "/"+m_setlist->nameEdit->text();
     
     QString filepath = path+".carxp";
-    for(int i=0; model->fileExists(filepath); ++i)
+    for(int i=0; m_model->fileExists(filepath); ++i)
     {
         filepath = path+QString::number(i)+".carxp";
     }
-    model->createPatch(filepath);
+    m_model->createPatch(filepath);
     
 #ifdef WITH_KF5
     m_setlist->patchrequester->setText(filepath);
@@ -436,7 +436,7 @@ void Performer::createPatch()
     m_setlist->patchrequestedit->setText(filepath);
 #endif
     updateSelected();
-    model->playNow(oldindex);
+    m_model->playNow(m_oldIndex);
     setWindowModified(true);
 }
 
@@ -444,12 +444,12 @@ void Performer::songSelected(const QModelIndex& index)
 {    
     QModelIndex ind = index;
     if(!ind.isValid())
-        ind = model->activeIndex();
+        ind = m_model->activeIndex();
     
     if(!ind.isValid())
         return;
 
-    m_setlist->setListView->setCurrentIndex(oldindex);
+    m_setlist->setListView->setCurrentIndex(m_oldIndex);
     updateSelected();
     m_setlist->setListView->setCurrentIndex(index);
     
@@ -466,12 +466,12 @@ void Performer::songSelected(const QModelIndex& index)
     m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
 #endif
     
-    if(m_viewer && model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+    if(m_viewer && m_model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
     {
         m_viewer->load(ind.data(SetlistModel::NotesRole).toUrl());
     }
     
-    oldindex = index;
+    m_oldIndex = index;
 
 }
 
@@ -488,8 +488,8 @@ void Performer::prepareUi()
     m_midiDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     QTableView *midiView = new QTableView(m_midiDock);
     m_midiDock->setWidget(midiView);
-    midi = new MIDI(midiView);
-    midiView->setModel(midi);
+    m_midi = new MIDI(midiView);
+    midiView->setModel(m_midi);
     addDockWidget(Qt::RightDockWidgetArea, m_midiDock);
     midiView->verticalHeader()->setVisible(false);
     midiView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -523,7 +523,7 @@ void Performer::prepareUi()
         QStringList name = {"PreviousPage", "NextPage"};
         for(int i=0; i<buttons.size(); ++i)
         {
-            midi->setLearnable(buttons[i], text[i], name[i], this);
+            m_midi->setLearnable(buttons[i], text[i], name[i], this);
         }
         
         QWidget* okularToolBar = findChild<QWidget*>("okularToolBar");
@@ -534,14 +534,14 @@ void Performer::prepareUi()
             {
                 if(button->defaultAction())
                 {
-                    midi->setLearnable(button);
+                    m_midi->setLearnable(button);
                     connect(button, SIGNAL(clicked(bool)), button->defaultAction(), SLOT(trigger()));
                 }
             }
             QComboBox* box = okularToolBar->findChild<QComboBox*>();
             if(box)
             {
-                midi->setLearnable(box, i18n("Zoom"), "zoom", this);
+                m_midi->setLearnable(box, i18n("Zoom"), "zoom", this);
             }
         }
         
@@ -571,7 +571,7 @@ void Performer::prepareUi()
             toolBar()->addWidget(widget);
         }
 
-        if(!pageView)
+        if(!m_pageView)
         {
             setupPageViewActions();
         }
@@ -583,7 +583,7 @@ void Performer::prepareUi()
     action->setText(i18n("&New"));
     action->setIcon(QIcon::fromTheme("document-new", QApplication::style()->standardIcon(QStyle::SP_FileIcon)));
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_N));
-    connect(action, SIGNAL(triggered(bool)), model, SLOT(reset()));
+    connect(action, SIGNAL(triggered(bool)), m_model, SLOT(reset()));
     filemenu->addAction(action);
     
     action = new QAction(this);
@@ -639,40 +639,40 @@ void Performer::prepareUi()
         styleMenu->addAction(action);        
     }
     
-    alwaysontopaction = new QAction(this);
-    alwaysontopaction->setText(i18n("&Always on top"));
-    alwaysontopaction->setCheckable(true); 
-    alwaysontopaction->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
-    connect(alwaysontopaction, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));
+    m_alwaysOnTopAction = new QAction(this);
+    m_alwaysOnTopAction->setText(i18n("&Always on top"));
+    m_alwaysOnTopAction->setCheckable(true); 
+    m_alwaysOnTopAction->setIcon(QIcon::fromTheme("arrow-up", QApplication::style()->standardIcon(QStyle::SP_ArrowUp)));
+    connect(m_alwaysOnTopAction, SIGNAL(toggled(bool)), this, SLOT(setAlwaysOnTop(bool)));
     
-    programchangeaction = new QAction(this);
-    programchangeaction->setText(i18n("&MIDI Program Changes"));
-    programchangeaction->setToolTip(i18n("If activated, the setlist will react to MIDI Program Change messages."));
-    programchangeaction->setCheckable(true);
-    connect(programchangeaction, SIGNAL(toggled(bool)), this, SLOT(setHandleProgramChanges(bool)));
+    m_programChangeAction = new QAction(this);
+    m_programChangeAction->setText(i18n("&MIDI Program Changes"));
+    m_programChangeAction->setToolTip(i18n("If activated, the setlist will react to MIDI Program Change messages."));
+    m_programChangeAction->setCheckable(true);
+    connect(m_programChangeAction, SIGNAL(toggled(bool)), this, SLOT(setHandleProgramChanges(bool)));
     
-    hidebackendaction = new QAction(this);
-    hidebackendaction->setText(i18n("&Hide Carla"));
-    hidebackendaction->setToolTip(i18n("If activated, Carla instances will not be visible."));
-    hidebackendaction->setCheckable(true);
-    connect(hidebackendaction, SIGNAL(toggled(bool)), this, SLOT(setHideBackend(bool)));
+    m_hideBackendAction = new QAction(this);
+    m_hideBackendAction->setText(i18n("&Hide Carla"));
+    m_hideBackendAction->setToolTip(i18n("If activated, Carla instances will not be visible."));
+    m_hideBackendAction->setCheckable(true);
+    connect(m_hideBackendAction, SIGNAL(toggled(bool)), this, SLOT(setHideBackend(bool)));
     
-    showmidiaction = new QAction(this);
-    showmidiaction->setText(i18n("Show &MIDI controls"));
-    showmidiaction->setToolTip(i18n("If activated, a MIDI controls configuration view will be visible."));
-    showmidiaction->setCheckable(true);
-    connect(showmidiaction, SIGNAL(toggled(bool)), this, SLOT(setShowMIDI(bool)));
+    m_showMIDIAction = new QAction(this);
+    m_showMIDIAction->setText(i18n("Show &MIDI controls"));
+    m_showMIDIAction->setToolTip(i18n("If activated, a MIDI controls configuration view will be visible."));
+    m_showMIDIAction->setCheckable(true);
+    connect(m_showMIDIAction, SIGNAL(toggled(bool)), this, SLOT(setShowMIDI(bool)));
     
     
     QAction *before = nullptr;
     if(settingsmenu->actions().size() > 1)
         before = settingsmenu->actions()[1];
     settingsmenu->insertMenu(before, styleMenu);
-    settingsmenu->insertActions(before, QList<QAction*>() << programchangeaction << alwaysontopaction << hidebackendaction << showmidiaction);
+    settingsmenu->insertActions(before, QList<QAction*>() << m_programChangeAction << m_alwaysOnTopAction << m_hideBackendAction << m_showMIDIAction);
     
     if(existed)
     {
-        before = settingsmenu->insertSeparator(programchangeaction);
+        before = settingsmenu->insertSeparator(m_programChangeAction);
     }
     
     if(!existed)
@@ -684,37 +684,37 @@ void Performer::prepareUi()
 
 void Performer::setupPageViewActions()
 {
-    pageView = m_viewer->scrollArea();
+    m_pageView = m_viewer->scrollArea();
 
-    if(!pageView)
+    if(!m_pageView)
         return;
     
-    QScrollBar* scrollBar = pageView->verticalScrollBar();
+    QScrollBar* scrollBar = m_pageView->verticalScrollBar();
     if(scrollBar)
-        midi->setLearnable(scrollBar, i18n("Scroll vertical"), "ScrollV", this);
+        m_midi->setLearnable(scrollBar, i18n("Scroll vertical"), "ScrollV", this);
     
-    scrollBar = pageView->horizontalScrollBar();
+    scrollBar = m_pageView->horizontalScrollBar();
     if(scrollBar)
-        midi->setLearnable(scrollBar, i18n("Scroll horizontal"), "ScrollH", this);
+        m_midi->setLearnable(scrollBar, i18n("Scroll horizontal"), "ScrollH", this);
 }
 
 void Performer::setAlwaysOnTop(bool ontop)
 {
-    if(ontop != alwaysontop)
+    if(ontop != m_alwaysOnTop)
     {
-        alwaysontop = ontop;
-        if(alwaysontop)
+        m_alwaysOnTop = ontop;
+        if(m_alwaysOnTop)
         {
             setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
-            alwaysontopbutton->setChecked(true);
-            alwaysontopaction->setChecked(true);
+            m_alwaysOnTopButton->setChecked(true);
+            m_alwaysOnTopAction->setChecked(true);
             show();
         }
         else
         {
             setWindowFlags(windowFlags() & ~Qt::WindowStaysOnTopHint);
-            alwaysontopbutton->setChecked(false);
-            alwaysontopaction->setChecked(false);
+            m_alwaysOnTopButton->setChecked(false);
+            m_alwaysOnTopAction->setChecked(false);
             show();
         }
     }
@@ -722,21 +722,21 @@ void Performer::setAlwaysOnTop(bool ontop)
 
 void Performer::setHandleProgramChanges(bool handle)
 {
-    handleProgramChange = handle;
-    programchangeaction->setChecked(handle);
+    m_handleProgramChange = handle;
+    m_programChangeAction->setChecked(handle);
 }
 
 void Performer::setHideBackend(bool hide)
 {
-    hideBackend = hide;
-    hidebackendaction->setChecked(hide);
-    model->setHideBackend(hide);
+    m_hideBackend = hide;
+    m_hideBackendAction->setChecked(hide);
+    m_model->setHideBackend(hide);
 }
 
 void Performer::setShowMIDI(bool show)
 {
-    showMIDI = show;
-    showmidiaction->setChecked(show);
+    m_showMIDI = show;
+    m_showMIDIAction->setChecked(show);
     m_midiDock->setVisible(show);
 }
 
@@ -747,10 +747,10 @@ void Performer::setStyle(const QString& stylename)
         qWarning() << "no such style" << stylename;
         return;
     }
-    style = stylename;
-    QApplication::setPalette(defaultPalette);
+    m_style = stylename;
+    QApplication::setPalette(m_defaultPalette);
     if(stylename.isEmpty())
-        QApplication::setStyle(QStyleFactory::create(defaultStyle));
+        QApplication::setStyle(QStyleFactory::create(m_defaultStyle));
     else
         QApplication::setStyle(QStyleFactory::create(stylename));
 }
@@ -761,25 +761,25 @@ void Performer::loadConfig()
 #ifdef WITH_KF5
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
-    notesdefaultpath = config->group("paths").readEntry("notes", QString());
-    m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(notesdefaultpath));
-    patchdefaultpath = config->group("paths").readEntry("patch", QString());
-    m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
+    m_notesDefaultPath = config->group("paths").readEntry("notes", QString());
+    m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(m_notesDefaultPath));
+    m_patchDefaultPath = config->group("paths").readEntry("patch", QString());
+    m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(m_patchDefaultPath));
     qDebug() << m_setlist->patchrequester->startDir();
     
-    for(QString actionstr: config->group("midi").groupList())
+    for(QString actionstr: config->group("m_midi").groupList())
     {
-        for(QAction* action : midi->actions())
+        for(QAction* action : m_midi->actions())
         {
             if(actionstr == action->objectName())
             {
-                int cc = config->group("midi").group(actionstr).readEntry("cc", 128);
+                int cc = config->group("m_midi").group(actionstr).readEntry("cc", 128);
                 if(cc < 128)
                 {
-                    midi->setCc(action, cc);
-                    midi->setMin(cc, config->group("midi").group(actionstr).readEntry("min", 0));
-                    midi->setMax(cc, config->group("midi").group(actionstr).readEntry("max", 127));
-                    midi->fixRange(cc);
+                    m_midi->setCc(action, cc);
+                    m_midi->setMin(cc, config->group("m_midi").group(actionstr).readEntry("min", 0));
+                    m_midi->setMax(cc, config->group("m_midi").group(actionstr).readEntry("max", 127));
+                    m_midi->fixRange(cc);
                 }
             }
         }
@@ -788,40 +788,40 @@ void Performer::loadConfig()
     QMap<QString, QStringList> connections;
     for(QString port: config->group("connections").keyList())
     {
-        for(QString& port : model->connections().keys())
+        for(QString& port : m_model->connections().keys())
             connections[port] = config->group("connections").readEntry(port,QString()).split(',');
     }
-    model->connections(connections);
+    m_model->connections(connections);
     
-    alwaysontop = config->group("window").readEntry("alwaysontop",false);
-    style = config->group("window").readEntry("style", QString());
-    handleProgramChange = config->group("setlist").readEntry("programchange",true);
-    hideBackend = config->group("setlist").readEntry("hidebackend",true);
-    showMIDI = config->group("window").readEntry("showmidi",false);
+    m_alwaysOnTop = config->group("window").readEntry("m_alwaysOnTop",false);
+    m_style = config->group("window").readEntry("style", QString());
+    m_handleProgramChange = config->group("setlist").readEntry("programchange",true);
+    m_hideBackend = config->group("setlist").readEntry("hidebackend",true);
+    m_showMIDI = config->group("window").readEntry("showmidi",false);
 #else
     QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
     
     config.beginGroup("paths");
-    notesdefaultpath = config.value("notes", QString()).toString();
-    //m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(notesdefaultpath));
-    patchdefaultpath = config.value("patch", QString()).toString();
-    //m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(patchdefaultpath));
+    m_notesDefaultPath = config.value("notes", QString()).toString();
+    //m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(m_notesDefaultPath));
+    m_patchDefaultPath = config.value("patch", QString()).toString();
+    //m_setlist->patchrequester->setStartDir(QUrl::fromLocalFile(m_patchDefaultPath));
     config.endGroup();
     
-    config.beginGroup("midi");
+    config.beginGroup("m_midi");
     for(QString actionstr: config.childGroups())
     {
         config.beginGroup(actionstr);
-        for(QAction* action : midi->actions())
+        for(QAction* action : m_midi->actions())
         {
             if(actionstr == action->objectName())
             {
                 int cc = config.value("cc", 128).toInt();
                 if(cc < 128)
                 {
-                    midi->setCc(action, cc);
-                    midi->setMin(cc, config.value("min", 0).toInt());
-                    midi->setMax(cc, config.value("max", 127).toInt());
+                    m_midi->setCc(action, cc);
+                    m_midi->setMin(cc, config.value("min", 0).toInt());
+                    m_midi->setMax(cc, config.value("max", 127).toInt());
                 }
             }
         }
@@ -833,21 +833,21 @@ void Performer::loadConfig()
     config.beginGroup("connections");
     for(QString port: config.allKeys())
     {
-        for(QString& port : model->connections().keys())
+        for(QString& port : m_model->connections().keys())
             connections[port] = config.value(port,QString()).toString().split(',');
     }
-    model->connections(connections);
+    m_model->connections(connections);
     config.endGroup();
     
     config.beginGroup("window");
-    alwaysontop = config.value("alwaysontop",false).toBool();
-    showMIDI = config.value("showmidi",false).toBool();
+    m_alwaysOnTop = config.value("m_alwaysOnTop",false).toBool();
+    m_showMIDI = config.value("showmidi",false).toBool();
     style = config.value("style",QString()).toString();
     config.endGroup();
     
     config.beginGroup("setlist");
-    handleProgramChange = config.value("programchange",true).toBool();
-    hideBackend = config.value("hidebackend",true).toBool();
+    m_handleProgramChange = config.value("programchange",true).toBool();
+    m_hideBackend = config.value("hidebackend",true).toBool();
     config.endGroup();
 #endif
 }
@@ -861,45 +861,45 @@ void Performer::saveConfig()
 #ifdef WITH_KF5
     KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
     
-    config->deleteGroup("midi");
-    for(QAction* action: midi->actions())
+    config->deleteGroup("m_midi");
+    for(QAction* action: m_midi->actions())
     {
-        if(midi->cc(action) <= 127)
+        if(m_midi->cc(action) <= 127)
         {
-            config->group("midi").group(action->objectName()).writeEntry("cc",QString::number(midi->cc(action)));
-            config->group("midi").group(action->objectName()).writeEntry("min",QString::number(midi->minValue(midi->cc(action))));
-            config->group("midi").group(action->objectName()).writeEntry("max",QString::number(midi->maxValue(midi->cc(action))));
+            config->group("m_midi").group(action->objectName()).writeEntry("cc",QString::number(m_midi->cc(action)));
+            config->group("m_midi").group(action->objectName()).writeEntry("min",QString::number(m_midi->minValue(m_midi->cc(action))));
+            config->group("m_midi").group(action->objectName()).writeEntry("max",QString::number(m_midi->maxValue(m_midi->cc(action))));
         }
     }
     
     config->deleteGroup("connections");
-    for(QString& port : model->connections().keys())
-        config->group("connections").writeEntry(port, model->connections()[port].join(','));
+    for(QString& port : m_model->connections().keys())
+        config->group("connections").writeEntry(port, m_model->connections()[port].join(','));
     
-    config->group("paths").writeEntry("notes", notesdefaultpath);
-    config->group("paths").writeEntry("patch", patchdefaultpath);
+    config->group("paths").writeEntry("notes", m_notesDefaultPath);
+    config->group("paths").writeEntry("patch", m_patchDefaultPath);
     
-    config->group("window").writeEntry("alwaysontop", alwaysontop);
-    config->group("window").writeEntry("showmidi", showMIDI);
-    config->group("window").writeEntry("style", style);
-    config->group("setlist").writeEntry("programchange", handleProgramChange);
-    config->group("setlist").writeEntry("hidebackend", hideBackend); 
+    config->group("window").writeEntry("m_alwaysOnTop", m_alwaysOnTop);
+    config->group("window").writeEntry("showmidi", m_showMIDI);
+    config->group("window").writeEntry("style", m_style);
+    config->group("setlist").writeEntry("programchange", m_handleProgramChange);
+    config->group("setlist").writeEntry("hidebackend", m_hideBackend); 
        
     config->sync();
 
 #else
     QSettings config(dir+"/performer.conf", QSettings::IniFormat);
     
-    config.remove("midi");
-    config.beginGroup("midi");
-    for(QAction *action : midi->actions())
+    config.remove("m_midi");
+    config.beginGroup("m_midi");
+    for(QAction *action : m_midi->actions())
     {
-        if(midi->cc(action) <= 127)
+        if(m_midi->cc(action) <= 127)
         {
             config.beginGroup(action->objectName());
-            config.setValue("cc",QString::number(midi->cc(action)));
-            config.setValue("min",QString::number(midi->minValue(midi->cc(action))));
-            config.setValue("max",QString::number(midi->maxValue(midi->cc(action))));
+            config.setValue("cc",QString::number(m_midi->cc(action)));
+            config.setValue("min",QString::number(m_midi->minValue(m_midi->cc(action))));
+            config.setValue("max",QString::number(m_midi->maxValue(m_midi->cc(action))));
             config.endGroup();
         }
     }
@@ -907,24 +907,24 @@ void Performer::saveConfig()
     
     config.remove("connections");
     config.beginGroup("connections");
-    for(QString& port : model->connections().keys())
-        config.setValue(port, model->connections()[port].join(','));
+    for(QString& port : m_model->connections().keys())
+        config.setValue(port, m_model->connections()[port].join(','));
     config.endGroup();
     
     config.beginGroup("paths");
-    config.setValue("notes", notesdefaultpath);
-    config.setValue("patch", patchdefaultpath);
+    config.setValue("notes", m_notesDefaultPath);
+    config.setValue("patch", m_patchDefaultPath);
     config.endGroup();
     
     config.beginGroup("window");
-    config.setValue("alwaysontop", alwaysontop);
-    config.setValue("showmidi", showMIDI);
+    config.setValue("m_alwaysOnTop", m_alwaysOnTop);
+    config.setValue("showmidi", m_showMIDI);
     config.setValue("style", style);
     config.endGroup();   
     
     config.beginGroup("setlist");
-    config.setValue("programchange", handleProgramChange);
-    config.setValue("hidebackend", hideBackend);
+    config.setValue("programchange", m_handleProgramChange);
+    config.setValue("hidebackend", m_hideBackend);
     config.endGroup();   
     
     qDebug() << "saving";
@@ -932,11 +932,6 @@ void Performer::saveConfig()
     config.sync();
 #endif
     loadConfig();
-}
-
-void Performer::defaults()
-{
-    //mDevicesConfig->reset();
 }
 
 void Performer::loadFile()
@@ -957,7 +952,7 @@ void Performer::loadFile(const QString& path)
     
     setWindowFilePath(path);
     
-    model->reset();
+    m_model->reset();
 #ifdef WITH_KF5
     KSharedConfigPtr set = KSharedConfig::openConfig(path);
     
@@ -975,11 +970,11 @@ void Performer::loadFile(const QString& path)
         config.insert("patch", QUrl::fromLocalFile(setlist.group(song).readEntry("patch",QString())));
         config.insert("notes", QUrl::fromLocalFile(setlist.group(song).readEntry("notes",QString())));
         config.insert("preload", setlist.group(song).readEntry("preload",true));
-        model->add(song.section('-',1), config);
+        m_model->add(song.section('-',1), config);
     }
     if(setlist.groupList().size() > 0)
     {
-        model->playNow(model->index(0,0));
+        m_model->playNow(m_model->index(0,0));
         songSelected(QModelIndex());
     }
 #else
@@ -1000,12 +995,12 @@ void Performer::loadFile(const QString& path)
         config.insert("patch", QUrl::fromLocalFile(set.value("patch",QString()).toString()));
         config.insert("notes", QUrl::fromLocalFile(set.value("notes",QString()).toString()));
         config.insert("preload", set.value("preload",true));
-        model->add(song.section('-',1), config);
+        m_model->add(song.section('-',1), config);
         set.endGroup();
     }
     if(set.childGroups().size() > 0)
     {
-        model->playNow(model->index(0,0));
+        m_model->playNow(m_model->index(0,0));
         songSelected(QModelIndex());
     }
     set.endGroup();
@@ -1040,7 +1035,7 @@ bool Performer::saveFile(const QString& path)
     
     for(int i=0; i < m_setlist->setListView->model()->rowCount(); ++i)
     {
-        QModelIndex index = model->index(i,0);
+        QModelIndex index = m_model->index(i,0);
         KConfigGroup song = setlist.group(QString::number(index.row())+"-"+index.data(SetlistModel::NameRole).toString());
         song.writeEntry("patch",index.data(SetlistModel::PatchRole).toUrl().toLocalFile());
         song.writeEntry("notes",index.data(SetlistModel::NotesRole).toUrl().toLocalFile());
@@ -1054,9 +1049,9 @@ bool Performer::saveFile(const QString& path)
     
     set.beginGroup("setlist");
     
-    for(int i=0; i < m_setlist->setListView->model()->rowCount(); ++i)
+    for(int i=0; i < m_setlist->setListView->m_model()->rowCount(); ++i)
     {
-        QModelIndex index = model->index(i,0);
+        QModelIndex index = m_model->index(i,0);
         set.beginGroup(QString::number(index.row())+"-"+index.data(SetlistModel::NameRole).toString());
         set.setValue("patch",index.data(SetlistModel::PatchRole).toUrl().toLocalFile());
         set.setValue("notes",index.data(SetlistModel::NotesRole).toUrl().toLocalFile());
@@ -1077,7 +1072,7 @@ bool Performer::saveFile(const QString& path)
 void Performer::autosave()
 {
     QString filepath = windowFilePath()+".autosave";
-    for(int i=0; model->fileExists(filepath); ++i)
+    for(int i=0; m_model->fileExists(filepath); ++i)
     {
         filepath = windowFilePath()+QString::number(i)+".autosave";
     }

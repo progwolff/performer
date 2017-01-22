@@ -87,25 +87,56 @@ signals:
     void changed();
 
 private slots:
+    /**
+     * creates a backend instance for a songs
+     * @param backend pointer to the new backend
+     * @param index index of the song to create a backend for
+     */ 
     void createBackend(AbstractPatchBackend*& backend, int index);
+    
+    /**
+     * removes a given backend instance
+     * @param backend pointer to the backend to remove
+     */
     void removeBackend(AbstractPatchBackend*& backend);
+    
+    /**
+     * try to restart all backend instances until success
+     * @param msg a message shown to the user
+     * @param timeout timeout of each try
+     */
     void forceRestart(const char* msg, int timeout);
     
 private:
+    
+    /**
+     * return the main jack client of Performer.
+     * Create a client if no client exists.
+     * @return the main jack client of Performer
+     */
     bool createJackClient();
+
+    /**
+     * try to delete a previously created main jack client
+     * @return true on success, false else. Try until success to make sure all memory is freed 
+     */
     bool freeJackClient();
+    
+    /**
+     * Reconnect all ports of Performer to match the last known configuration.
+     */
     void reconnect();
     
     QList<SetlistMetadata> m_setlist;
 
-    int movedindex;
-    int activeindex,previousindex,nextindex;
+    int m_movedIndex;
+    int m_activeIndex,m_previousIndex,m_nextIndex;
 
-    AbstractPatchBackend *m_activebackend,*m_previousbackend,*m_nextbackend;
+    AbstractPatchBackend *m_activeBackend,*m_previousBackend,*m_nextBackend;
     
-    int *secondsleft;
+    int *m_secondsLeft;
     
-    Backend backend;
+    Backend m_backend;
     
 };
 

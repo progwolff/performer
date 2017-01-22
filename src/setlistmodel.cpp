@@ -53,16 +53,16 @@
 
 SetlistModel::SetlistModel(QObject *parent)
     : QAbstractListModel(parent)
-    , m_activebackend(nullptr)
-    , m_previousbackend(nullptr)
-    , m_nextbackend(nullptr)
-    , secondsleft(nullptr)
-    , backend(Carla)
+    , m_activeBackend(nullptr)
+    , m_previousBackend(nullptr)
+    , m_nextBackend(nullptr)
+    , m_secondsLeft(nullptr)
+    , m_backend(Carla)
 {
-    movedindex = -1;
-    activeindex = -1;
-    previousindex = -1;
-    nextindex = -1;
+    m_movedIndex = -1;
+    m_activeIndex = -1;
+    m_previousIndex = -1;
+    m_nextIndex = -1;
 
     connect(this, SIGNAL(jackClientState(int)), this, SLOT(updateProgress(int)), Qt::QueuedConnection);
     
@@ -77,9 +77,9 @@ SetlistModel::SetlistModel(QObject *parent)
 
 SetlistModel::~SetlistModel()
 {
-    removeBackend(m_activebackend);
-    removeBackend(m_previousbackend);
-    removeBackend(m_nextbackend);
+    removeBackend(m_activeBackend);
+    removeBackend(m_previousBackend);
+    removeBackend(m_nextBackend);
 #ifdef WITH_JACK
     while(!freeJackClient());
 #endif
@@ -91,7 +91,7 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
     {
         qDebug() << "creating backend for" << m_setlist[index].patch().toLocalFile();
         
-        switch(backend)
+        switch(m_backend)
         {
             case Carla:
                 instance = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile(), m_setlist[index].name());
@@ -140,9 +140,9 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
      *            if(fileExists(metadata.patch().toLocalFile()))
      *            {
      *                QIcon ico;
-     *                if(index.row()==activeindex)
+     *                if(index.row()==m_activeIndex)
      *                    ico = QIcon::fromTheme("audio-volume-high");
-     *                else if(index.row()==previousindex || index.row()==nextindex)
+     *                else if(index.row()==m_previousIndex || index.row()==m_nextIndex)
      *                    ico = QIcon::fromTheme("audio-ready");
      *                else
      *                    ico = QIcon::fromTheme("audio-volume-muted");
@@ -171,9 +171,9 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
             QColor active = QApplication::palette().color(QPalette::Highlight); //QColor::fromRgbF(.18, .80, .44, 1)
             active = QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()/3);
             QColor inactive = QApplication::palette().color(QPalette::Base); //QColor::fromRgbF(.95, .61, .07, 1)
-            if(index.row()==activeindex)
+            if(index.row()==m_activeIndex)
                 gradient.setColorAt(stop, active);
-            else if(index.row()==previousindex || index.row()==nextindex)
+            else if(index.row()==m_previousIndex || index.row()==m_nextIndex)
                 gradient.setColorAt(stop, QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()/3));
             else
                 gradient.setColorAt(stop, inactive);
@@ -185,7 +185,7 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
         return QBrush(gradient);
     }
     case Qt::ToolTipRole:
-        if(index.row()==activeindex)
+        if(index.row()==m_activeIndex)
             tooltip = i18n("Active Song. ");
         switch(metadata.progress())
         {
@@ -238,11 +238,11 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
     case SetlistModel::IdRole:
         return metadata.name();
     case SetlistModel::ActiveRole:
-        return (index.row()==activeindex);
+        return (index.row()==m_activeIndex);
     case SetlistModel::ProgressRole:
         return metadata.progress();
     case SetlistModel::EditableRole:
-        if(m_activebackend && !m_activebackend->editor().isEmpty())
+        if(m_activeBackend && !m_activeBackend->editor().isEmpty())
             return true;
         return false;
     }
@@ -260,25 +260,25 @@ void SetlistModel::reset()
 
 		endInsertRows();
 	}
-    removeBackend(m_activebackend);
-    removeBackend(m_previousbackend);
-    removeBackend(m_nextbackend);
+    removeBackend(m_activeBackend);
+    removeBackend(m_previousBackend);
+    removeBackend(m_nextBackend);
     
-    switch(backend)
+    switch(m_backend)
     {
         case Carla:
-            m_activebackend = new CarlaPatchBackend("");
+            m_activeBackend = new CarlaPatchBackend("");
             break;
     }
     
-    m_activebackend->activate();
-    connect(m_activebackend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
+    m_activeBackend->activate();
+    connect(m_activeBackend, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
 
 }
 
 void SetlistModel::update()
 {
-    movedindex = -1;
+    m_movedIndex = -1;
 }
 
 void SetlistModel::update(const QModelIndex& index, const QVariantMap& conf)
@@ -300,7 +300,7 @@ int SetlistModel::add(const QString &name, const QVariantMap &conf)
 
 bool SetlistModel::dropMimeData(const QMimeData * /*data*/, Qt::DropAction /*action*/, int row, int /*column*/, const QModelIndex & /*parent*/)
 {
-    movedindex = row;
+    m_movedIndex = row;
 
     return true;
 }
@@ -324,24 +324,24 @@ bool SetlistModel::removeRows(int row, int /*count*/, const QModelIndex& /*paren
 {
     beginInsertRows(QModelIndex(), m_setlist.count(), m_setlist.count());
 
-    if(movedindex >= 0)
+    if(m_movedIndex >= 0)
     {
         SetlistMetadata d = m_setlist.at(row);
 
-        if(row > movedindex)
+        if(row > m_movedIndex)
             m_setlist.removeAt(row);
 
-        m_setlist.insert(movedindex, d);
+        m_setlist.insert(m_movedIndex, d);
 
-        if(activeindex > movedindex)
-            ++activeindex;
+        if(m_activeIndex > m_movedIndex)
+            ++m_activeIndex;
 
-        if(row <= movedindex)
+        if(row <= m_movedIndex)
             m_setlist.removeAt(row);
 
-        movedindex = -1;
+        m_movedIndex = -1;
         
-        playNow(index(activeindex,0));
+        playNow(index(m_activeIndex,0));
     }
     else
     {
@@ -357,63 +357,63 @@ bool SetlistModel::removeRows(int row, int /*count*/, const QModelIndex& /*paren
 
 void SetlistModel::panic()
 {
-    playNow(index(activeindex,0));
+    playNow(index(m_activeIndex,0));
 }
 
 void SetlistModel::playNow(const QModelIndex& ind)
 {
     if(!ind.isValid() || ind.row()>=m_setlist.size() || ind.row()<0)
         return;
-    activeindex = ind.row();
-    previousindex = activeindex-1;
-    nextindex = (m_setlist.size()>activeindex+1)?activeindex+1:-1;
+    m_activeIndex = ind.row();
+    m_previousIndex = m_activeIndex-1;
+    m_nextIndex = (m_setlist.size()>m_activeIndex+1)?m_activeIndex+1:-1;
 
-    removeBackend(m_activebackend);
-    removeBackend(m_previousbackend);
-    removeBackend(m_nextbackend);
+    removeBackend(m_activeBackend);
+    removeBackend(m_previousBackend);
+    removeBackend(m_nextBackend);
 
-    createBackend(m_activebackend, activeindex);
-    m_previousbackend = nullptr;
-    m_nextbackend = nullptr;
-    if(previousindex >= 0)
-        createBackend(m_previousbackend, previousindex);
-    if(nextindex >= 0)
-        createBackend(m_nextbackend, nextindex);
+    createBackend(m_activeBackend, m_activeIndex);
+    m_previousBackend = nullptr;
+    m_nextBackend = nullptr;
+    if(m_previousIndex >= 0)
+        createBackend(m_previousBackend, m_previousIndex);
+    if(m_nextIndex >= 0)
+        createBackend(m_nextBackend, m_nextIndex);
 
-    if(m_activebackend)
-        m_activebackend->activate();
-    if(m_previousbackend && m_setlist[previousindex].preload())
-        m_previousbackend->preload();
-    if(m_nextbackend && m_setlist[nextindex].preload())
-        m_nextbackend->preload();
+    if(m_activeBackend)
+        m_activeBackend->activate();
+    if(m_previousBackend && m_setlist[m_previousIndex].preload())
+        m_previousBackend->preload();
+    if(m_nextBackend && m_setlist[m_nextIndex].preload())
+        m_nextBackend->preload();
 }
 
 void SetlistModel::playPrevious()
 {
-    if(activeindex <= 0)
+    if(m_activeIndex <= 0)
         return;
     
-    AbstractPatchBackend *oldactivebackend = m_activebackend;
-    AbstractPatchBackend *oldnextbackend = m_nextbackend;
+    AbstractPatchBackend *oldactivebackend = m_activeBackend;
+    AbstractPatchBackend *oldnextbackend = m_nextBackend;
     
-    --previousindex;
-    --activeindex;
-    --nextindex;
+    --m_previousIndex;
+    --m_activeIndex;
+    --m_nextIndex;
 
-    m_nextbackend = m_activebackend;
-    m_activebackend = m_previousbackend;
-    m_previousbackend = nullptr;
+    m_nextBackend = m_activeBackend;
+    m_activeBackend = m_previousBackend;
+    m_previousBackend = nullptr;
     
-    if(m_activebackend)
-        m_activebackend->activate();
+    if(m_activeBackend)
+        m_activeBackend->activate();
     
-    if(previousindex >= 0 && previousindex <=  m_setlist.size()-1)
-        createBackend(m_previousbackend, previousindex);
+    if(m_previousIndex >= 0 && m_previousIndex <=  m_setlist.size()-1)
+        createBackend(m_previousBackend, m_previousIndex);
     
-    if(m_previousbackend && m_setlist[previousindex].preload())
-        QMetaObject::invokeMethod(m_previousbackend, "preload", Qt::QueuedConnection);
-    if(m_nextbackend && m_setlist[nextindex].preload())
-        QMetaObject::invokeMethod(m_nextbackend, "preload", Qt::QueuedConnection);
+    if(m_previousBackend && m_setlist[m_previousIndex].preload())
+        QMetaObject::invokeMethod(m_previousBackend, "preload", Qt::QueuedConnection);
+    if(m_nextBackend && m_setlist[m_nextIndex].preload())
+        QMetaObject::invokeMethod(m_nextBackend, "preload", Qt::QueuedConnection);
 
     if(oldactivebackend)
         QMetaObject::invokeMethod(oldactivebackend, "deactivate", Qt::QueuedConnection);
@@ -425,30 +425,30 @@ void SetlistModel::playPrevious()
 
 void SetlistModel::playNext()
 {
-    if(activeindex < 0 || activeindex >= m_setlist.size()-1)
+    if(m_activeIndex < 0 || m_activeIndex >= m_setlist.size()-1)
         return;
     
-    AbstractPatchBackend *oldactivebackend = m_activebackend;
-    AbstractPatchBackend *oldpreviousbackend = m_previousbackend;
+    AbstractPatchBackend *oldactivebackend = m_activeBackend;
+    AbstractPatchBackend *oldpreviousbackend = m_previousBackend;
 
-    ++previousindex;
-    ++activeindex;
-    ++nextindex;
+    ++m_previousIndex;
+    ++m_activeIndex;
+    ++m_nextIndex;
 
-    m_previousbackend = m_activebackend;
-    m_activebackend = m_nextbackend;
-    m_nextbackend = nullptr;
+    m_previousBackend = m_activeBackend;
+    m_activeBackend = m_nextBackend;
+    m_nextBackend = nullptr;
     
-    if(m_activebackend)
-        m_activebackend->activate();
+    if(m_activeBackend)
+        m_activeBackend->activate();
     
-    if(nextindex >= 0 && nextindex <= m_setlist.size()-1)
-        createBackend(m_nextbackend, nextindex);
+    if(m_nextIndex >= 0 && m_nextIndex <= m_setlist.size()-1)
+        createBackend(m_nextBackend, m_nextIndex);
 
-    if(m_previousbackend && m_setlist[previousindex].preload())
-        QMetaObject::invokeMethod(m_previousbackend, "preload", Qt::QueuedConnection);
-    if(m_nextbackend && m_setlist[nextindex].preload())
-        QMetaObject::invokeMethod(m_nextbackend, "preload", Qt::QueuedConnection);
+    if(m_previousBackend && m_setlist[m_previousIndex].preload())
+        QMetaObject::invokeMethod(m_previousBackend, "preload", Qt::QueuedConnection);
+    if(m_nextBackend && m_setlist[m_nextIndex].preload())
+        QMetaObject::invokeMethod(m_nextBackend, "preload", Qt::QueuedConnection);
     
     if(oldactivebackend)
         QMetaObject::invokeMethod(oldactivebackend, "deactivate", Qt::QueuedConnection);
@@ -460,9 +460,9 @@ void SetlistModel::playNext()
 
 void SetlistModel::edit(const QModelIndex& index)
 {
-    if(m_activebackend && !m_activebackend->editor().isEmpty())
+    if(m_activeBackend && !m_activeBackend->editor().isEmpty())
     {
-        QProcess::startDetached(m_activebackend->editor(), QStringList() << index.data(PatchRole).toUrl().toLocalFile());
+        QProcess::startDetached(m_activeBackend->editor(), QStringList() << index.data(PatchRole).toUrl().toLocalFile());
         qDebug() << "edit" << index.data(PatchRole).toUrl().toLocalFile();
     }
 }
@@ -475,13 +475,13 @@ bool SetlistModel::fileExists(const QString& file) const
 
 void SetlistModel::createPatch(const QString& path) const
 {
-    if(m_activebackend)
-        m_activebackend->createPatch(path);
+    if(m_activeBackend)
+        m_activeBackend->createPatch(path);
 }
 
 QModelIndex SetlistModel::activeIndex() const
 {
-    return index(activeindex,0);
+    return index(m_activeIndex,0);
 }
 
 void SetlistModel::updateProgress(int p)
@@ -489,12 +489,12 @@ void SetlistModel::updateProgress(int p)
     QVariantMap m;
     m.insert("progress", p);
     int ind = -1;
-    if(QObject::sender() == m_activebackend)
-        ind = activeindex;
-    else if(QObject::sender() == m_previousbackend)
-        ind = previousindex;
-    else if(QObject::sender() == m_nextbackend)
-        ind = nextindex;
+    if(QObject::sender() == m_activeBackend)
+        ind = m_activeIndex;
+    else if(QObject::sender() == m_previousBackend)
+        ind = m_previousIndex;
+    else if(QObject::sender() == m_nextBackend)
+        ind = m_nextIndex;
 
     switch(p)
     {
@@ -506,18 +506,18 @@ void SetlistModel::updateProgress(int p)
         if(ind < 0)
             break;
         qWarning() << "error on " << m_setlist[ind].name() << ". Trying to restart.";
-        if(ind == activeindex)
-            m_activebackend->activate();
-        else if(ind == previousindex && m_setlist[previousindex].preload())
-            m_previousbackend->preload();
-        else if(m_setlist[nextindex].preload())
-            m_nextbackend->preload();
+        if(ind == m_activeIndex)
+            m_activeBackend->activate();
+        else if(ind == m_previousIndex && m_setlist[m_previousIndex].preload())
+            m_previousBackend->preload();
+        else if(m_setlist[m_nextIndex].preload())
+            m_nextBackend->preload();
         break;
     case AbstractPatchBackend::JACK_NO_SERVER:
         qWarning() << "no jack server running.";
-        removeBackend(m_previousbackend);
-        removeBackend(m_nextbackend);
-        removeBackend(m_activebackend);
+        removeBackend(m_previousBackend);
+        removeBackend(m_nextBackend);
+        removeBackend(m_activeBackend);
 #ifdef WITH_JACK
         while(!freeJackClient());
 #endif
@@ -540,24 +540,24 @@ void SetlistModel::updateProgress(int p)
 
 void SetlistModel::forceRestart(const char* msg, int timeout)
 {
-    if(secondsleft)
+    if(m_secondsLeft)
         return;
     QTimer *timer;
     timer = new QTimer(this);
     timer->setInterval(1000);
     timer->setSingleShot(false);
-    secondsleft = new int(timeout);
-    emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *secondsleft));
+    m_secondsLeft = new int(timeout);
+    emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *m_secondsLeft));
     connect(timer, &QTimer::timeout, this, [this,msg,timeout,timer](){
-        --*secondsleft;
-        if(*secondsleft <= 0)
+        --*m_secondsLeft;
+        if(*m_secondsLeft <= 0)
         {
             emit info("");
                 
 #ifdef WITH_JACK
             if(!createJackClient())
             {
-                *secondsleft = timeout+1;
+                *m_secondsLeft = timeout+1;
                 QProcess *exec = new QProcess(this);
                 exec->setEnvironment(QProcess::systemEnvironment());
                 exec->start("jackman");
@@ -569,14 +569,14 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
                 reconnect();
                 timer->stop();
                 timer->deleteLater();
-                delete secondsleft;
-                secondsleft = nullptr;
+                delete m_secondsLeft;
+                m_secondsLeft = nullptr;
                 panic();
             }
         }
-        else if (*secondsleft < timeout)
+        else if (*m_secondsLeft < timeout)
         {
-            emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *secondsleft));
+            emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *m_secondsLeft));
         }
     });
     timer->start();
@@ -584,7 +584,7 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
 
 void SetlistModel::setHideBackend(bool hide)
 {
-    switch(backend)
+    switch(m_backend)
     {
         case Carla:
             CarlaPatchBackend::setHideBackend(hide);
@@ -595,7 +595,7 @@ void SetlistModel::setHideBackend(bool hide)
 bool SetlistModel::createJackClient()
 {
 #ifdef WITH_JACK
-    switch(backend)
+    switch(m_backend)
     {
         case Carla:
             return CarlaPatchBackend::jackClient();
@@ -607,7 +607,7 @@ bool SetlistModel::createJackClient()
 bool SetlistModel::freeJackClient()
 {
 #ifdef WITH_JACK
-    switch(backend)
+    switch(m_backend)
     {
         case Carla:
             return CarlaPatchBackend::freeJackClient();
@@ -618,7 +618,7 @@ bool SetlistModel::freeJackClient()
 
 void SetlistModel::connections(QMap<QString,QStringList> connections)
 {
-    switch(backend)
+    switch(m_backend)
     {
         case Carla:
             CarlaPatchBackend::connections(connections);
@@ -628,7 +628,7 @@ void SetlistModel::connections(QMap<QString,QStringList> connections)
 
 QMap<QString,QStringList> SetlistModel::connections() const
 {
-    switch(backend)
+    switch(m_backend)
     {
         case Carla:
             return CarlaPatchBackend::connections();
@@ -638,7 +638,7 @@ QMap<QString,QStringList> SetlistModel::connections() const
 
 void SetlistModel::reconnect()
 {
-    switch(backend)
+    switch(m_backend)
     {
         case Carla:
             CarlaPatchBackend::reconnect();

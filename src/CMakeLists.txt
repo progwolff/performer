@@ -76,6 +76,7 @@ if(WITH_KF5)
         #KF5::XmlGui
         KF5::CoreAddons
         KF5::GlobalAccel
+        KF5::Crash
     )
     
 endif(WITH_KF5)

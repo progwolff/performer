@@ -54,7 +54,17 @@ public:
     {};
     
 #ifdef WITH_JACK
+    /**
+     * return the main jack client of Performer.
+     * Create a client if no client exists.
+     * @return the main jack client of Performer
+     */
     static jack_client_t *jackClient();
+    
+    /**
+     * try to delete a previously created main jack client
+     * @return true on success, false else. Try until success to make sure all memory is freed 
+     */
     static bool freeJackClient();
 #endif
     
