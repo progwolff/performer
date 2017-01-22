@@ -842,7 +842,7 @@ void Performer::loadConfig()
     config.beginGroup("window");
     m_alwaysOnTop = config.value("m_alwaysOnTop",false).toBool();
     m_showMIDI = config.value("showmidi",false).toBool();
-    style = config.value("style",QString()).toString();
+    m_style = config.value("style",QString()).toString();
     config.endGroup();
     
     config.beginGroup("setlist");
@@ -919,7 +919,7 @@ void Performer::saveConfig()
     config.beginGroup("window");
     config.setValue("m_alwaysOnTop", m_alwaysOnTop);
     config.setValue("showmidi", m_showMIDI);
-    config.setValue("style", style);
+    config.setValue("style", m_style);
     config.endGroup();   
     
     config.beginGroup("setlist");
