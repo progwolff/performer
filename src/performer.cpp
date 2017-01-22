@@ -1049,7 +1049,7 @@ bool Performer::saveFile(const QString& path)
     
     set.beginGroup("setlist");
     
-    for(int i=0; i < m_setlist->setListView->m_model()->rowCount(); ++i)
+    for(int i=0; i < m_setlist->setListView->model()->rowCount(); ++i)
     {
         QModelIndex index = m_model->index(i,0);
         set.beginGroup(QString::number(index.row())+"-"+index.data(SetlistModel::NameRole).toString());
