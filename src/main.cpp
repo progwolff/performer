@@ -23,7 +23,9 @@
 #ifdef WITH_KF5
 #include <KLocalizedString>
 #include <KAboutData>
+#ifdef WITH_KCRASH
 #include <KCrash>
+#endif
 #else
 #include "fallback.h"
 #endif //WITH_KF5
@@ -84,8 +86,9 @@ int main (int argc, char *argv[])
     parser.process(app);
     aboutData.processCommandLine(&parser);
     
-    
+#ifdef WITH_KCRASH
     KCrash::initialize();
+#endif
     
 #endif //WITH_KF5
 

@@ -33,16 +33,19 @@ if(ECM_FOUND)
     include(ECMInstallIcons)
     include(FeatureSummary)
 
-    find_package(KF5 COMPONENTS
+    find_package(KF5 REQUIRED COMPONENTS
         CoreAddons
         I18n
         #ConfigWidgets
         KIO
         GlobalAccel
-        Crash
         #XmlGui
+    )
+    
+    find_package(KF5 
         OPTIONAL_COMPONENTS
         Parts
+        Crash
     )
 
     if(KF5_FOUND)
@@ -61,6 +64,14 @@ if(ECM_FOUND)
         endif()
     else()
         find_package(KF5 COMPONENTS XmlGui)
+    endif()
+    
+    if(WITH_KF5 AND KF5Crash_FOUND)
+        option(WITH_KCRASH "Build with KCrash" ON)
+        if(WITH_KCRASH)
+            add_definitions(-DWITH_KCRASH) 
+            Message("Building with KCRASH")
+        endif()
     endif()
 
     include(KDEInstallDirs)

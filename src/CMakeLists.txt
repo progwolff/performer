@@ -76,10 +76,15 @@ if(WITH_KF5)
         #KF5::XmlGui
         KF5::CoreAddons
         KF5::GlobalAccel
-        KF5::Crash
     )
     
 endif(WITH_KF5)
+
+if(WITH_KCRASH)
+    list(APPEND _LINK_LIBRARIES
+        KF5::Crash
+    )
+endif(WITH_KCRASH)
 
 if(NOT WITH_KPARTS AND WITH_KF5)
     list(APPEND _LINK_LIBRARIES 
