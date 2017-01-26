@@ -314,7 +314,6 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
     }
     activeBackendLock.unlock();
 }
-#endif
 
 int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
 {
@@ -375,6 +374,7 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
     
     return 0;
 }
+#endif
 
 
 QMap<QString,QStringList> CarlaPatchBackend::connections()

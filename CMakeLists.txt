@@ -26,6 +26,12 @@ find_package(Qt5 ${QT_MIN_VESION}
     WebView
 )
 
+if(ANDROID)
+find_package(Qt5 ${QT_MIN_VERSION}
+    CONFIG REQUIRED COMPONENTS
+    AndroidExtras
+)
+endif(ANDROID)
 
 find_package(ECM NO_MODULE)
 if(ECM_FOUND)

@@ -41,6 +41,9 @@ add_qt_android_apk(performer_apk performer
 	PACKAGE_NAME "de.julianwolff.performer"
 	DEPENDS performer
 )
+list(APPEND _LINK_LIBRARIES
+    Qt5::AndroidExtras
+)
 
 
 elseif(WIN32)
