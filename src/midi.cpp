@@ -226,6 +226,15 @@ void MIDI::trigger(unsigned char cc, unsigned char val)
         
         unsigned char olddata2 = MIDI::value(cc);
         
+        if(range == 0)
+        {
+            for(QWidget *widget : action->associatedWidgets())
+            {
+                static_cast<QToolButton*>(widget)->emit clicked();
+            }
+            return;
+        }
+        
         if(range > 0)
         {
             low_thresh = minValue(cc) + (1+range)/2 - ((range >= 4)?2:0);
