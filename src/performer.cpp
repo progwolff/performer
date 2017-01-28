@@ -43,6 +43,10 @@
 #include "ui_setlist_without_kde.h"
 #endif //WITH_KF5
 
+#ifdef ANDROID
+#include "androidfiledialog.h"
+#endif
+
 #include <QDebug>
 
 #include <QStyledItemDelegate>
@@ -153,6 +157,10 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->nameEdit, &QLineEdit::textEdited, this, [this](){updateSelected(); setWindowModified(true);});
     
     connect(m_setlist->createpatchbutton, SIGNAL(clicked()), SLOT(createPatch()));
+#ifndef WITH_JACK
+    m_setlist->createpatchbutton->setEnabled(false);
+    m_setlist->createpatchbutton->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
+#endif
     
     connect(m_setlist->setListView, SIGNAL(activated(QModelIndex)), SLOT(songSelected(QModelIndex)));
     connect(m_setlist->setListView, SIGNAL(clicked(QModelIndex)), SLOT(songSelected(QModelIndex)));
@@ -392,14 +400,42 @@ void Performer::updateSelected()
 #ifndef WITH_KF5
 void Performer::requestPatch()
 {
+#ifndef ANDROID
     m_setlist->patchrequestedit->setText(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), i18n("Carla Patch (*.carxp)")));
     updateSelected();
+#else
+    AndroidFileDialog *fileDialog = new AndroidFileDialog();
+    connect(fileDialog, &AndroidFileDialog::existingFileNameReady, this, [this,fileDialog](QString filename){
+        m_setlist->patchrequestedit->setText(filename);
+        updateSelected();
+        fileDialog->deleteLater();
+    });
+    bool success = fileDialog->provideExistingFileName();
+    if (!success) {
+        qWarning() << "could not create an AndroidFileDialog.";
+        fileDialog->deleteLater();
+    }
+#endif //ANDROID
 }
 
 void Performer::requestNotes()
 {
+#ifndef ANDROID
     m_setlist->notesrequestedit->setText(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), QString()));
     updateSelected();
+#else
+    AndroidFileDialog *fileDialog = new AndroidFileDialog();
+    connect(fileDialog, &AndroidFileDialog::existingFileNameReady, this, [this,fileDialog](QString filename){
+        m_setlist->notesrequestedit->setText(filename);
+        updateSelected();
+        fileDialog->deleteLater();
+    });
+    bool success = fileDialog->provideExistingFileName();
+    if (!success) {
+        qWarning() << "could not create an AndroidFileDialog.";
+        fileDialog->deleteLater();
+    }
+#endif //ANDROID
 }
 #endif
 

@@ -33,13 +33,24 @@ endif(WITH_KF5)
 
     
 if(ANDROID)
-add_library(performer SHARED main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
+set(ANDROID_SRCS androidfiledialog.cpp)
+add_library(performer SHARED main.cpp ${ANDROID_SRCS} ${PERFORMER_SRCS} ${PERFORMER_UI})
 include(../cmake/AddQtAndroidApk.cmake)
+add_definitions(-DANDROID)
+
+FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/package_sources/assets)
+if(WITH_QTWEBVIEW)
+    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/qml DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/package_sources/assets)
+    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/extern/pdf.js DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/package_sources/assets)
+    FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/AndroidManifest.xml DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/package_sources)
+endif()
+
 add_qt_android_apk(performer_apk performer
 	NAME "Performer"
-	VERSION_CODE 1
+	VERSION_CODE 1.1
 	PACKAGE_NAME "de.julianwolff.performer"
 	DEPENDS performer
+	PACKAGE_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/package_sources
 )
 list(APPEND _LINK_LIBRARIES
     Qt5::AndroidExtras
@@ -139,7 +150,7 @@ if(WITH_TESTS)
         add_definitions( -Wall -O2 -fexceptions )
         include_directories(${CATCH_INCLUDE_DIR} ${COMMON_INCLUDES})
         enable_testing()
-        add_executable(test_performer tests.cpp ${PERFORMER_SRCS}  ${PERFORMER_UI})
+        add_executable(test_performer tests.cpp ${ANDROID_SRCS} ${PERFORMER_SRCS}  ${PERFORMER_UI})
         add_dependencies(test_performer catch) 
         target_link_libraries(test_performer ${_LINK_LIBRARIES})
         add_test(NAME "test_performer" COMMAND test_performer)

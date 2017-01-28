@@ -28,6 +28,8 @@
 #include <QScrollBar>
 
 #include <QQuickItem>
+#include <QFileInfo>
+#include <QDir>
 
 #include <QStandardPaths>
 
@@ -83,9 +85,17 @@ void QtWebViewDocumentViewer::load(QUrl url)
 
 	if (!m_webview->source().isValid())
 	{
-		const QString qmlPath = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/webview.qml");
+#ifdef ANDROID
+        QFile file("assets:/qml/webview.qml");
+        QDir dir(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
+        if (!dir.exists()){
+            dir.mkdir(".");
+        }
+        file.copy(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation)+"/performer/webview.qml");
+#endif
+		QUrl url = QUrl::fromLocalFile(QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/webview.qml"));
 		m_webview->setContentsMargins(0, 0, 0, 0);
-		m_webview->setSource(QUrl::fromLocalFile(qmlPath));
+		m_webview->setSource(url);
 		m_webview->show();
 		m_webview->updateGeometry();
 	}
@@ -99,6 +109,14 @@ void QtWebViewDocumentViewer::load(QUrl url)
     
     if(type.name() == "application/pdf")
     {
+#ifdef ANDROID
+        QFile file("assets:/pdf.js/web/viewer.html");
+        QDir dir(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+        if (!dir.exists()){
+            dir.mkdir(".");
+        }
+        file.copy(QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/performer/webview.qml");
+#endif
         QUrl pdfurl = QUrl::fromLocalFile(QStandardPaths::locate(QStandardPaths::GenericDataLocation, "performer/pdf.js/web/viewer.html"));
         pdfurl.setQuery(QString("file=")+url.toLocalFile());
         qDebug() << pdfurl;
