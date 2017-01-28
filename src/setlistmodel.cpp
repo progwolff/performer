@@ -98,7 +98,7 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
         }
         
         connect(instance, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
-        connect(instance, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)));
+        connect(instance, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), Qt::QueuedConnection);
     }
     else
     {

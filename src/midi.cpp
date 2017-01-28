@@ -230,7 +230,10 @@ void MIDI::trigger(unsigned char cc, unsigned char val)
         {
             for(QWidget *widget : action->associatedWidgets())
             {
-                static_cast<QToolButton*>(widget)->emit clicked();
+                if(static_cast<QToolButton*>(widget)->isCheckable())
+                    static_cast<QToolButton*>(widget)->toggle();
+                else
+                    static_cast<QToolButton*>(widget)->emit clicked();
             }
             return;
         }
@@ -517,7 +520,7 @@ void MIDI::message(unsigned char status, unsigned char data1, unsigned char data
         if(m_learn)
         {
             setCc(m_learn, data1);
-            emit this->status(i18n("MIDI CC %1 (%3) assigned to action %2", QString::number(data1), m_learn->text(), description(data1)));
+            emit this->status(i18n("MIDI CC %1 (%3) assigned to action %2 %4", QString::number(data1), m_learn->text(), description(data1), ((m_learn->data() == "button")?i18n("(button)"):"")));
             visualizeMidiLearn();
             m_learn = nullptr;
             setValue(data1, data2);
