@@ -497,6 +497,13 @@ Some actions in the toolbar of &performer; belong to the document viewer used. P
 
 <para>Besides setting a MIDI CC in the MIDI control dock widget, MIDI CCs can be mapped to actions by using the <xref linkend="context-midi-learn"/> action in the context menu of the corresponding GUI widget.</para>
 
+<sect3 id="notes-midi-button">
+<title>Notes on MIDI assignable buttons</title>
+
+<para>If a MIDI CC is assigned to a button of &performer;'s GUI, the upper half of the range given in the MIDI control dock widget will be used to press the button and the lower half of the range will be used to release the button. The action of the button is triggered, when a value in the upper half of the range is received. After being triggered once, the action is only triggered again after receiving a value in the lower half of the range.</para>
+<para>If the range of a MIDI CC that is assigned to a button of &performer;'s GUI is 0 (Min equals Max), the button's action is triggered on each received value.</para>
+</sect3>
+
 </sect2>
 
 <sect2 id="context-midi">

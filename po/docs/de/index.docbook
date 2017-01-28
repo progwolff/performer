@@ -496,6 +496,14 @@ Einige der Einträge in der Werkzeugleiste von &performer; gehören zu dem verwe
 
 <para>Neben der Möglichkeit, MIDI CCs Aktionen im Dock-Widget zur MIDI-Steuerung zuzuweisen, können MIDI CCs Aktionen mithilfe der Aktion <xref linkend="context-midi-learn"/> im Kontextmenü eines entsprechenden Steuerelements zugewiesen werden.</para>
 
+
+<sect3 id="notes-midi-button">
+<title>Hinweise zu MIDI und Buttons</title>
+
+<para>Wird eine MIDI CC Nachricht einem Button in &performer; zugewiesen, wird die obere Hälfte des im Dock-Widgets zur MIDI-Steuerung angegebenen Bereichs zum Herunterdrücken des Buttons genutzt. Die untere Hälfte des Bereichs wird zum Loslassen des Buttons genutzt. Die Aktion des Buttons wird ausgelöst, wenn ein Wert in der oberen Hälfte des Bereichs empfangen wird. Nachdem die Aktion einmal ausgelöst wurde, wird sie erst wieder ausgelöst, wenn ein Wert in der unteren Hälte des Bereichs empfangen wurde.</para>
+<para>Ist der angegebene Bereich 0 (Min und Max haben den selben Wert), wird die Aktion mit jedem empfangenen Wert ausgelöst.</para>
+</sect3>
+
 </sect2>
 
 <sect2 id="context-midi">
