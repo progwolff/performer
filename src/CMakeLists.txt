@@ -139,6 +139,13 @@ if(WITH_JACK)
 endif(WITH_JACK)
 
 
+if(LINK_STATIC)
+
+set_target_properties(performer PROPERTIES LINK_SEARCH_START_STATIC 1)
+set_target_properties(performer PROPERTIES LINK_SEARCH_END_STATIC 1)
+
+endif(LINK_STATIC)
+
 target_link_libraries(performer ${_LINK_LIBRARIES})
 
 

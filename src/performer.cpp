@@ -191,6 +191,9 @@ Performer::Performer(QWidget *parent) :
     setHideBackend(m_hideBackend);
     setShowMIDI(m_showMIDI);
     setStyle(m_style);
+    
+    if(m_viewer)
+        m_viewer->load(QUrl("https://github.com/progwolff/performer#usage"));
 }
 
 
@@ -502,9 +505,10 @@ void Performer::songSelected(const QModelIndex& index)
     m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
 #endif
     
-    if(m_viewer && m_model->fileExists(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+    QUrl notesurl = ind.data(SetlistModel::NotesRole).toUrl();
+    if(m_viewer && m_model->fileExists(notesurl.toLocalFile()))
     {
-        m_viewer->load(ind.data(SetlistModel::NotesRole).toUrl());
+        m_viewer->load(notesurl);
     }
     
     m_oldIndex = index;

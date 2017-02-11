@@ -230,10 +230,13 @@ void MIDI::trigger(unsigned char cc, unsigned char val)
         {
             for(QWidget *widget : action->associatedWidgets())
             {
-                if(static_cast<QToolButton*>(widget)->isCheckable())
-                    static_cast<QToolButton*>(widget)->toggle();
-                else
-                    static_cast<QToolButton*>(widget)->emit clicked();
+                if(widget->inherits("QToolButton"))
+                {
+                    if(static_cast<QToolButton*>(widget)->isCheckable())
+                        static_cast<QToolButton*>(widget)->toggle();
+                    else
+                        static_cast<QToolButton*>(widget)->emit clicked();
+                }
             }
             return;
         }

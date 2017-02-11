@@ -8,6 +8,17 @@ SET(CMAKE_CXX_FLAGS "-std=c++0x")
 add_definitions(-DTRANSLATION_DOMAIN=\"performer\")
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
+option(LINK_STATIC "Force link static" OFF)
+
+if(LINK_STATIC)
+
+if(UNIX)
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a .so")
+endif(UNIX)
+
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+endif(LINK_STATIC)
+
 find_package(Qt5 ${QT_MIN_VERSION} 
     CONFIG REQUIRED COMPONENTS 
     Core 
