@@ -788,7 +788,18 @@ void CarlaPatchBackend::preload()
                             uuid = jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
                         else
                         {
-                            QTimer::singleShot(500, outputhandler);
+                            
+                            QTimer::singleShot(500, [this,outputhandler]()
+                            {
+                                try 
+                                {
+                                    outputhandler();
+                                }
+                                catch (std::bad_function_call& e)
+                                {
+                                    qWarning() << "client was killed while reading output";
+                                }
+                            });
                             break;
                         }
                         if(!uuid)
