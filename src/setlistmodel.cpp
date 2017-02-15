@@ -301,6 +301,8 @@ int SetlistModel::add(const QString &name, const QVariantMap &conf)
 bool SetlistModel::dropMimeData(const QMimeData * /*data*/, Qt::DropAction /*action*/, int row, int /*column*/, const QModelIndex & /*parent*/)
 {
     m_movedIndex = row;
+    if(m_movedIndex < 0)
+        m_movedIndex = m_setlist.size();
 
     return true;
 }
