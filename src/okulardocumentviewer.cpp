@@ -25,6 +25,13 @@
 #include <QDebug>
 #include <KActionCollection>
 
+
+#ifdef WITH_QWEBENGINE
+#include <QWebEnginePage>
+#include <QTemporaryFile>
+#include <QMimeDatabase>
+#endif
+
 OkularDocumentViewer::OkularDocumentViewer::OkularDocumentViewer(KParts::MainWindow* parent):
 m_part(nullptr)
 {
@@ -103,6 +110,33 @@ KParts::ReadOnlyPart * OkularDocumentViewer::part()
 
 void OkularDocumentViewer::load(QUrl url)
 {
+#ifdef WITH_QWEBENGINE
+    QMimeDatabase db;
+    QMimeType type = db.mimeTypeForFile(url.toLocalFile());
+    
+    if(!url.isLocalFile() || type.name() == "text/html")
+    {
+        QWebEnginePage *page = new QWebEnginePage();
+        page->load(url);
+        connect(page, &QWebEnginePage::loadFinished, this, [this,page](){
+            qDebug() << "rendering" << page->url();
+            page->printToPdf([this,page](const QByteArray& data){
+                QTemporaryFile file;
+                file.setAutoRemove(false);
+                if(file.open())
+                {
+                    file.write(data);
+                    file.close();
+                    load(QUrl::fromLocalFile(file.fileName()));
+                }
+                page->deleteLater();
+                qDebug() << "done rendering";
+            });
+        });
+        return;
+    }
+#endif
+    
     if(m_part)
         m_part->openUrl(url);
 }

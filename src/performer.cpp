@@ -594,7 +594,7 @@ void Performer::prepareUi()
     }
 #endif
 
-#ifdef WITH_QWEBENGINE
+#if defined(WITH_QWEBENGINE) && !defined(WITH_KPARTS)
     m_viewer = new QWebEngineDocumentViewer(this);
     setCentralWidget(m_viewer->widget());
 #endif

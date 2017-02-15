@@ -789,10 +789,8 @@ void CarlaPatchBackend::preload()
                         else
                         {
                             
-                            QTimer::singleShot(500, [this,outputhandler]()
-                            {
-                                try 
-                                {
+                            QTimer::singleShot(500, [this,outputhandler](){
+                                try {
                                     outputhandler();
                                 }
                                 catch (std::bad_function_call& e)
