@@ -368,7 +368,7 @@ void SetlistModel::playNow(const QModelIndex& ind)
         return;
     m_activeIndex = ind.row();
     m_previousIndex = m_activeIndex-1;
-    m_nextIndex = (m_setlist.size()>m_activeIndex+1)?m_activeIndex+1:-1;
+    m_nextIndex = m_activeIndex+1;
 
     removeBackend(m_activeBackend);
     removeBackend(m_previousBackend);
@@ -377,9 +377,9 @@ void SetlistModel::playNow(const QModelIndex& ind)
     createBackend(m_activeBackend, m_activeIndex);
     m_previousBackend = nullptr;
     m_nextBackend = nullptr;
-    if(m_previousIndex >= 0)
+    if(m_previousIndex >= 0 && m_previousIndex <=  m_setlist.size()-1)
         createBackend(m_previousBackend, m_previousIndex);
-    if(m_nextIndex >= 0)
+    if(m_nextIndex >= 0 && m_nextIndex <=  m_setlist.size()-1)
         createBackend(m_nextBackend, m_nextIndex);
 
     if(m_activeBackend)
