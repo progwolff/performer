@@ -52,7 +52,7 @@
 #include <QMetaObject>
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 SetlistModel::SetlistModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -160,7 +160,7 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
     case Qt::BackgroundRole:
     {
 
-        double stop = (metadata.progress())?((metadata.progress())/100.):1;
+        double stop = MIN(1,MAX(0,(metadata.progress())?((metadata.progress())/100.):1));
 
         QLinearGradient gradient(0, 1, 1, 1);
         gradient.setCoordinateMode(QGradient::StretchToDeviceMode);
