@@ -52,6 +52,7 @@
 #include <QMetaObject>
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)<(b))?(a):(b))
 
 SetlistModel::SetlistModel(QObject *parent)
     : QAbstractListModel(parent)
@@ -166,7 +167,7 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
 
         //gradient.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0));
         if(stop+.01 <= 1)
-            gradient.setColorAt(MIN(1,stop+.01), QColor::fromRgbF(0, 0, 0, 0));
+            gradient.setColorAt(MIN(1,MAX(0,stop+.01)), QColor::fromRgbF(0, 0, 0, 0));
 
         if(fileExists(metadata.patch().toLocalFile()) && metadata.progress() >= 0)
         {
