@@ -265,7 +265,7 @@ void Performer::warning(const QString& msg)
 {
     qWarning() << msg;
 #ifdef WITH_KF5
-    KNotification *notification= new KNotification("warning", this);
+    KNotification *notification= new KNotification("warning", this, KNotification::SkipGrouping);
     notification->setText(msg);
     notification->addContext("default", "default");
     notification->sendEvent();
