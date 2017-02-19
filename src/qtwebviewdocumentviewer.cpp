@@ -145,6 +145,11 @@ void QtWebViewDocumentViewer::load(QUrl url)
     m_webview->rootObject()->setProperty("currentwidth", areasize.width());
     m_webview->rootObject()->setProperty("currentheight", areasize.height());
     //m_webview->page()->view()->resize(m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height()));
+    
+    QObject *item = m_webview->rootObject();
+
+    connect(item, SIGNAL(sizeChanged(QVariant)), (QtWebViewDocumentViewer*)this, SLOT(resizeView(QVariant)));
+
 }
 
 

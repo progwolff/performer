@@ -159,6 +159,7 @@ endif(LINK_STATIC)
 
 target_link_libraries(performer ${_LINK_LIBRARIES})
 
+add_definitions( -fexceptions )
 
 option(WITH_TESTS "unit tests" ON)
 if(WITH_TESTS)
