@@ -510,7 +510,7 @@ void SetlistModel::updateProgress(int p)
     case AbstractPatchBackend::PROCESS_EXIT:
         if(ind < 0)
             break;
-        qWarning() << "error on " << m_setlist[ind].name() << ". Trying to restart.";
+        emit warning(i18n("%1 crashed. Trying to restart.", m_setlist[ind].name()));
         if(ind == m_activeIndex)
             m_activeBackend->activate();
         else if(ind == m_previousIndex && m_setlist[m_previousIndex].preload())
@@ -519,19 +519,18 @@ void SetlistModel::updateProgress(int p)
             m_nextBackend->preload();
         break;
     case AbstractPatchBackend::JACK_NO_SERVER:
-        qWarning() << "no jack server running.";
+        emit warning(i18n("Could not find a running jack server."));
         removeBackend(m_previousBackend);
         removeBackend(m_nextBackend);
         removeBackend(m_activeBackend);
 #ifdef WITH_JACK
         while(!freeJackClient());
 #endif
-        //emit info(i18n("Could not find a running jack server."));
         forceRestart("Could not find a running jack server.", 5);
         break;
     case AbstractPatchBackend::JACK_OPEN_FAILED:
         qWarning() << "failed to create a jack client.";
-        //emit info(i18n("Could not create a client on the existing jack server."));
+        emit warning(i18n("Could not create a client on the existing jack server."));
         forceRestart("Could not create a client on the existing jack server.",5);
         break;
     }

@@ -90,6 +90,7 @@ if(WITH_KF5)
         #KF5::XmlGui
         KF5::CoreAddons
         KF5::GlobalAccel
+        KF5::Notifications
     )
     
 endif(WITH_KF5)
@@ -190,6 +191,7 @@ install(TARGETS performer DESTINATION ${CMAKE_INSTALL_BINDIR})
 if(ECM_FOUND)
     install( FILES okularui.rc DESTINATION  ${KXMLGUI_INSTALL_DIR}/performer )
     install( FILES Performerui.rc DESTINATION ${KXMLGUI_INSTALL_DIR}/performer )
+    install( FILES performer.notifyrc DESTINATION ${KNOTIFYRC_INSTALL_DIR} )
 endif(ECM_FOUND)
 #kcoreaddons_desktop_to_json(performer ../performer.desktop)
 

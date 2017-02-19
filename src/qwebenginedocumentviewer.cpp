@@ -65,6 +65,7 @@ QWebEngineDocumentViewer::QWebEngineDocumentViewer(QMainWindow* parent)
             "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
             "scaleSelect.options.selectedIndex = "+QString::number(index)+";"
         );
+        m_webview->page()->view()->resize(m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height()));
     });
 }
 

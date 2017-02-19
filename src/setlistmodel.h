@@ -82,6 +82,7 @@ public slots:
 signals:
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);
     void error(const QString& msg);
+    void warning(const QString& msg);
     void info(const QString& msg);
     void jackClientState(int s);
     void changed();

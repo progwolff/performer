@@ -103,6 +103,7 @@ private slots:
     void receiveMidiEvent(unsigned char status, unsigned char data1, unsigned char data2);
     
     void error(const QString& message);
+    void warning(const QString& message);
     void info(const QString& message);
     
     void setAlwaysOnTop(bool ontop);

@@ -57,6 +57,7 @@ if(ECM_FOUND)
         KIO
         GlobalAccel
         #XmlGui
+        Notifications
     )
     
     find_package(KF5 

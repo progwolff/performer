@@ -1,0 +1,15 @@
+[Global]
+IconName=performer
+Comment=Performer
+Name=Performer
+
+[Context/default]
+Name=Default
+Comment=Default context
+
+[Event/warning]
+Name=Generic warning message
+Comment=Warning message that does not fit to any other event
+Contexts=default
+Sound=
+Action=Popup

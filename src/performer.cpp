@@ -35,6 +35,7 @@
 #include <KConfig>
 #include <KConfigGroup>
 #include <KUrlRequesterDialog>
+#include <knotification.h>
 #ifdef WITH_KPARTS
 #include <KActionCollection>
 #include <KAboutApplicationDialog>
@@ -171,6 +172,7 @@ Performer::Performer(QWidget *parent) :
     connect(m_midi, SIGNAL(status(const QString&)), this, SLOT(info(const QString&)));
     
     connect(m_model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
+    connect(m_model, SIGNAL(warning(const QString&)), this, SLOT(warning(const QString&)));
     connect(m_model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
     connect(m_model, &SetlistModel::changed, this, [this](){
         setWindowModified(true); 
@@ -257,6 +259,19 @@ void Performer::error(const QString& msg)
     QErrorMessage *box = new QErrorMessage(this);
     box->showMessage(msg);
     //box->deleteLater();
+}
+
+void Performer::warning(const QString& msg)
+{
+    qWarning() << msg;
+#ifdef WITH_KF5
+    KNotification *notification= new KNotification("warning", this);
+    notification->setText(msg);
+    notification->addContext("default", "default");
+    notification->sendEvent();
+#else
+    statusBar()->showMessage("Warning: " + msg);
+#endif
 }
 
 void Performer::info(const QString& msg)
@@ -403,7 +418,7 @@ void Performer::updateSelected()
 #ifndef WITH_KF5
 void Performer::requestPatch()
 {
-#ifndef ANDROID
+#ifndef ANDROIDaskSaveChanges
     m_setlist->patchrequestedit->setText(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), i18n("Carla Patch (*.carxp)")));
     updateSelected();
 #else

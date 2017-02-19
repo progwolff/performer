@@ -46,6 +46,7 @@ QtWebViewDocumentViewer::QtWebViewDocumentViewer(QMainWindow* parent)
     m_webviewarea = new QScrollArea(this);
     m_webview = new QQuickWidget(this);
     m_webviewarea->setWidget(m_webview);
+    m_webview->setResizeMode(QQuickWidget::SizeRootObjectToView);
     m_webview->setEnabled(true);
     m_zoombox = new QComboBox(this);
     m_zoombox->addItem(i18n("Automatic zoom"));
@@ -68,6 +69,9 @@ QtWebViewDocumentViewer::QtWebViewDocumentViewer(QMainWindow* parent)
             Q_ARG(QString, "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
                 "scaleSelect.options.selectedIndex = "+QString::number(index)+";")
         );
+        QSize areasize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
+        m_webview->rootObject()->setProperty("currentwidth", areasize.width());
+        m_webview->rootObject()->setProperty("currentheight", areasize.height());
     });
 }
 
