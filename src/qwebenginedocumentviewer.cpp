@@ -105,7 +105,8 @@ void QWebEngineDocumentViewer::load(QUrl url)
         m_webview->load(url);
     }
     
-    m_webview->page()->view()->resize(m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height()));
+    QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
+    m_webview->page()->view()->resize(viewportsize.width()-5, viewportsize.height()-5);
 }
 
 QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
@@ -122,6 +123,8 @@ QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
             "document.getElementById('toolbarViewerMiddle').style.display='none';"
             "new Array(document.getElementById('viewer').firstChild.firstChild.offsetWidth, document.getElementById('viewer').offsetHeight, document.getElementById('scaleSelect').options.selectedIndex);"
             "} catch (err){"
+            "document.body.style.width='100%';"
+            "document.body.style.height='100%';"
             "document.body.style.overflow='hidden';"
             "document.body.firstChild.style.width='100%';"
             "document.body.firstChild.style.height='auto';"
