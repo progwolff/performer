@@ -155,6 +155,34 @@ if(LINK_STATIC)
 set_target_properties(performer PROPERTIES LINK_SEARCH_START_STATIC 1)
 set_target_properties(performer PROPERTIES LINK_SEARCH_END_STATIC 1)
 
+if(UNIX)
+find_library (QXcb_LIBRARY NAMES qxcb)
+find_library (QXcbQpa_LIBRARY NAMES Qt5XcbQpa)
+find_library (QXcb_glxintegration_LIBRARY NAMES libqxcb-glx-integration)
+find_library (Qt5GlxSupport_LIBRARY NAMES Qt5GlxSupport)
+find_library (Qt5EventDispatcherSupport_LIBRARY NAMES Qt5EventDispatcherSupport)
+find_library (Qt5AccessibilitySupport_LIBRARY NAMES Qt5AccessibilitySupport)
+find_library (Qt5LinuxAccessibilitySupport_LIBRARY NAMES Qt5LinuxAccessibilitySupport)
+find_library (Qt5ThemeSupport_LIBRARY NAMES Qt5ThemeSupport)
+find_library (Qt5FontDatabaseSupport_LIBRARY NAMES Qt5FontDatabaseSupport)
+find_library (Qt5EglFSDeviceIntegration_LIBRARY NAMES Qt5EglFSDeviceIntegration)
+find_library (Qt5ServiceSupport_LIBRARY NAMES Qt5ServiceSupport)
+list(APPEND _LINK_LIBRARIES 
+    ${QXcb_LIBRARY} 
+    ${QXcbQpa_LIBRARY} 
+    ${Qt5ThemeSupport_LIBRARY} 
+    ${Qt5FontDatabaseSupport_LIBRARY}
+    ${Qt5ServiceSupport_LIBRARY} 
+    ${Qt5LinuxAccessibilitySupport_LIBRARY} 
+    ${Qt5AccessibilitySupport_LIBRARY} 
+    ${Qt5EventDispatcherSupport_LIBRARY} 
+    xcb X11 xcb-xkb xcb-render xcb-randr xcb-xinerama xcb-xfixes xcb-shape xcb-shm xcb-sync xcb-keysyms xcb-image 
+    xcb-ewmh xkbcommon xcb-icccm xkbcommon-x11 xcb-render-util Xi X11-xcb ICE SM freetype Xft fontconfig
+    pthread dl png z harfbuzz glib-2.0 icui18n icuuc pcre16
+    Qt5DBus
+)
+endif(UNIX)
+
 endif(LINK_STATIC)
 
 target_link_libraries(performer ${_LINK_LIBRARIES})

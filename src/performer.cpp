@@ -1065,11 +1065,26 @@ void Performer::loadFile(const QString& path)
 
 bool Performer::saveFileAs()
 {
+#ifndef ANDROID
     QString filename = QFileDialog::getSaveFileName(Q_NULLPTR, i18n("Save File As..."));
     if(!filename.isEmpty())
         return saveFile(filename);
     else
         return false;
+#else
+    AndroidFileDialog *fileDialog = new AndroidFileDialog();
+    connect(fileDialog, &AndroidFileDialog::existingFileNameReady, this, [this,fileDialog](QString filename){
+        saveFile(filename);
+        fileDialog->deleteLater();
+    });
+    bool success = fileDialog->provideExistingFileName();
+    if (!success) {
+        qWarning() << "could not create an AndroidFileDialog.";
+        fileDialog->deleteLater();
+        return false;
+    }
+    return true;
+#endif //ANDROID
 }
 
 bool Performer::saveFile(const QString& path)

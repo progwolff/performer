@@ -32,12 +32,18 @@
 
 #include "performer.h"
 
+#ifdef LINK_STATIC
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
+#endif
  
 int main (int argc, char *argv[])
 {
     QApplication app(argc, argv);
     
     app.setWindowIcon(QIcon::fromTheme("performer"));
+
+    QCoreApplication::addLibraryPath("/usr/lib/qt/plugins");
     
 #ifdef WITH_QTWEBVIEW
 #ifdef QT_WEBVIEW_WEBENGINE_BACKEND

@@ -10,14 +10,6 @@ add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 
 option(LINK_STATIC "Force link static" OFF)
 
-if(LINK_STATIC)
-
-if(UNIX)
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".a .so")
-endif(UNIX)
-
-set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
-endif(LINK_STATIC)
 
 find_package(Qt5 ${QT_MIN_VERSION} 
     CONFIG REQUIRED COMPONENTS 
@@ -36,6 +28,20 @@ find_package(Qt5 ${QT_MIN_VESION}
     WebEngineWidgets
     WebView
 )
+
+
+if(LINK_STATIC)
+
+add_definitions(-DLINK_STATIC) 
+
+if(UNIX)
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a .so")
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS DBus Gui)
+endif(UNIX)
+
+
+endif(LINK_STATIC)
 
 if(ANDROID)
 find_package(Qt5 ${QT_MIN_VERSION}
