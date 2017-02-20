@@ -11,6 +11,15 @@ add_definitions(-DQT_NO_URL_CAST_FROM_STRING)
 option(LINK_STATIC "Force link static" OFF)
 
 
+if(LINK_STATIC)
+add_definitions(-DLINK_STATIC) 
+if(UNIX)
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+endif(UNIX)
+
+endif(LINK_STATIC)
+
 find_package(Qt5 ${QT_MIN_VERSION} 
     CONFIG REQUIRED COMPONENTS 
     Core 
@@ -29,19 +38,10 @@ find_package(Qt5 ${QT_MIN_VESION}
     WebView
 )
 
-
 if(LINK_STATIC)
-
-add_definitions(-DLINK_STATIC) 
-
-if(UNIX)
-set(CMAKE_FIND_LIBRARY_SUFFIXES ".a .so")
-set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS DBus Gui)
-endif(UNIX)
-
-
 endif(LINK_STATIC)
+
 
 if(ANDROID)
 find_package(Qt5 ${QT_MIN_VERSION}
@@ -50,7 +50,10 @@ find_package(Qt5 ${QT_MIN_VERSION}
 )
 endif(ANDROID)
 
+option(SKIP_ECM "Do not search for extra cmake modules" OFF)
+if(NOT SKIP_ECM)
 find_package(ECM NO_MODULE)
+endif()
 if(ECM_FOUND)
     set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
     include(ECMInstallIcons)

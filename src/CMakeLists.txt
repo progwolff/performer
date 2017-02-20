@@ -2,6 +2,7 @@
 # add_subdirectory(configwidgets)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
 include_directories ( ${JACK_INCLUDEDIR} ${JACK_INCLUDE_DIRS} )
 link_directories ( ${JACK_LIBDIR} ${JACK_LIBRARY_DIRS} )
@@ -21,17 +22,7 @@ set(PERFORMER_SRCS
     qwebenginedocumentviewer.cpp
     qtwebviewdocumentviewer.cpp
 )
-
-if(WITH_KF5)
-    set(PERFORMER_UI ui/setlist.ui)
-    ki18n_wrap_ui(PERFORMER ${PERFORMER_UI})
-else(WITH_KF5)
-    set(PERFORMER_UI ui/setlist_without_kde.ui)
-    qt5_wrap_ui(PERFORMER ${PERFORMER_UI})
-	include_directories(${CMAKE_CURRENT_BINARY_DIR})
-endif(WITH_KF5)
-
-    
+   
 if(ANDROID)
 set(ANDROID_SRCS androidfiledialog.cpp)
 add_library(performer SHARED main.cpp ${ANDROID_SRCS} ${PERFORMER_SRCS} ${PERFORMER_UI})
@@ -66,6 +57,58 @@ endif()
 add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
 endif()
 
+
+
+if(WITH_JACK)
+    list(APPEND _LINK_LIBRARIES 
+        ${JACK_LIBRARIES}
+    )
+endif(WITH_JACK)
+
+if(LINK_STATIC)
+
+set_target_properties(performer PROPERTIES LINK_SEARCH_START_STATIC 1)
+set_target_properties(performer PROPERTIES LINK_SEARCH_END_STATIC 1)
+
+if(UNIX)
+find_library (QXcb_LIBRARY NAMES qxcb)
+find_library (QXcbQpa_LIBRARY NAMES Qt5XcbQpa)
+find_library (QXcb_glxintegration_LIBRARY NAMES libqxcb-glx-integration)
+find_library (Qt5GlxSupport_LIBRARY NAMES Qt5GlxSupport)
+find_library (Qt5EventDispatcherSupport_LIBRARY NAMES Qt5EventDispatcherSupport)
+find_library (Qt5AccessibilitySupport_LIBRARY NAMES Qt5AccessibilitySupport)
+find_library (Qt5LinuxAccessibilitySupport_LIBRARY NAMES Qt5LinuxAccessibilitySupport)
+find_library (Qt5ThemeSupport_LIBRARY NAMES Qt5ThemeSupport)
+find_library (Qt5FontDatabaseSupport_LIBRARY NAMES Qt5FontDatabaseSupport)
+find_library (Qt5EglFSDeviceIntegration_LIBRARY NAMES Qt5EglFSDeviceIntegration)
+find_library (Qt5ServiceSupport_LIBRARY NAMES Qt5ServiceSupport)
+list(APPEND _LINK_LIBRARIES 
+    ${QXcb_LIBRARY} 
+    ${QXcbQpa_LIBRARY} 
+    ${Qt5ThemeSupport_LIBRARY} 
+    ${Qt5FontDatabaseSupport_LIBRARY}
+    ${Qt5ServiceSupport_LIBRARY} 
+    ${Qt5LinuxAccessibilitySupport_LIBRARY} 
+    ${Qt5AccessibilitySupport_LIBRARY} 
+    ${Qt5EventDispatcherSupport_LIBRARY} 
+    xcb X11 xcb-xkb xcb-render xcb-randr xcb-xinerama xcb-xfixes xcb-shape xcb-shm xcb-sync xcb-keysyms xcb-image 
+    xcb-ewmh xkbcommon xcb-icccm xkbcommon-x11 xcb-render-util Xi X11-xcb ICE SM freetype Xft fontconfig
+    pthread dl dbus-1 png z harfbuzz glib-2.0 icui18n icuuc pcre16
+    Qt5::DBus
+)
+endif(UNIX)
+
+endif(LINK_STATIC)
+
+if(WITH_KF5)
+    set(PERFORMER_UI setlist.ui)
+    ki18n_wrap_ui(ui_setlist.h ${PERFORMER_UI})
+else(WITH_KF5)
+    set(PERFORMER_UI setlist_without_kde.ui)
+    qt5_wrap_ui(ui_setlist_without_kde.h ${PERFORMER_UI})
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
+endif(WITH_KF5)
+
 target_compile_definitions(performer PRIVATE -DPROJECT_VERSION="${PROJECT_VERSION}")
 
 #target_compile_features(performer PRIVATE cxx_auto_type)
@@ -76,8 +119,6 @@ list(APPEND _LINK_LIBRARIES
     Qt5::QuickWidgets
     Qt5::Concurrent
 )
-
-
 
 
 if(WITH_KF5)
@@ -143,47 +184,6 @@ if(WITH_QTWEBVIEW)
     endif()
 endif(WITH_QTWEBVIEW)
 
-if(WITH_JACK)
-    list(APPEND _LINK_LIBRARIES 
-        ${JACK_LIBRARIES}
-    )
-endif(WITH_JACK)
-
-
-if(LINK_STATIC)
-
-set_target_properties(performer PROPERTIES LINK_SEARCH_START_STATIC 1)
-set_target_properties(performer PROPERTIES LINK_SEARCH_END_STATIC 1)
-
-if(UNIX)
-find_library (QXcb_LIBRARY NAMES qxcb)
-find_library (QXcbQpa_LIBRARY NAMES Qt5XcbQpa)
-find_library (QXcb_glxintegration_LIBRARY NAMES libqxcb-glx-integration)
-find_library (Qt5GlxSupport_LIBRARY NAMES Qt5GlxSupport)
-find_library (Qt5EventDispatcherSupport_LIBRARY NAMES Qt5EventDispatcherSupport)
-find_library (Qt5AccessibilitySupport_LIBRARY NAMES Qt5AccessibilitySupport)
-find_library (Qt5LinuxAccessibilitySupport_LIBRARY NAMES Qt5LinuxAccessibilitySupport)
-find_library (Qt5ThemeSupport_LIBRARY NAMES Qt5ThemeSupport)
-find_library (Qt5FontDatabaseSupport_LIBRARY NAMES Qt5FontDatabaseSupport)
-find_library (Qt5EglFSDeviceIntegration_LIBRARY NAMES Qt5EglFSDeviceIntegration)
-find_library (Qt5ServiceSupport_LIBRARY NAMES Qt5ServiceSupport)
-list(APPEND _LINK_LIBRARIES 
-    ${QXcb_LIBRARY} 
-    ${QXcbQpa_LIBRARY} 
-    ${Qt5ThemeSupport_LIBRARY} 
-    ${Qt5FontDatabaseSupport_LIBRARY}
-    ${Qt5ServiceSupport_LIBRARY} 
-    ${Qt5LinuxAccessibilitySupport_LIBRARY} 
-    ${Qt5AccessibilitySupport_LIBRARY} 
-    ${Qt5EventDispatcherSupport_LIBRARY} 
-    xcb X11 xcb-xkb xcb-render xcb-randr xcb-xinerama xcb-xfixes xcb-shape xcb-shm xcb-sync xcb-keysyms xcb-image 
-    xcb-ewmh xkbcommon xcb-icccm xkbcommon-x11 xcb-render-util Xi X11-xcb ICE SM freetype Xft fontconfig
-    pthread dl png z harfbuzz glib-2.0 icui18n icuuc pcre16
-    Qt5DBus
-)
-endif(UNIX)
-
-endif(LINK_STATIC)
 
 target_link_libraries(performer ${_LINK_LIBRARIES})
 
