@@ -392,6 +392,7 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
 
 void Performer::updateSelected()
 {
+    QModelIndex index =  m_setlist->setListView->currentIndex();
 #ifdef WITH_KF5
     QVariantMap map;
     map.insert("patch", m_setlist->patchrequester->url());
@@ -404,15 +405,18 @@ void Performer::updateSelected()
         m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(m_notesDefaultPath));
     map.insert("preload", m_setlist->preloadBox->isChecked());
     map.insert("name", m_setlist->nameEdit->text());
-    m_model->update(m_setlist->setListView->currentIndex(), map);
+    m_model->update(index, map);
 #else
     QVariantMap map;
     map.insert("patch", QUrl::fromLocalFile(m_setlist->patchrequestedit->text()));
     map.insert("notes", QUrl::fromLocalFile(m_setlist->notesrequestedit->text()));
     map.insert("preload", m_setlist->preloadBox->isChecked());
     map.insert("name", m_setlist->nameEdit->text());
-    m_model->update(m_setlist->setListView->currentIndex(), map);
+    m_model->update(index, map);
 #endif
+    
+    if(!m_model->activeIndex().isValid() && m_model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
+        m_model->playNow(index);
 }
 
 #ifndef WITH_KF5
