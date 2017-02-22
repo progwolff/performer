@@ -158,6 +158,7 @@ Performer::Performer(QWidget *parent) :
     connect(m_setlist->nameEdit, &QLineEdit::textEdited, this, [this](){updateSelected(); setWindowModified(true);});
     
     connect(m_setlist->createpatchbutton, SIGNAL(clicked()), SLOT(createPatch()));
+    m_setlist->createpatchbutton->setIcon(QIcon::fromTheme("list-add", QApplication::style()->standardIcon(QStyle::SP_FileDialogListView)));
 #ifndef WITH_JACK
     m_setlist->createpatchbutton->setEnabled(false);
     m_setlist->createpatchbutton->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
