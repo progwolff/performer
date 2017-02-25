@@ -27,6 +27,7 @@
 #include <QApplication>
 
 #include <string>
+#include <functional>
 
 #ifdef WITH_JACK
 #include <jack/midiport.h>
