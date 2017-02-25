@@ -92,8 +92,12 @@ list(APPEND _LINK_LIBRARIES
     ${Qt5AccessibilitySupport_LIBRARY} 
     ${Qt5EventDispatcherSupport_LIBRARY} 
     xcb X11 xcb-xkb xcb-render xcb-randr xcb-xinerama xcb-xfixes xcb-shape xcb-shm xcb-sync xcb-keysyms xcb-image 
-    xcb-ewmh xkbcommon xcb-icccm xkbcommon-x11 xcb-render-util Xi X11-xcb ICE SM freetype Xft fontconfig
-    pthread dl dbus-1 png z harfbuzz glib-2.0 icui18n icuuc pcre16
+    xcb-ewmh xkbcommon xcb-icccm xkbcommon-x11 xcb-render-util Xi X11-xcb ICE SM Xft fontconfig
+    pthread dl dbus-1 
+    png freetype 
+    z 
+    harfbuzz 
+    glib-2.0 icui18n icuuc pcre16
     Qt5::DBus
 )
 endif(UNIX)
@@ -240,3 +244,37 @@ if(WITH_JACK)
         PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
     )
 endif(WITH_JACK)
+
+
+
+INCLUDE(InstallRequiredSystemLibraries)
+
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Audio session manager for live music performances")
+SET(CPACK_PACKAGE_VENDOR "Julian Wolff")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../README.md")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE")
+SET(CPACK_PACKAGE_NAME "Performer")
+SET(CPACK_PACKAGE_VERSION_MAJOR "1")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "1")
+SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
+IF(WIN32 AND NOT UNIX)
+  # There is a bug in NSI that does not handle full unix paths properly. Make
+  # sure there is at least one set of four (4) backlasshes.
+  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}\\\\sc-apps-performer.svg")
+  SET(CPACK_NSIS_INSTALLED_ICON_NAME "Performer.exe")
+  SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Performer")
+  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\github.com\\\\progwolff\\\\performer")
+  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\github.com\\\\progwolff\\\\performer")
+  SET(CPACK_NSIS_CONTACT "wolff@julianwolff.de")
+  SET(CPACK_NSIS_MODIFY_PATH ON)
+ELSE(WIN32 AND NOT UNIX)
+  SET(CPACK_STRIP_FILES "performer")
+  SET(CPACK_SOURCE_STRIP_FILES "")
+  SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "Julian Wolff <wolff at julianwolff.de>")
+  SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5gui5 (>= 5.5), libqt5quickwidgets5 (>= 5.5), libqt5quick5 (>= 5.5), libqt5qml5 (>= 5.5), libqt5xml5 (>= 5.5), libqt5widgets5 (>= 5.5), libqt5dbus5 (>= 5.5), libqt5core5a (>= 5.5), libqt5concurrent5 (>= 5.5), libjack-jackd2-0, carla (>= 1.5)")
+  SET(CPACK_RPM_PACKAGE_REQUIRES "okular5, kparts,  libqt5gui5 >= 5.6, libqt5quickwidgets5 >= 5.6, libqt5quick5 >= 5.6, libqt5qml5 >= 5.6, libqt5xml5 >= 5.6, libqt5widgets5 >= 5.6, libqt5dbus5 >= 5.6, libqt5core5a >= 5.6, libqt5concurrent5 >= 5.6, libjack-jackd2-0, carla >= 1.5")
+ENDIF(WIN32 AND NOT UNIX)
+SET(CPACK_PACKAGE_EXECUTABLES "Performer" "Performer")
+INCLUDE(CPack)
