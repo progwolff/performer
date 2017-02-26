@@ -35,6 +35,9 @@
 #ifdef LINK_STATIC
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
+
+#include <QFontDatabase>
+#include <QFont>
 #endif
  
 int main (int argc, char *argv[])
