@@ -30,6 +30,7 @@
 #include <functional>
 
 #ifdef WITH_JACK
+#include <jack/session.h>
 #include <jack/midiport.h>
 #endif
 

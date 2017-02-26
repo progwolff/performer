@@ -57,8 +57,8 @@
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent)
-#elif defined WITH_KF5
-    KMainWindow(parent)
+#elif defined(WITH_KF5)
+    KXmlGuiWindow(parent)
 #else
     QMainWindow(parent)
 #endif
@@ -558,7 +558,7 @@ void Performer::prepareUi()
         midiView->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
     }
     
-#ifdef WITH_KPARTS
+#if defined(WITH_KPARTS)
     m_viewer = new OkularDocumentViewer(this);
     
     if(!static_cast<OkularDocumentViewer*>(m_viewer)->part())
@@ -612,6 +612,11 @@ void Performer::prepareUi()
         }
 
     }
+    qDebug() << "have KF5 and KParts";
+#elif defined(WITH_KF5)
+    qDebug() << "have KF5 but not KParts";
+    setupGUI(ToolBar | Keys | StatusBar | Save);
+    KXmlGuiWindow::createGUI();
 #endif
 
 #if defined(WITH_QWEBENGINE) && !defined(WITH_KPARTS)

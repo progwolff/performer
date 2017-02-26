@@ -110,7 +110,7 @@ KParts::ReadOnlyPart * OkularDocumentViewer::part()
 
 void OkularDocumentViewer::load(QUrl url)
 {
-#ifdef WITH_QWEBENGINE
+#if defined(WITH_QWEBENGINE) && (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
     QMimeDatabase db;
     QMimeType type = db.mimeTypeForFile(url.toLocalFile());
     

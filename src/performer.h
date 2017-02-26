@@ -70,7 +70,7 @@ class Performer :
 #ifdef WITH_KPARTS
     public KParts::MainWindow
 #elif defined WITH_KF5
-    public KMainWindow
+    public KXmlGuiWindow
 #else
     public QMainWindow
 #endif

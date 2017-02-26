@@ -166,8 +166,9 @@ QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
     
     connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
     connect(m_webview->page(), &QWebEnginePage::geometryChangeRequested, this, resizefunct);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
     connect(m_webview->page(), &QWebEnginePage::contentsSizeChanged, this, resizefunct);
-    
+#endif
     
     return m_webviewarea;
 }
