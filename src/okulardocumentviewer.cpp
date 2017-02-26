@@ -41,6 +41,7 @@ m_part(nullptr)
 
     if (service)
     {
+        qDebug() << "found okular_part service";
         m_part = service->createInstance<KParts::ReadOnlyPart>(this, QVariantList() << "Print/Preview");
 
         if (m_part)

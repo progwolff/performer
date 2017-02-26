@@ -29,7 +29,6 @@
 #include "ui_setlist.h"
 #include <KAboutData>
 #include <KLocalizedString>
-#include <KMessageBox>
 #include <KToolBar>
 #include <KSharedConfig>
 #include <KConfig>
@@ -561,11 +560,13 @@ void Performer::prepareUi()
 #if defined(WITH_KPARTS)
     m_viewer = new OkularDocumentViewer(this);
     
-    if(!static_cast<OkularDocumentViewer*>(m_viewer)->part())
+    if(!m_viewer->widget())
     {
-        KMessageBox::error(this, i18n("Okular KPart not found"));
+        warning(i18n("Okular KPart not found"));
         setupGUI(ToolBar | Keys | StatusBar | Save);
         KXmlGuiWindow::createGUI();
+        delete m_viewer;
+        m_viewer = nullptr;
     }
     else
     {
@@ -619,14 +620,20 @@ void Performer::prepareUi()
     KXmlGuiWindow::createGUI();
 #endif
 
-#if defined(WITH_QWEBENGINE) && !defined(WITH_KPARTS)
-    m_viewer = new QWebEngineDocumentViewer(this);
-    setCentralWidget(m_viewer->widget());
+#if defined(WITH_QWEBENGINE)
+    if(!m_viewer)
+    {
+        m_viewer = new QWebEngineDocumentViewer(this);
+        setCentralWidget(m_viewer->widget());
+    }
 #endif
     
 #ifdef WITH_QTWEBVIEW
-    m_viewer = new QtWebViewDocumentViewer(this);
-    setCentralWidget(m_viewer->widget());
+    if(!m_viewer)
+    {
+        m_viewer = new QtWebViewDocumentViewer(this);
+        setCentralWidget(m_viewer->widget());
+    }
 #endif
     
     if(m_viewer)
