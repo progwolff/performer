@@ -65,40 +65,46 @@ if(WITH_JACK)
     )
 endif(WITH_JACK)
 
+
+#target_compile_features(performer PRIVATE cxx_auto_type)
+list(APPEND _LINK_LIBRARIES 
+    Qt5::Widgets
+    #Qt5::X11Extras
+    Qt5::Quick
+    Qt5::QuickWidgets
+    Qt5::Concurrent
+)
+
+
 if(LINK_STATIC)
 
 set_target_properties(performer PROPERTIES LINK_SEARCH_START_STATIC 1)
 set_target_properties(performer PROPERTIES LINK_SEARCH_END_STATIC 1)
 
 if(UNIX)
-find_library (QXcb_LIBRARY NAMES qxcb)
-find_library (QXcbQpa_LIBRARY NAMES Qt5XcbQpa)
-find_library (QXcb_glxintegration_LIBRARY NAMES libqxcb-glx-integration)
-find_library (Qt5GlxSupport_LIBRARY NAMES Qt5GlxSupport)
-find_library (Qt5EventDispatcherSupport_LIBRARY NAMES Qt5EventDispatcherSupport)
-find_library (Qt5AccessibilitySupport_LIBRARY NAMES Qt5AccessibilitySupport)
-find_library (Qt5LinuxAccessibilitySupport_LIBRARY NAMES Qt5LinuxAccessibilitySupport)
-find_library (Qt5ThemeSupport_LIBRARY NAMES Qt5ThemeSupport)
-find_library (Qt5FontDatabaseSupport_LIBRARY NAMES Qt5FontDatabaseSupport)
-find_library (Qt5EglFSDeviceIntegration_LIBRARY NAMES Qt5EglFSDeviceIntegration)
-find_library (Qt5ServiceSupport_LIBRARY NAMES Qt5ServiceSupport)
 list(APPEND _LINK_LIBRARIES 
-    ${QXcb_LIBRARY} 
-    ${QXcbQpa_LIBRARY} 
-    ${Qt5ThemeSupport_LIBRARY} 
-    ${Qt5FontDatabaseSupport_LIBRARY}
-    ${Qt5ServiceSupport_LIBRARY} 
-    ${Qt5LinuxAccessibilitySupport_LIBRARY} 
-    ${Qt5AccessibilitySupport_LIBRARY} 
-    ${Qt5EventDispatcherSupport_LIBRARY} 
-    xcb X11 xcb-xkb xcb-render xcb-randr xcb-xinerama xcb-xfixes xcb-shape xcb-shm xcb-sync xcb-keysyms xcb-image 
-    xcb-ewmh xkbcommon xcb-icccm xkbcommon-x11 xcb-render-util Xi X11-xcb ICE SM Xft fontconfig
+    
+    Qt5::Gui
+    ${Qt5_DIR}/../../../plugins/platforms/libqxcb.a
+    ${Qt5_DIR}/../../libQt5XcbQpa.a
+    ${Qt5_DIR}/../../libQt5FontDatabaseSupport.a
+    ${Qt5_DIR}/../../libxcb-static.a
+    ${Qt5_DIR}/../../libQt5InputSupport.a
+    ${Qt5_DIR}/../../libQt5EventDispatcherSupport.a
+    ${Qt5_DIR}/../../libQt5LinuxAccessibilitySupport.a
+    ${Qt5_DIR}/../../libQt5AccessibilitySupport.a
+    ${Qt5_DIR}/../../libQt5ThemeSupport.a
+    ${Qt5_DIR}/../../libQt5ServiceSupport.a
+    Qt5::DBus    
+    ${Qt5_DIR}/../../libqtlibpng.a
+    ${Qt5_DIR}/../../libqtfreetype.a
+    ${Qt5_DIR}/../../libqtharfbuzz.a
+    ${Qt5_DIR}/../../libqtpcre.a
+    ${Qt5_DIR}/../../libxcb-static.a
+    xcb X11 Xi X11-xcb ICE SM
     pthread dl dbus-1 
-    png freetype 
-    z 
-    harfbuzz 
-    glib-2.0 icui18n icuuc pcre16
-    Qt5::DBus
+    glib-2.0 icui18n icuuc 
+    pcre16
 )
 endif(UNIX)
 
@@ -114,15 +120,6 @@ else(WITH_KF5)
 endif(WITH_KF5)
 
 target_compile_definitions(performer PRIVATE -DPROJECT_VERSION="${PROJECT_VERSION}")
-
-#target_compile_features(performer PRIVATE cxx_auto_type)
-list(APPEND _LINK_LIBRARIES 
-    Qt5::Widgets
-    #Qt5::X11Extras
-    Qt5::Quick
-    Qt5::QuickWidgets
-    Qt5::Concurrent
-)
 
 
 if(WITH_KF5)

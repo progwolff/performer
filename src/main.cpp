@@ -40,6 +40,13 @@ Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
 int main (int argc, char *argv[])
 {
     QApplication app(argc, argv);
+#ifdef LINK_STATIC
+    QString fontPath = "/usr/share/fonts/TTF/DejaVuSans.ttf";
+    QFontDatabase::addApplicationFont(fontPath);
+    QFont font("DejaVuSans");
+    font.setPointSize(10);
+    app.setFont(font);
+#endif
     
     app.setWindowIcon(QIcon::fromTheme("performer"));
 
