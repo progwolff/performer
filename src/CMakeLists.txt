@@ -2,7 +2,8 @@
 # add_subdirectory(configwidgets)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
+#set(CMAKE_AUTOUIC ON)
+QT5_WRAP_UI(setlistheader setlist_without_kde.ui)
 
 include_directories ( ${JACK_INCLUDEDIR} ${JACK_INCLUDE_DIRS} )
 link_directories ( ${JACK_LIBDIR} ${JACK_LIBRARY_DIRS} )
@@ -54,16 +55,9 @@ else()
 if(NOT WITH_KF5)
 include(GNUInstallDirs)
 endif()
-add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI})
+add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI} ${setlistheader})
 endif()
 
-
-
-if(WITH_JACK)
-    list(APPEND _LINK_LIBRARIES 
-        ${JACK_LIBRARIES}
-    )
-endif(WITH_JACK)
 
 
 #target_compile_features(performer PRIVATE cxx_auto_type)
@@ -82,33 +76,39 @@ set_target_properties(performer PROPERTIES LINK_SEARCH_START_STATIC 1)
 set_target_properties(performer PROPERTIES LINK_SEARCH_END_STATIC 1)
 
 if(UNIX)
+if(NOT DEFINED Qt5_LIBDIR)
+set(Qt5_LIBDIR "${Qt5_DIR}/../../..")
+endif()
+
 list(APPEND _LINK_LIBRARIES 
     
     Qt5::Gui
-    ${Qt5_DIR}/../../../plugins/platforms/libqxcb.a
-    ${Qt5_DIR}/../../libQt5XcbQpa.a
-    ${Qt5_DIR}/../../libQt5FontDatabaseSupport.a
-    ${Qt5_DIR}/../../libxcb-static.a
-    ${Qt5_DIR}/../../libQt5InputSupport.a
-    ${Qt5_DIR}/../../libQt5EventDispatcherSupport.a
-    ${Qt5_DIR}/../../libQt5LinuxAccessibilitySupport.a
-    ${Qt5_DIR}/../../libQt5AccessibilitySupport.a
-    ${Qt5_DIR}/../../libQt5ThemeSupport.a
-    ${Qt5_DIR}/../../libQt5ServiceSupport.a
-    Qt5::DBus    
-    ${Qt5_DIR}/../../libqtlibpng.a
-    ${Qt5_DIR}/../../libqtfreetype.a
-    ${Qt5_DIR}/../../libqtharfbuzz.a
-    ${Qt5_DIR}/../../libqtpcre.a
-    ${Qt5_DIR}/../../libxcb-static.a
+    Qt5::Core
+    ${Qt5_LIBDIR}/plugins/platforms/libqxcb.a
+    ${Qt5_LIBDIR}/lib/libQt5XcbQpa.a
+    ${Qt5_LIBDIR}/lib/libqtharfbuzzng.a
+    ${Qt5_LIBDIR}/lib/libqtpcre.a
+    ${Qt5_LIBDIR}/lib/libxcb-static.a
+    ${Qt5_LIBDIR}/lib/libQt5PlatformSupport.a
+    Qt5::DBus
     xcb X11 Xi X11-xcb ICE SM
-    pthread dl dbus-1 
-    glib-2.0 icui18n icuuc 
-    pcre16
+    pthread dl 
+    glib-2.0 dl icui18n icuuc 
+    freetype fontconfig dbus-1
+    png jpeg
+    z
 )
 endif(UNIX)
 
 endif(LINK_STATIC)
+
+
+
+if(WITH_JACK)
+    list(APPEND _LINK_LIBRARIES 
+        ${JACK_LIBRARIES}
+    )
+endif(WITH_JACK)
 
 if(WITH_KF5)
     set(PERFORMER_UI setlist.ui)
