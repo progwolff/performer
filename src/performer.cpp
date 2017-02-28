@@ -473,11 +473,11 @@ void Performer::createPatch()
 {
     QString path = m_patchDefaultPath;
     if(path.isEmpty())
-        path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+/performer;
     
     QDir dir(path);
     if (!dir.exists())
-        dir.mkdir(".");
+        dir.mkpath(".");
     
     path += "/"+m_setlist->nameEdit->text();
     
