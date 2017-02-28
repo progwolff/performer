@@ -518,11 +518,11 @@ void Performer::songSelected(const QModelIndex& index)
 #ifdef WITH_KF5
     m_setlist->patchrequester->setUrl(ind.data(SetlistModel::PatchRole).toUrl());
     m_setlist->notesrequester->setUrl(ind.data(SetlistModel::NotesRole).toUrl());
-    m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
 #else
     m_setlist->patchrequestedit->setText(ind.data(SetlistModel::PatchRole).toUrl().toLocalFile());
     m_setlist->notesrequestedit->setText(ind.data(SetlistModel::NotesRole).toUrl().toLocalFile());
 #endif
+    m_setlist->preloadBox->setChecked(ind.data(SetlistModel::PreloadRole).toBool());
     
     QUrl notesurl = ind.data(SetlistModel::NotesRole).toUrl();
     if(m_viewer && m_model->fileExists(notesurl.toLocalFile()))
