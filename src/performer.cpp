@@ -488,6 +488,9 @@ void Performer::createPatch()
     }
     m_model->createPatch(filepath);
     
+    if(!m_model->fileExists(filepath))
+        return;
+    
 #ifdef WITH_KF5
     m_setlist->patchrequester->setText(filepath);
 #else
