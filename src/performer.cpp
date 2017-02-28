@@ -473,7 +473,7 @@ void Performer::createPatch()
 {
     QString path = m_patchDefaultPath;
     if(path.isEmpty())
-        path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+/performer;
+        path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)+"/performer";
     
     QDir dir(path);
     if (!dir.exists())
