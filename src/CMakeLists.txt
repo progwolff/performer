@@ -2,8 +2,8 @@
 # add_subdirectory(configwidgets)
 
 set(CMAKE_AUTOMOC ON)
-#set(CMAKE_AUTOUIC ON)
-QT5_WRAP_UI(setlistheader setlist_without_kde.ui)
+set(CMAKE_AUTOUIC ON)
+#QT5_WRAP_UI(setlistheader setlist_without_kde.ui)
 
 include_directories ( ${JACK_INCLUDEDIR} ${JACK_INCLUDE_DIRS} )
 link_directories ( ${JACK_LIBDIR} ${JACK_LIBRARY_DIRS} )
