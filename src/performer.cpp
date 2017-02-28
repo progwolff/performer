@@ -150,7 +150,7 @@ Performer::Performer(QWidget *parent) :
 #if !defined(WITH_KPARTS) && !defined(WITH_QWEBENGINE) && !defined(WITH_QTWEBVIEW)
     m_setlist->notesrequestbutton->setEnabled(false);
     m_setlist->notesrequestedit->setEnabled(false);
-    m_setlist->patchrequestbutton->setToolTip(i18n("Performer was built without KParts, QWebEngine or QtWebView. Rebuild Performer with one of these dependencies to enable displaying notes."));
+    m_setlist->notesrequestbutton->setToolTip(i18n("Performer was built without KParts, QWebEngine or QtWebView. Rebuild Performer with one of these dependencies to enable displaying notes."));
 #endif
 #endif
     connect(m_setlist->preloadBox, &QCheckBox::stateChanged, this, [this](){updateSelected(); setWindowModified(true);});
