@@ -13,3 +13,10 @@ Comment=Warning message that does not fit to any other event
 Contexts=default
 Sound=
 Action=Popup
+
+[Event/notification]
+Name=Generic notification
+Comment=Notification that does not fit to any other event
+Contexts=default
+Sound=
+Action=Popup

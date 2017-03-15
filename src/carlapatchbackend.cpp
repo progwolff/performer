@@ -364,6 +364,7 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
     }
     
     activeBackendLock.lockForRead();
+    
     if(activeBackend)
     for(int i = 0; i < midiMessages.size()-2; ++i)
     {
@@ -372,6 +373,27 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
         int c = midiMessages.takeFirst();
         activeBackend->emit midiEvent(a, b, c);
     }
+
+    
+    //get event count in regular events midi input and notify model
+    
+    port_buf = jack_port_get_buffer(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":events-in").toLocal8Bit()), nframes);
+    
+    // input: get number of events, and process them.
+    event_count = jack_midi_get_event_count(port_buf);
+    if(activeBackend && event_count > 0)
+    {
+        for(unsigned int i=0; i<event_count; i++)
+        {
+            jack_midi_event_get(&in_event, port_buf, i);
+            if(IS_MIDINOTEON(in_event.buffer[0]) && in_event.buffer[2] > 0)
+            {
+                activeBackend->emit activity();
+                break;
+            }
+        }
+    }
+    
     activeBackendLock.unlock();
     
     return 0;

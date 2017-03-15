@@ -24,6 +24,7 @@
 
 class SetlistMetadata;
 class AbstractPatchBackend;
+class QTimer;
 
 /**
  * List model for setlists holding songs
@@ -138,6 +139,9 @@ private:
     int *m_secondsLeft;
     
     Backend m_backend;
+    
+    int m_inputActivity;
+    QTimer *m_inputActivityTimer;
     
 };
 

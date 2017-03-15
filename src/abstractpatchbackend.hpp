@@ -100,6 +100,10 @@ signals:
      * @param data2 Second MIDI data byte
      */
     void midiEvent(unsigned char status, unsigned char data1, unsigned char data2);
+    /**
+     * MIDI activity at the regular events port was detected
+     */
+    void activity();
     
 public slots:
     

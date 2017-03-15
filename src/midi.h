@@ -28,6 +28,10 @@
  */
 #define IS_MIDIPC(a) ((0xF0 & (a)) == 0xC0)
 
+/**
+ * true if MIDI message with status byte a is a MiDI Note message
+ */
+#define IS_MIDINOTEON(a) ((0xF0 & (a)) == 0x90)
 
 #include <QAbstractTableModel>
 #include <QList>

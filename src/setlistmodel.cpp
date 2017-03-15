@@ -61,6 +61,7 @@ SetlistModel::SetlistModel(QObject *parent)
     , m_nextBackend(nullptr)
     , m_secondsLeft(nullptr)
     , m_backend(Carla)
+    , m_inputActivity(0)
 {
     m_movedIndex = -1;
     m_activeIndex = -1;
@@ -68,6 +69,18 @@ SetlistModel::SetlistModel(QObject *parent)
     m_nextIndex = -1;
 
     connect(this, SIGNAL(jackClientState(int)), this, SLOT(updateProgress(int)), Qt::QueuedConnection);
+    
+    m_inputActivityTimer = new QTimer(this);
+    connect(m_inputActivityTimer, &QTimer::timeout, this, [this](){
+        --m_inputActivity;
+        if (m_inputActivity < 0)
+        {
+            m_inputActivity = 0;
+            m_inputActivityTimer->stop();
+        }
+        emit dataChanged(index(m_activeIndex,0), index(m_activeIndex,0));
+    });
+    m_inputActivityTimer->start(20);
     
     reset();
 
@@ -98,10 +111,17 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
         {
             case Carla:
                 instance = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile(), m_setlist[index].name());
+                connect(instance, &CarlaPatchBackend::activity, this, [this](){
+                    m_inputActivity += 20;
+                    if(m_inputActivity > 100)
+                        m_inputActivity = 100;
+                    m_inputActivityTimer->start();
+                }, Qt::QueuedConnection);
         }
         
         connect(instance, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
         connect(instance, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), Qt::QueuedConnection);
+        
     }
     else
     {
@@ -172,10 +192,14 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
         if(fileExists(metadata.patch().toLocalFile()) && metadata.progress() >= 0)
         {
             QColor active = QApplication::palette().color(QPalette::Highlight); //QColor::fromRgbF(.18, .80, .44, 1)
+            QColor active2 = QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()*((m_inputActivity)/100.));
             active = QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()/3);
             QColor inactive = QApplication::palette().color(QPalette::Base); //QColor::fromRgbF(.95, .61, .07, 1)
             if(index.row()==m_activeIndex)
-                gradient.setColorAt(stop, active);
+            {
+                gradient.setColorAt(MAX(0,MIN(stop, 0.37)), active);
+                gradient.setColorAt(stop, active2);
+            }
             else if(index.row()==m_previousIndex || index.row()==m_nextIndex)
                 gradient.setColorAt(stop, QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()/3));
             else
@@ -386,7 +410,10 @@ void SetlistModel::playNow(const QModelIndex& ind)
         createBackend(m_nextBackend, m_nextIndex);
 
     if(m_activeBackend)
+    {
         m_activeBackend->activate();
+        emit info(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
+    }
     if(m_previousBackend && m_setlist[m_previousIndex].preload())
         m_previousBackend->preload();
     if(m_nextBackend && m_setlist[m_nextIndex].preload())
@@ -410,7 +437,10 @@ void SetlistModel::playPrevious()
     m_previousBackend = nullptr;
     
     if(m_activeBackend)
+    {
         m_activeBackend->activate();
+        emit info(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
+    }
     
     if(m_previousIndex >= 0 && m_previousIndex <=  m_setlist.size()-1)
         createBackend(m_previousBackend, m_previousIndex);
@@ -445,7 +475,10 @@ void SetlistModel::playNext()
     m_nextBackend = nullptr;
     
     if(m_activeBackend)
+    {
         m_activeBackend->activate();
+        emit info(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
+    }
     
     if(m_nextIndex >= 0 && m_nextIndex <= m_setlist.size()-1)
         createBackend(m_nextBackend, m_nextIndex);
