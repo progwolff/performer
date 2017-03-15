@@ -174,6 +174,7 @@ Performer::Performer(QWidget *parent) :
     connect(m_model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
     connect(m_model, SIGNAL(warning(const QString&)), this, SLOT(warning(const QString&)));
     connect(m_model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
+    connect(m_model, SIGNAL(notification(const QString&)), this, SLOT(notification(const QString&)));
     connect(m_model, &SetlistModel::changed, this, [this](){
         setWindowModified(true); 
         if(m_setlist->setListView->model()->rowCount() == 0)
@@ -265,7 +266,7 @@ void Performer::warning(const QString& msg)
 {
     qWarning() << msg;
 #ifdef WITH_KF5
-    KNotification *notification= new KNotification("warning", this, KNotification::SkipGrouping);
+    KNotification *notification = new KNotification("warning", this, KNotification::SkipGrouping);
     notification->setText(msg);
     notification->addContext("default", "default");
     notification->sendEvent();
@@ -278,6 +279,18 @@ void Performer::info(const QString& msg)
 {
     qInfo() << "info: " << msg;
     statusBar()->showMessage(msg);
+}
+
+void Performer::notification(const QString& msg)
+{
+#ifdef WITH_KF5
+    KNotification *notification = new KNotification("notification", this, KNotification::SkipGrouping);
+    notification->setText(msg);
+    notification->addContext("default", "default");
+    notification->sendEvent();
+#else
+    info(msg);
+#endif
 }
 
 void Performer::prefer()

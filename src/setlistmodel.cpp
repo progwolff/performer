@@ -412,7 +412,7 @@ void SetlistModel::playNow(const QModelIndex& ind)
     if(m_activeBackend)
     {
         m_activeBackend->activate();
-        emit info(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
+        emit notification(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
     }
     if(m_previousBackend && m_setlist[m_previousIndex].preload())
         m_previousBackend->preload();
@@ -439,7 +439,7 @@ void SetlistModel::playPrevious()
     if(m_activeBackend)
     {
         m_activeBackend->activate();
-        emit info(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
+        emit notification(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
     }
     
     if(m_previousIndex >= 0 && m_previousIndex <=  m_setlist.size()-1)
@@ -477,7 +477,7 @@ void SetlistModel::playNext()
     if(m_activeBackend)
     {
         m_activeBackend->activate();
-        emit info(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
+        emit notification(i18n("Now playing %1", m_setlist[m_activeIndex].name()));
     }
     
     if(m_nextIndex >= 0 && m_nextIndex <= m_setlist.size()-1)

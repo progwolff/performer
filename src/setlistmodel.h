@@ -85,6 +85,7 @@ signals:
     void error(const QString& msg);
     void warning(const QString& msg);
     void info(const QString& msg);
+    void notification(const QString& msg);
     void jackClientState(int s);
     void changed();
 

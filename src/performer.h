@@ -105,6 +105,7 @@ private slots:
     void error(const QString& message);
     void warning(const QString& message);
     void info(const QString& message);
+    void notification(const QString& message);
     
     void setAlwaysOnTop(bool ontop);
     void setHandleProgramChanges(bool handle);
