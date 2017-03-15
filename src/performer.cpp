@@ -278,12 +278,6 @@ void Performer::info(const QString& msg)
 {
     qInfo() << "info: " << msg;
     statusBar()->showMessage(msg);
-#ifdef WITH_KF5
-    KNotification *notification= new KNotification("notification", this, KNotification::SkipGrouping);
-    notification->setText(msg);
-    notification->addContext("default", "default");
-    notification->sendEvent();
-#endif
 }
 
 void Performer::prefer()

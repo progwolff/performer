@@ -192,7 +192,7 @@ QVariant SetlistModel::data(const QModelIndex &index, int role) const
         if(fileExists(metadata.patch().toLocalFile()) && metadata.progress() >= 0)
         {
             QColor active = QApplication::palette().color(QPalette::Highlight); //QColor::fromRgbF(.18, .80, .44, 1)
-            QColor active2 = QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()*((m_inputActivity)/100.));
+            QColor active2 = QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()/3 + 2.*active.alphaF()/3.*((m_inputActivity)/100.));
             active = QColor::fromRgbF(active.redF(), active.greenF(), active.blueF(), active.alphaF()/3);
             QColor inactive = QApplication::palette().color(QPalette::Base); //QColor::fromRgbF(.95, .61, .07, 1)
             if(index.row()==m_activeIndex)
