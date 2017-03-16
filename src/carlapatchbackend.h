@@ -40,6 +40,10 @@ public:
 #ifdef WITH_JACK
     static jack_client_t *jackClient();
     static bool freeJackClient();
+    
+    int cpuLoad() override;
+    int bufferSize() override;
+    int sampleRate() override;
 #endif
     
     static QMap<QString,QStringList> connections();
@@ -47,6 +51,7 @@ public:
     const QString editor() override;
     
     void createPatch(const QString& path) override;
+    
     
 public slots:
     
@@ -89,6 +94,7 @@ private:
 #ifdef WITH_JACK
     static int processMidiEvents(jack_nframes_t nframes, void* arg);
     static void serverLost(void* arg);
+    static int xrunOccured(void* arg);
 #endif
     
 #ifdef WITH_JACK

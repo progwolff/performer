@@ -88,6 +88,10 @@ signals:
     void notification(const QString& msg);
     void jackClientState(int s);
     void changed();
+    void cpuLoadChanged(int load);
+    void sampleRateChanged(int rate);
+    void bufferSizeChanged(int buf);
+    void xruns(int count);
 
 private slots:
     /**
@@ -113,9 +117,8 @@ private slots:
 private:
     
     /**
-     * return the main jack client of Performer.
-     * Create a client if no client exists.
-     * @return the main jack client of Performer
+     * Create a jack client if no client exists
+     * @return true if a client has been created or if a client existed already
      */
     bool createJackClient();
 
@@ -143,6 +146,8 @@ private:
     
     int m_inputActivity;
     QTimer *m_inputActivityTimer;
+    
+    int m_xruns;
     
 };
 

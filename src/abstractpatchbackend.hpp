@@ -87,6 +87,26 @@ public:
      */
     virtual void createPatch(const QString& path) = 0;
     
+#ifdef WITH_JACK
+    /**
+     * return the current cpu load
+     * @return the current cpu load
+     */
+    virtual int cpuLoad() = 0;
+    
+    /**
+     * return the current buffer size
+     * @return the current buffer size
+     */
+    virtual int bufferSize() = 0;
+    
+    /**
+     * return the current sample rate
+     * @return the current sample rate
+     */
+    virtual int sampleRate() = 0;
+#endif
+    
 signals:
     /**
      * Indicates the progress of loading of this patch
@@ -104,6 +124,10 @@ signals:
      * MIDI activity at the regular events port was detected
      */
     void activity();
+    /**
+     * an xrun has occured
+     */
+    void xrun();
     
 public slots:
     

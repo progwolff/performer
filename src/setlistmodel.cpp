@@ -62,6 +62,7 @@ SetlistModel::SetlistModel(QObject *parent)
     , m_secondsLeft(nullptr)
     , m_backend(Carla)
     , m_inputActivity(0)
+    , m_xruns(0)
 {
     m_movedIndex = -1;
     m_activeIndex = -1;
@@ -81,6 +82,25 @@ SetlistModel::SetlistModel(QObject *parent)
         emit dataChanged(index(m_activeIndex,0), index(m_activeIndex,0));
     });
     m_inputActivityTimer->start(20);
+    
+#ifdef WITH_JACK
+    QTimer *cpuLoadTimer = new QTimer(this);
+    connect(cpuLoadTimer, &QTimer::timeout, this, [this](){
+        if(!m_activeBackend)
+            return;
+        
+        int load = m_activeBackend->cpuLoad();
+        if(load >= 0)
+            emit cpuLoadChanged(load);
+        int size = m_activeBackend->bufferSize();
+        if(size >= 0)
+            emit bufferSizeChanged(size);
+        int rate = m_activeBackend->sampleRate();
+        if(rate >= 0)
+            emit sampleRateChanged(rate);
+    });
+    cpuLoadTimer->start(1000);
+#endif
     
     reset();
 
@@ -117,6 +137,10 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
                         m_inputActivity = 100;
                     m_inputActivityTimer->start();
                 }, Qt::QueuedConnection);
+                connect(instance, &CarlaPatchBackend::xrun, this, [this](){
+                    ++m_xruns;
+                    emit xruns(m_xruns);
+                });
         }
         
         connect(instance, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));

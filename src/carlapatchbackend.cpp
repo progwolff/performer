@@ -272,6 +272,8 @@ jack_client_t *CarlaPatchBackend::jackClient()
                     
                     jack_set_process_callback(m_client, &CarlaPatchBackend::processMidiEvents, NULL);
                     
+                    jack_set_xrun_callback(m_client, &CarlaPatchBackend::xrunOccured, NULL);
+                    
                     jack_on_shutdown(m_client, &CarlaPatchBackend::serverLost, NULL);
                     
                     jack_activate(m_client);
@@ -396,6 +398,17 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
     
     activeBackendLock.unlock();
     
+    return 0;
+}
+
+int CarlaPatchBackend::xrunOccured(void *arg)
+{
+    activeBackendLock.lockForRead();
+    
+    if(activeBackend)
+        activeBackend->emit xrun();
+        
+    activeBackendLock.unlock();
     return 0;
 }
 #endif
@@ -1014,9 +1027,28 @@ const QStringList CarlaPatchBackend::jackClients()
         
     return ret;
 }
-#endif
 
-#ifdef WITH_JACK
+int CarlaPatchBackend::cpuLoad() 
+{
+    if(m_client)
+        return jack_cpu_load(m_client);
+    return -1;
+}
+
+int CarlaPatchBackend::sampleRate() 
+{
+    if(m_client)
+        return jack_get_sample_rate(m_client);
+    return -1;
+}
+
+int CarlaPatchBackend::bufferSize() 
+{
+    if(m_client)
+        return jack_get_buffer_size(m_client);
+    return -1;
+}
+
 _jack_port* CarlaPatchBackend::clientPort(const QString& port)
 {
     _jack_port* ret = nullptr;

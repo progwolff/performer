@@ -125,6 +125,7 @@ Performer::Performer(QWidget *parent) :
     m_midi->setLearnable(toolButton, i18n("Panic!"), "Panic", this);
     connect(toolButton, SIGNAL(clicked()), m_model, SLOT(panic()));
     
+    
     m_setlist->setupBox->setVisible(false);
 #ifdef WITH_KF5
     connect(m_setlist->patchrequester, &KUrlRequester::urlSelected, this, [this](){updateSelected(); setWindowModified(true);});
@@ -183,6 +184,28 @@ Performer::Performer(QWidget *parent) :
     connect(m_model, &SetlistModel::rowsAboutToBeInserted, this, [this](){
         m_oldIndex = QModelIndex();
     });
+    
+    
+    QWidget* spacer = new QWidget(this);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    toolBar()->addWidget(spacer);
+    
+    QLabel *widget = new QLabel(i18n("0 xruns,"), this);
+    toolBar()->addWidget(widget);
+    connect(m_model, &SetlistModel::xruns, this, [widget](int count){ widget->setText(i18n("%1 xruns,", count)); });
+    toolBar()->addSeparator();
+    widget = new QLabel(i18n("CPU: 0%,"), this);
+    toolBar()->addWidget(widget);
+    connect(m_model, &SetlistModel::cpuLoadChanged, this, [widget](int load){ widget->setText(i18n("CPU: %1%,", load)); });
+    toolBar()->addSeparator();
+    widget = new QLabel(i18n("0Hz,"), this);
+    toolBar()->addWidget(widget);
+    connect(m_model, &SetlistModel::sampleRateChanged, this, [widget](int rate){ widget->setText(i18n("%1Hz,", rate)); });
+    toolBar()->addSeparator();
+    widget = new QLabel(i18n("0 Samples/Buffer"), this);
+    toolBar()->addWidget(widget);
+    connect(m_model, &SetlistModel::bufferSizeChanged, this, [widget](int size){ widget->setText(i18n("%1 Samples/Buffer", size)); });
+    toolBar()->addSeparator();
     
     loadConfig();
     
