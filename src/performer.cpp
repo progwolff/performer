@@ -162,6 +162,9 @@ Performer::Performer(QWidget *parent) :
 #ifndef WITH_JACK
     m_setlist->createpatchbutton->setEnabled(false);
     m_setlist->createpatchbutton->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
+#elif defined(_MSC_VER)
+	m_setlist->createpatchbutton->setEnabled(false);
+	m_setlist->createpatchbutton->setToolTip(i18n("Directly creating new patches is not supported on Windows. Use Carla to create new patches."));
 #endif
     
     connect(m_setlist->setListView, SIGNAL(activated(QModelIndex)), SLOT(songSelected(QModelIndex)));
