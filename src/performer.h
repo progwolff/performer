@@ -131,6 +131,8 @@ private:
     
 #ifndef WITH_KF5
     QToolBar* toolBar();
+
+	QSystemTrayIcon *m_tray;
 #endif
     
     Ui::Setlist *m_setlist;

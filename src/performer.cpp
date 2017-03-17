@@ -41,6 +41,7 @@
 #endif
 #else
 #include "ui_setlist_without_kde.h"
+#include <QSystemTrayIcon> 
 #endif //WITH_KF5
 
 #ifdef ANDROID
@@ -71,6 +72,10 @@ Performer::Performer(QWidget *parent) :
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
+#else
+	m_tray = new QSystemTrayIcon(QIcon::fromTheme("performer"), this);
+	if(m_tray->supportsMessages())
+		m_tray->show();
 #endif   
     
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
@@ -297,7 +302,10 @@ void Performer::warning(const QString& msg)
     notification->addContext("default", "default");
     notification->sendEvent();
 #else
-    statusBar()->showMessage("Warning: " + msg);
+	if (m_tray->supportsMessages())
+		m_tray->showMessage("Performer", msg, QSystemTrayIcon::Warning);
+	else
+		statusBar()->showMessage("Warning: " + msg);
 #endif
 }
 
@@ -315,7 +323,10 @@ void Performer::notification(const QString& msg)
     notification->addContext("default", "default");
     notification->sendEvent();
 #else
-    info(msg);
+	if(m_tray->supportsMessages())
+		m_tray->showMessage("Performer", msg);
+    else
+		info(msg);
 #endif
 }
 

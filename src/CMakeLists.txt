@@ -50,7 +50,7 @@ list(APPEND _LINK_LIBRARIES
 
 
 elseif(WIN32)
-add_executable(performer WIN32 main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI} ${CMAKE_CURRENT_SOURCE_DIR}/../performer.rc)
+add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI} ${CMAKE_CURRENT_SOURCE_DIR}/../performer.rc)
 else()
 if(NOT WITH_KF5)
 include(GNUInstallDirs)
