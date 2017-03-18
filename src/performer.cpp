@@ -431,7 +431,10 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
         if(m_handleProgramChange)
         {
             if(m_setlist->setListView->model()->rowCount() > data1)
+            {
                 m_model->playNow(m_model->index(data1,0));
+                songSelected(QModelIndex());
+            }
         }
     }
 }
