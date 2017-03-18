@@ -112,7 +112,7 @@ private slots:
      * @param msg a message shown to the user
      * @param timeout timeout of each try
      */
-    void forceRestart(const char* msg, int timeout);
+    void forceRestart(const QString& msg, int timeout);
     
 private:
     

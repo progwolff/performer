@@ -576,19 +576,17 @@ void SetlistModel::updateProgress(int p)
             m_nextBackend->preload();
         break;
     case AbstractPatchBackend::JACK_NO_SERVER:
-        emit warning(i18n("Could not find a running jack server."));
         removeBackend(m_previousBackend);
         removeBackend(m_nextBackend);
         removeBackend(m_activeBackend);
 #ifdef WITH_JACK
         while(!freeJackClient());
 #endif
-        forceRestart("Could not find a running jack server.", 5);
+        forceRestart(i18n("Could not find a running jack server."), 5);
         break;
     case AbstractPatchBackend::JACK_OPEN_FAILED:
         qWarning() << "failed to create a jack client.";
-        emit warning(i18n("Could not create a client on the existing jack server."));
-        forceRestart("Could not create a client on the existing jack server.",5);
+        forceRestart(i18n("Could not create a client on the existing jack server."),5);
         break;
     }
 
@@ -599,7 +597,7 @@ void SetlistModel::updateProgress(int p)
     }
 }
 
-void SetlistModel::forceRestart(const char* msg, int timeout)
+void SetlistModel::forceRestart(const QString& msg, int timeout)
 {
     if(m_secondsLeft)
         return;
@@ -608,7 +606,7 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
     timer->setInterval(1000);
     timer->setSingleShot(false);
     m_secondsLeft = new int(timeout);
-    emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *m_secondsLeft));
+    emit warning(msg+"\n"+i18n("Will retry to connect to server in %1 seconds.", *m_secondsLeft));
     connect(timer, &QTimer::timeout, this, [this,msg,timeout,timer](){
         --*m_secondsLeft;
         if(*m_secondsLeft <= 0)
@@ -637,7 +635,7 @@ void SetlistModel::forceRestart(const char* msg, int timeout)
         }
         else if (*m_secondsLeft < timeout)
         {
-            emit info(i18n(msg)+i18n("Will retry to connect to server in %1 seconds.", *m_secondsLeft));
+            emit info(msg+" "+i18n("Will retry to connect to server in %1 seconds.", *m_secondsLeft));
         }
     });
     timer->start();

@@ -190,22 +190,18 @@ Performer::Performer(QWidget *parent) :
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     toolBar()->addWidget(spacer);
     
-    QLabel *widget = new QLabel(i18n("0 xruns,"), this);
+    QLabel *widget = new QLabel(i18n("0 xruns, "), this);
     toolBar()->addWidget(widget);
-    connect(m_model, &SetlistModel::xruns, this, [widget](int count){ widget->setText(i18n("%1 xruns,", count)); });
-    toolBar()->addSeparator();
-    widget = new QLabel(i18n("CPU: 0%,"), this);
+    connect(m_model, &SetlistModel::xruns, this, [widget](int count){ widget->setText(i18n("%1 xruns, ", count)); });
+    widget = new QLabel(i18n("CPU: 0%, "), this);
     toolBar()->addWidget(widget);
-    connect(m_model, &SetlistModel::cpuLoadChanged, this, [widget](int load){ widget->setText(i18n("CPU: %1%,", load)); });
-    toolBar()->addSeparator();
-    widget = new QLabel(i18n("0Hz,"), this);
+    connect(m_model, &SetlistModel::cpuLoadChanged, this, [widget](int load){ widget->setText(i18n("CPU: %1%, ", load)); });
+    widget = new QLabel(i18n("0Hz, "), this);
     toolBar()->addWidget(widget);
-    connect(m_model, &SetlistModel::sampleRateChanged, this, [widget](int rate){ widget->setText(i18n("%1Hz,", rate)); });
-    toolBar()->addSeparator();
-    widget = new QLabel(i18n("0 Samples/Buffer"), this);
+    connect(m_model, &SetlistModel::sampleRateChanged, this, [widget](int rate){ widget->setText(i18n("%1Hz, ", rate)); });
+    widget = new QLabel(i18n("0 Samples/Buffer "), this);
     toolBar()->addWidget(widget);
-    connect(m_model, &SetlistModel::bufferSizeChanged, this, [widget](int size){ widget->setText(i18n("%1 Samples/Buffer", size)); });
-    toolBar()->addSeparator();
+    connect(m_model, &SetlistModel::bufferSizeChanged, this, [widget](int size){ widget->setText(i18n("%1 Samples/Buffer ", size)); });
     
     loadConfig();
     
