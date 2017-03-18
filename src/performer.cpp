@@ -41,6 +41,7 @@
 #endif
 #else
 #include "ui_setlist_without_kde.h"
+#include <QSystemTrayIcon> 
 #endif //WITH_KF5
 
 #ifdef ANDROID
@@ -71,6 +72,10 @@ Performer::Performer(QWidget *parent) :
 {
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("performer");
+#else
+	m_tray = new QSystemTrayIcon(QIcon::fromTheme("performer"), this);
+	if(m_tray->supportsMessages())
+		m_tray->show();
 #endif   
     
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
@@ -162,6 +167,9 @@ Performer::Performer(QWidget *parent) :
 #ifndef WITH_JACK
     m_setlist->createpatchbutton->setEnabled(false);
     m_setlist->createpatchbutton->setToolTip(i18n("Performer was built without Jack. Rebuild Performer with Jack to enable loading Carla patches."));
+#elif defined(_MSC_VER)
+	m_setlist->createpatchbutton->setEnabled(false);
+	m_setlist->createpatchbutton->setToolTip(i18n("Directly creating new patches is not supported on Windows. Use Carla to create new patches."));
 #endif
     
     connect(m_setlist->setListView, SIGNAL(activated(QModelIndex)), SLOT(songSelected(QModelIndex)));
@@ -290,7 +298,10 @@ void Performer::warning(const QString& msg)
     notification->addContext("default", "default");
     notification->sendEvent();
 #else
-    statusBar()->showMessage("Warning: " + msg);
+	if (m_tray->supportsMessages())
+		m_tray->showMessage("Performer", msg, QSystemTrayIcon::Warning);
+	else
+		statusBar()->showMessage("Warning: " + msg);
 #endif
 }
 
@@ -308,7 +319,10 @@ void Performer::notification(const QString& msg)
     notification->addContext("default", "default");
     notification->sendEvent();
 #else
-    info(msg);
+	if(m_tray->supportsMessages())
+		m_tray->showMessage("Performer", msg);
+    else
+		info(msg);
 #endif
 }
 

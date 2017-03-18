@@ -67,21 +67,21 @@ $ make
 ```
 ### Windows [Experimental]
 
-Download and extract the zip file from Releases to C:\Program Files (x86).
+Install Qt5 with QWebEngine.
 
-To update to the latest git version:
+Install Jack2
+
+Install Carla and run it
 
 In cmd.exe type:
 ```
 mkdir build
 cd build
-cmake -DQt5_DIR="C:\Qt\5.7\msvc2015\lib\cmake\Qt5" -DJACK_INCLUDEDIR="C:\Program Files (x86)\Jack\includes" -DJACK_LIBRARIES="C:\Program Files (x86)\Jack\lib\libjack.lib" -DWITH_TESTS=0 ..
-cmake --build . --config Release
+cmake -CMAKE_INSTALL_BINDIR=bin -DWITH_QWEBENGINE=1 -DQt5_DIR=C:\Qt\5.8\msvc2015\lib\cmake\Qt5 -DQt5WebEngine_DIR=C:\Qt\5.8\msvc2015\lib\cmake\Qt5WebEngine -DJACK_INCLUDEDIR="C:\Program Files (x86)\Jack\includes" -DJACK_LIBRARIES="C:\Program Files (x86)\Jack\lib\libjack.lib" -G"Visual Studio 14 2015" ..
+cmake --build . --config Release --target package
 ```
-In cmd.exe with admin privileges:
-```
-cmake --build . --config Release --target install
-```
+
+Use the generated installer to install Performer
 
 ### Android [Experimental]
 
