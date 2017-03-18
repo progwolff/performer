@@ -92,7 +92,8 @@ signals:
     void sampleRateChanged(int rate);
     void bufferSizeChanged(int buf);
     void xruns(int count);
-
+    void activity();
+    
 private slots:
     /**
      * creates a backend instance for a songs

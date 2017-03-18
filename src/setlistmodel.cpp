@@ -136,6 +136,7 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
                     if(m_inputActivity > 100)
                         m_inputActivity = 100;
                     m_inputActivityTimer->start();
+                    emit activity();
                 }, Qt::QueuedConnection);
                 connect(instance, &CarlaPatchBackend::xrun, this, [this](){
                     ++m_xruns;
@@ -145,6 +146,7 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
         
         connect(instance, SIGNAL(progress(int)), this, SLOT(updateProgress(int)));
         connect(instance, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), Qt::QueuedConnection);
+        connect(instance, SIGNAL(midiEvent(unsigned char, unsigned char, unsigned char)), this, SIGNAL(activity()), Qt::QueuedConnection);
         
     }
     else

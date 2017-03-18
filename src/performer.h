@@ -114,6 +114,8 @@ private slots:
     
     void askSaveChanges(QSessionManager& manager);
     
+    void activity();
+    
 #ifndef WITH_KF5
     void requestPatch();
     void requestNotes();

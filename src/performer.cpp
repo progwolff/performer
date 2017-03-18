@@ -180,6 +180,8 @@ Performer::Performer(QWidget *parent) :
     
     connect(m_midi, SIGNAL(status(const QString&)), this, SLOT(info(const QString&)));
     
+    connect(m_model, SIGNAL(activity()), this, SLOT(activity()));
+    
     connect(m_model, SIGNAL(error(const QString&)), this, SLOT(error(const QString&)));
     connect(m_model, SIGNAL(warning(const QString&)), this, SLOT(warning(const QString&)));
     connect(m_model, SIGNAL(info(const QString&)), this, SLOT(info(const QString&)));
@@ -437,6 +439,13 @@ void Performer::receiveMidiEvent(unsigned char status, unsigned char data1, unsi
             }
         }
     }
+}
+
+void Performer::activity()
+{
+    //keep screen active
+    QCursor::setPos(QCursor::pos()+QPoint(0,1));
+    QCursor::setPos(QCursor::pos()+QPoint(0,-1));
 }
 
 void Performer::updateSelected()
