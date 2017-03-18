@@ -42,6 +42,7 @@ QWebEngineDocumentViewer::QWebEngineDocumentViewer(QMainWindow* parent)
     Q_UNUSED(parent)
     m_webview = new QWebEngineView(this);
     m_webviewarea = new QScrollArea(this);
+	m_webviewarea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     m_webviewarea->setWidget(m_webview);
     QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
@@ -106,42 +107,46 @@ void QWebEngineDocumentViewer::load(QUrl url)
     }
     
     QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
-    m_webview->page()->view()->resize(viewportsize.width()-5, viewportsize.height()-5);
+    //m_webview->page()->view()->resize(viewportsize.width()-5, viewportsize.height()-5);
 }
 
 QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
 {
     if(!m_webview)
         return nullptr;
-            
+
     auto resizefunct = [this](){
-        m_webview->page()->runJavaScript(
-            //"document.getElementById('toolbarContainer').parentElement.style.position='fixed';"
-            "try {"
-            "document.getElementById('viewerContainer').style.overflow='visible';"
-            "document.body.style.overflow='hidden';"
+
+		//m_webviewarea->resize(size());
+
+		m_webview->page()->runJavaScript(
+			//"document.getElementById('toolbarContainer').parentElement.style.position='fixed';"
+			"try {"
+			"document.getElementById('viewerContainer').style.overflow='visible';"
+			"document.body.style.overflow='hidden';"
+			"document.body.style.height='auto';"
             "document.getElementById('toolbarViewerMiddle').style.display='none';"
-            "new Array(document.getElementById('viewer').firstChild.firstChild.offsetWidth, document.getElementById('viewer').offsetHeight, document.getElementById('scaleSelect').options.selectedIndex);"
+            "new Array(document.getElementById('viewer').offsetWidth, document.getElementById('viewer').offsetHeight, document.getElementById('scaleSelect').options.selectedIndex);"
             "} catch (err){"
             "document.body.style.width='100%';"
             "document.body.style.height='100%';"
             "document.body.style.overflow='hidden';"
-            "document.body.firstChild.style.width='100%';"
-            "document.body.firstChild.style.height='auto';"
-            "new Array(document.body.firstChild.offsetWidth, document.body.firstChild.offsetHeight);"
+            //"document.body.firstChild.style.width='100%';"
+            //"document.body.firstChild.style.height='auto';"
+            "new Array(document.body.firstChild.offsetWidth, document.body.firstChild.offsetHeight, document.body.offsetWidth, document.body.offsetHeight);"
             "}",
             [this](QVariant result){
                 if(result.canConvert<QVariantList>())
                 {
                     QVariantList size = result.toList();
-                    if(size.size() > 2)
+                    if(size.size() == 3)
                     {
                         if(size[0].toInt() > 0 && size[1].toInt() > 0)
                         {
                             QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
                             m_webview->page()->view()->resize(
-                                qMax(size[0].toInt(),viewportsize.width()-5), 
-                                qMax(size[1].toInt(),viewportsize.height()-5)
+                                qMax(size[0].toInt(), viewportsize.width()-5), 
+                                qMax(size[1].toInt(), viewportsize.height()-5)
                             );
                         }
                         if(size[2].toInt() >= 0)
@@ -151,20 +156,18 @@ QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
                     }
                     else
                     {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            m_webview->page()->view()->resize(
-                                size[0].toInt(), 
-                                size[1].toInt()
-                            );
-                        }
+                        QSize viewportsize = m_webviewarea->size() - QSize(m_webviewarea->verticalScrollBar()->width(), m_webviewarea->horizontalScrollBar()->height());
+						m_webview->page()->view()->resize(
+							qMax(qMax(size[0].toInt(), size[2].toInt()), viewportsize.width() - 5),
+							qMax(qMax(size[1].toInt(), size[3].toInt()), viewportsize.height() - 5)
+						);
                     }
                 }
             }
         );
     };
     
-    connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
+    //connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
     connect(m_webview->page(), &QWebEnginePage::geometryChangeRequested, this, resizefunct);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
     connect(m_webview->page(), &QWebEnginePage::contentsSizeChanged, this, resizefunct);
