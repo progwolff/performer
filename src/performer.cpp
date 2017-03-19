@@ -199,19 +199,23 @@ Performer::Performer(QWidget *parent) :
     QWidget* spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     toolBar()->addWidget(spacer);
-    
-    QLabel *widget = new QLabel(i18n("0 xruns, "), this);
+
+    QLabel *widget = new QLabel(i18n("Audio: 0 kHz / "), this);
     toolBar()->addWidget(widget);
-    connect(m_model, &SetlistModel::xruns, this, [widget](int count){ widget->setText(i18n("%1 xruns, ", count)); });
-    widget = new QLabel(i18n("CPU: 0%, "), this);
+    connect(m_model, &SetlistModel::sampleRateChanged, this, [widget](int rate){ widget->setText(i18n("Audio: %1 kHz / ", QString::number(rate / 1000.))); });
+    widget->setToolTip(i18n("Block latency in seconds is buffer size divided by sample rate."));
+    widget = new QLabel(i18n("0 Samples, "), this);
     toolBar()->addWidget(widget);
-    connect(m_model, &SetlistModel::cpuLoadChanged, this, [widget](int load){ widget->setText(i18n("CPU: %1%, ", load)); });
-    widget = new QLabel(i18n("0Hz, "), this);
+    connect(m_model, &SetlistModel::bufferSizeChanged, this, [widget](int size){ widget->setText(i18n("%1 Samples, ", size)); });
+    widget->setToolTip(i18n("Block latency in seconds is buffer size divided by sample rate."));
+    widget = new QLabel(i18n("DSP: 0%, "), this);
     toolBar()->addWidget(widget);
-    connect(m_model, &SetlistModel::sampleRateChanged, this, [widget](int rate){ widget->setText(i18n("%1Hz, ", rate)); });
-    widget = new QLabel(i18n("0 Samples/Buffer "), this);
+    connect(m_model, &SetlistModel::cpuLoadChanged, this, [widget](int load){ widget->setText(i18n("DSP: %1%, ", load)); });
+    widget->setToolTip(i18n("Current CPU load estimated by JACK."));
+    widget = new QLabel(i18n("X: 0 "), this);
     toolBar()->addWidget(widget);
-    connect(m_model, &SetlistModel::bufferSizeChanged, this, [widget](int size){ widget->setText(i18n("%1 Samples/Buffer ", size)); });
+    connect(m_model, &SetlistModel::xruns, this, [widget](int count){ widget->setText(i18n("X: %1 ", count)); });
+    widget->setToolTip(i18n("Number of dropouts (xruns) since program start.\nTry to increase the buffer size if there are too many xruns."));
     
     loadConfig();
     
