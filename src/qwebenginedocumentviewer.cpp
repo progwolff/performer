@@ -106,7 +106,7 @@ void QWebEngineDocumentViewer::load(QUrl url)
         m_webview->load(url);
     }
     
-    QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
+    //QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
     //m_webview->page()->view()->resize(viewportsize.width()-5, viewportsize.height()-5);
 }
 

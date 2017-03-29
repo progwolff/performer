@@ -26,9 +26,13 @@
 #include "setlistview.h"
 
 #ifdef WITH_KF5
+#include <KLocalizedString>
+QString QCoreApplication::translate(const char */*context*/, const char *sourceText, const char */*disambiguation*/, int /*n*/)
+{
+    return i18n(sourceText);
+}
 #include "ui_setlist.h"
 #include <KAboutData>
-#include <KLocalizedString>
 #include <KToolBar>
 #include <KSharedConfig>
 #include <KConfig>
@@ -401,6 +405,7 @@ void Performer::showContextMenu(QPoint pos)
             action->setIcon(QIcon::fromTheme("view-refresh", QApplication::style()->standardIcon(QStyle::SP_BrowserReload)));
         }
         
+        //myMenu.addSeparator();
         if(index.data(SetlistModel::EditableRole).toBool())
         {
             myMenu.addSeparator();
@@ -409,6 +414,10 @@ void Performer::showContextMenu(QPoint pos)
             if(!m_model->fileExists(index.data(SetlistModel::PatchRole).toUrl().toLocalFile()))
                 action->setEnabled(false);
         }
+        /*action = myMenu.addAction(QIcon::fromTheme("document-edit", QApplication::style()->standardIcon(QStyle::SP_FileLinkIcon)), i18n("Edit notes"));
+        connect(action, &QAction::triggered, this, [this,index](){QDesktopServices::openUrl(index.data(SetlistModel::NotesRole).toUrl());});
+        if(!m_model->fileExists(index.data(SetlistModel::NotesRole).toUrl().toLocalFile()))
+            action->setEnabled(false);*/
         
         myMenu.addSeparator();
         
