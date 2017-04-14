@@ -35,7 +35,7 @@ Install performer-git from AUR
 
 ### AV Linux / Debian Testing
 
-A prebuild package can be found at https://github.com/progwolff/performer/releases/download/v1.0.1/Performer-1.0.1-AVLinux.deb
+A prebuilt package can be found at https://github.com/progwolff/performer/releases/download/v1.0.1/Performer-1.0.1-AVLinux.deb
 
 To build Performer from git run:
 ```
@@ -51,7 +51,7 @@ $ sudo make install
 
 ### KXStudio / Ubuntu 14.04
 
-A prebuild package can be found at https://github.com/progwolff/performer/releases/download/v1.0.1/Performer-1.0.1-KXStudio.deb
+A prebuilt package can be found at https://github.com/progwolff/performer/releases/download/v1.0.1/Performer-1.0.1-KXStudio.deb
 
 This build has no document viewer enabled.
 
