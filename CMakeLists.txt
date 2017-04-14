@@ -250,6 +250,7 @@ if(ECM_FOUND)
     feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 elseif(UNIX)
     install(FILES performer.desktop DESTINATION /usr/share/applications)
+    install(FILES sc-apps-performer.svg DESTINATION /usr/share/icons RENAME performer.svg)
 endif(ECM_FOUND)
 
 find_package(SharedMimeInfo ${SMI_MIN_VERSION})
