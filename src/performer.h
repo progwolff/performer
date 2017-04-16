@@ -78,7 +78,7 @@ class Performer :
 {
     Q_OBJECT
 public:
-    explicit Performer();
+    explicit Performer(QWidget *parent = nullptr);
     ~Performer();
 
 public slots:

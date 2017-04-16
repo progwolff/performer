@@ -66,9 +66,11 @@ m_part(nullptr)
 OkularDocumentViewer::~OkularDocumentViewer()
 {
     if(m_part)
+    {
         m_part->closeUrl();
-    delete m_part;
-    m_part = nullptr;
+        delete m_part;
+        m_part = nullptr;
+    }
 }
 
 QList<QWidget*> OkularDocumentViewer::toolbarWidgets()

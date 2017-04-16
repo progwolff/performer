@@ -59,13 +59,13 @@ QString QCoreApplication::translate(const char */*context*/, const char *sourceT
     return i18n(sourceText);
 }
 
-Performer::Performer() :
+Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
-    KParts::MainWindow(nullptr),
+    KParts::MainWindow(parent),
 #elif defined(WITH_KF5)
-    KXmlGuiWindow(nullptr),
+    KXmlGuiWindow(parent),
 #else
-    //QMainWindow()
+    QMainWindow(parent),
 #endif
     m_setlist(new Ui::Setlist)
     ,m_pageView(nullptr)
@@ -244,32 +244,49 @@ Performer::~Performer()
     //for(QAction* action : midi_cc_actions)
     //    delete action;
     
+    
+    qDebug() << "delete model";
+    
     delete m_model;
     m_model = nullptr;
     
+    qDebug() << "delete midi";
+    
     delete m_midi;
     m_midi = nullptr;
+    
+    qDebug() << "delete viewer";
     
 #ifndef WITH_KPARTS
     delete m_viewer;
     m_viewer = nullptr;
 #endif
     
+    qDebug() << "delete dock";
+    
     delete m_dock;
     m_dock = nullptr;
     
+    qDebug() << "delete mididock";
+    
     delete m_midiDock;
     m_midiDock = nullptr;
+    
+    qDebug() << "delete setlist";
 
     delete m_setlist;
     m_setlist = nullptr;
     
+    
+    qDebug() << "delete translator";
 #ifndef WITH_KF5
     delete translator();
     
     delete m_tray;
     m_tray = nullptr;
 #endif
+    
+    qDebug() << "deletion done";
 }
 
 void Performer::closeEvent(QCloseEvent *event)

@@ -19,6 +19,7 @@
  
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QDebug>
 
 #ifdef WITH_KF5
 #include <KLocalizedString>
@@ -111,7 +112,7 @@ int main (int argc, char *argv[])
     
 #endif //WITH_KF5
 
-    Performer *window = new Performer;
+    Performer *window = new Performer(nullptr);
     window->show();
     const QStringList args = parser.positionalArguments();
     if(args.size() > 0)
@@ -119,8 +120,10 @@ int main (int argc, char *argv[])
     
     int exit = app.exec();
     
-    delete window;    
-  
+#ifndef WITH_KF5
+    delete window;
+#endif
+    
     return exit;
 }
 
