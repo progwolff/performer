@@ -31,6 +31,7 @@
 
 #include "fallback.h"
 #include <QMainWindow>
+#include <QSystemTrayIcon>
 
 #endif
 
@@ -51,8 +52,6 @@
 #include <QToolButton>
 
 #include <QPointer>
-
-#include <QSystemTrayIcon>
 
 #include "midi.h"
 
@@ -79,7 +78,7 @@ class Performer :
 {
     Q_OBJECT
 public:
-    Performer();
+    explicit Performer();
     ~Performer();
 
 public slots:
