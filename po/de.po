@@ -492,11 +492,11 @@ msgstr ""
 
 #: performer.cpp:203
 msgid "Audio: 0 kHz / "
-msgstr ""
+msgstr "Audio: 0 kHz / "
 
 #: performer.cpp:205
 msgid "Audio: %1 kHz / "
-msgstr ""
+msgstr "Audio: %1 kHz / "
 
 #: performer.cpp:206 performer.cpp:210
 msgid "Block latency in seconds is buffer size divided by sample rate."
@@ -506,19 +506,19 @@ msgstr ""
 
 #: performer.cpp:207
 msgid "0 Samples, "
-msgstr ""
+msgstr "0 Samples, "
 
 #: performer.cpp:209
 msgid "%1 Samples, "
-msgstr ""
+msgstr "%1 Samples, "
 
 #: performer.cpp:211
 msgid "DSP: 0%, "
-msgstr ""
+msgstr "DSP: 0%, "
 
 #: performer.cpp:213
 msgid "DSP: %1%, "
-msgstr ""
+msgstr "DSP: %1%, "
 
 #: performer.cpp:214
 msgid "Current CPU load estimated by JACK."
@@ -526,11 +526,11 @@ msgstr "Die aktuelle von JACK geschätzte Prozessorauslastung"
 
 #: performer.cpp:215
 msgid "X: 0 "
-msgstr ""
+msgstr "X: 0 "
 
 #: performer.cpp:217
 msgid "X: %1 "
-msgstr ""
+msgstr "X: %1 "
 
 #: performer.cpp:218
 msgid ""

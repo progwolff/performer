@@ -22,6 +22,7 @@ set(PERFORMER_SRCS
     okulardocumentviewer.cpp
     qwebenginedocumentviewer.cpp
     qtwebviewdocumentviewer.cpp
+    fallback.cpp
 )
    
 if(ANDROID)
@@ -52,9 +53,6 @@ list(APPEND _LINK_LIBRARIES
 elseif(WIN32)
 add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI} ${CMAKE_CURRENT_SOURCE_DIR}/../performer.rc)
 else()
-if(NOT WITH_KF5)
-include(GNUInstallDirs)
-endif()
 add_executable(performer main.cpp ${PERFORMER_SRCS} ${PERFORMER_UI} ${setlistheader})
 endif()
 

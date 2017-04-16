@@ -108,6 +108,10 @@ if(ECM_FOUND)
     list(APPEND QML_DIRS "${ECM_MODULE_DIR}")
 endif(ECM_FOUND)
 
+if(NOT WITH_KF5)
+include(GNUInstallDirs)
+endif()
+
 #if(NOT WITH_KPARTS)
     if(Qt5WebEngineWidgets_FOUND)
         option(WITH_QWEBENGINE "Build with QWebEngine (View files without Okular and view html docs with or without Ocular)" ON)
@@ -163,16 +167,63 @@ endif()
 FIND_PROGRAM(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
 FIND_PROGRAM(BASH_EXECUTABLE bash)
 
-IF(NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
-	MESSAGE(
-"------
-                 NOTE: msgfmt or bash not found. Translations will *not* be installed
-------")
+get_cmake_property(_variableNames VARIABLES)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
+IF(NOT WITH_KF5 OR NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
+
+    FIND_PROGRAM(LCONVERT_EXECUTABLE lconvert)
+    FIND_PROGRAM(LRELEASE_EXECUTABLE lrelease)
+	
+	IF(NOT LCONVERT_EXECUTABLE OR NOT LRELEASE_EXECUTABLE)
+        MESSAGE(
+    "------
+                    NOTE: msgfmt and lconvert or lrelease not found. Translations will *not* be installed
+    ------")
+    ELSE()
+        
+        MESSAGE("installing qm localization from ${CMAKE_CURRENT_SOURCE_DIR}/po")
+        FILE(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/po/*.po")
+        SET(QM_FILES)
+        
+        if(NOT DEFINED CMAKE_INSTALL_DATADIR)
+            set(CMAKE_INSTALL_DATADIR ${CMAKE_INSTALL_BINDIR}/data)
+        endif()
+        if(NOT QT_INSTALL_LOCALEDIR)
+            set(QT_INSTALL_LOCALEDIR "${CMAKE_INSTALL_DATADIR}/performer")
+        endif()
+
+        FOREACH(_poFile ${PO_FILES})
+		MESSAGE("found ${_poFile}")
+                GET_FILENAME_COMPONENT(_poFileName ${_poFile} NAME)
+                STRING(REGEX REPLACE "\\.po$" "" _langCode ${_poFileName} )
+
+                IF( _langCode )
+                    
+                        GET_FILENAME_COMPONENT(_lang ${_poFile} NAME_WE)
+
+                        ADD_CUSTOM_TARGET(performer_${_langCode}.qm)
+                        ADD_CUSTOM_COMMAND(TARGET performer_${_langCode}.qm
+                                COMMAND lconvert -locations relative ${_poFile} -o ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts && lrelease ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts -qm ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.qm
+                                DEPENDS ${_poFile})
+                                
+                        MESSAGE("bash lconvert -locations relative ${_poFile} -o ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts && lrelease ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts -qm ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.qm")
+                        INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.qm DESTINATION ${QT_INSTALL_LOCALEDIR})
+                        LIST(APPEND QM_FILES performer_${_langCode}.qm)
+                ENDIF( _langCode )
+
+        ENDFOREACH(_poFile ${PO_FILES})
+
+        ADD_CUSTOM_TARGET(translations ALL DEPENDS ${QM_FILES})
+        
+    ENDIF()
 ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 
         SET(catalogname performer)
 
-	MESSAGE("installing localization from ${CMAKE_CURRENT_SOURCE_DIR}/po")
+        MESSAGE("installing localization from ${CMAKE_CURRENT_SOURCE_DIR}/po")
         FILE(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/po/*.po")
         SET(GMO_FILES)
         
@@ -249,8 +300,8 @@ if(ECM_FOUND)
     
     feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 elseif(UNIX)
-    install(FILES performer.desktop DESTINATION /usr/share/applications)
-    install(FILES sc-apps-performer.svg DESTINATION /usr/share/icons RENAME performer.svg)
+    install(FILES performer.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
+    install(FILES sc-apps-performer.svg DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons RENAME performer.svg)
 endif(ECM_FOUND)
 
 find_package(SharedMimeInfo ${SMI_MIN_VERSION})

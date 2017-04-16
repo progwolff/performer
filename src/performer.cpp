@@ -262,6 +262,10 @@ Performer::~Performer()
 
     delete m_setlist;
     m_setlist = nullptr;
+    
+#ifndef WITH_KF5
+    delete translator();
+#endif
 }
 
 void Performer::closeEvent(QCloseEvent *event)
