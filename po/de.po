@@ -780,7 +780,7 @@ msgstr "Hauptwerkzeugleiste"
 #. i18n: ectx: property (windowTitle), widget (QDockWidget, Setlist)
 #: rc.cpp:6 rc.cpp:51
 msgid "Se&tlist"
-msgstr "Se&tliste"
+msgstr "Setliste"
 
 #. i18n: file: setlist.ui:36
 #. i18n: ectx: property (toolTip), widget (QListView, setListView)

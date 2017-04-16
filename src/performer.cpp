@@ -27,10 +27,6 @@
 
 #ifdef WITH_KF5
 #include <KLocalizedString>
-QString QCoreApplication::translate(const char */*context*/, const char *sourceText, const char */*disambiguation*/, int /*n*/)
-{
-    return i18n(sourceText);
-}
 #include "ui_setlist.h"
 #include <KAboutData>
 #include <KToolBar>
@@ -57,6 +53,11 @@ QString QCoreApplication::translate(const char */*context*/, const char *sourceT
 #include <QStyledItemDelegate>
 #include <QStandardPaths>
 #include <QMenu>
+
+QString QCoreApplication::translate(const char */*context*/, const char *sourceText, const char */*disambiguation*/, int /*n*/)
+{
+    return i18n(sourceText);
+}
 
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
@@ -249,10 +250,8 @@ Performer::~Performer()
     delete m_midi;
     m_midi = nullptr;
     
-#ifndef WITH_KPARTS
     delete m_viewer;
     m_viewer = nullptr;
-#endif
     
     delete m_dock;
     m_dock = nullptr;

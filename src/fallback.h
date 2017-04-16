@@ -25,31 +25,36 @@ QTranslator *translator();
     
 inline QString i18n (const char *text)
 {
-    return translator()->translate("", text);
+    const QString translation = translator()->translate("", text);
+    return translation.isEmpty()?text:translation;
 }
 
 template<typename T>
 inline QString i18n (const char *text, T param)
 {
-    return translator()->translate("", text).arg(param);
+    const QString translation = translator()->translate("", text).arg(param);
+    return translation.isEmpty()?text:translation;
 }
 
 template<typename T,typename S>
 inline QString i18n (const char *text, T param, S param2)
 {
-    return translator()->translate("", text).arg(param).arg(param2);
+    const QString translation = translator()->translate("", text).arg(param).arg(param2);
+    return translation.isEmpty()?text:translation;
 }
 
 template<typename T,typename S,typename Q>
 inline QString i18n (const char *text, T param, S param2, Q param3)
 {
-    return translator()->translate("", text).arg(param).arg(param2).arg(param3);
+    const QString translation = translator()->translate("", text).arg(param).arg(param2).arg(param3);
+    return translation.isEmpty()?text:translation;
 }
 
 template<typename T,typename S,typename Q,typename R>
 inline QString i18n (const char *text, T param, S param2, Q param3, R param4)
 {
-    return translator()->translate("", text).arg(param).arg(param2).arg(param3).arg(param4);
+    const QString translation = translator()->translate("", text).arg(param).arg(param2).arg(param3).arg(param4);
+    return translation.isEmpty()?text:translation;
 }
 
 #endif
