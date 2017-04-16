@@ -30,7 +30,7 @@
 #else
 
 #include "fallback.h"
-#include <QtWidgets>
+#include <QMainWindow>
 
 #endif
 
@@ -51,6 +51,8 @@
 #include <QToolButton>
 
 #include <QPointer>
+
+#include <QSystemTrayIcon>
 
 #include "midi.h"
 
@@ -77,7 +79,7 @@ class Performer :
 {
     Q_OBJECT
 public:
-    explicit Performer(QWidget *parent = 0);
+    Performer();
     ~Performer();
 
 public slots:

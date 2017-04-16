@@ -59,15 +59,15 @@ QString QCoreApplication::translate(const char */*context*/, const char *sourceT
     return i18n(sourceText);
 }
 
-Performer::Performer(QWidget *parent) :
+Performer::Performer() :
 #ifdef WITH_KPARTS
-    KParts::MainWindow(parent)
+    KParts::MainWindow(nullptr),
 #elif defined(WITH_KF5)
-    KXmlGuiWindow(parent)
+    KXmlGuiWindow(nullptr),
 #else
-    QMainWindow(parent)
+    //QMainWindow()
 #endif
-    ,m_setlist(new Ui::Setlist)
+    m_setlist(new Ui::Setlist)
     ,m_pageView(nullptr)
     ,m_viewer(nullptr)
     ,m_alwaysOnTop(false)
@@ -239,7 +239,7 @@ Performer::Performer(QWidget *parent) :
 
 
 Performer::~Performer() 
-{
+{    
     saveConfig();   
     //for(QAction* action : midi_cc_actions)
     //    delete action;
@@ -264,13 +264,24 @@ Performer::~Performer()
     
 #ifndef WITH_KF5
     delete translator();
+    
+    delete m_tray;
+    m_tray = nullptr;
 #endif
 }
 
 void Performer::closeEvent(QCloseEvent *event)
 {
+#ifndef WITH_KF5
+    if(m_tray)
+        m_tray->hide();
+#endif
+    
     if(!isWindowModified())
+    {
+        event->accept();
         return;
+    }
     
     int ret = QMessageBox::warning(
                 this,
@@ -285,12 +296,14 @@ void Performer::closeEvent(QCloseEvent *event)
             event->ignore();
         break;
     case QMessageBox::Discard:
+        event->accept();
         break;
     case QMessageBox::Cancel:
         event->ignore();
         break;
     default:
         autosave();
+        event->accept();
     }
 }
 
@@ -1095,6 +1108,11 @@ void Performer::loadFile(const QString& path)
     closeEvent(&close);
     if(!close.isAccepted())
         return;
+    
+#ifndef WITH_KF5
+    if(m_tray->supportsMessages())
+        m_tray->show();
+#endif
     
     if(path.isEmpty())
         return;

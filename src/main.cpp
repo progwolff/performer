@@ -52,6 +52,8 @@ int main (int argc, char *argv[])
 #endif
     
     app.setWindowIcon(QIcon::fromTheme("performer"));
+    
+    app.setQuitOnLastWindowClosed(true);
 
     QCoreApplication::addLibraryPath("/usr/lib/qt/plugins");
     
@@ -105,20 +107,19 @@ int main (int argc, char *argv[])
 #ifdef WITH_KCRASH
     KCrash::initialize();
 #endif
+#else
+    
+    parser.process(app);
     
 #endif //WITH_KF5
 
-    Performer *window = new Performer(nullptr);
-    window->show();
+    Performer window;
+    window.show();
     const QStringList args = parser.positionalArguments();
     if(args.size() > 0)
-        window->loadFile(args[0]);
+        window.loadFile(args[0]);
     
     int exit = app.exec();
-    
-#ifndef WITH_KF5
-    delete window;
-#endif    
   
     return exit;
 }
