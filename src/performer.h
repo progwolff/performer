@@ -86,6 +86,9 @@ public slots:
     void loadConfig();
     void loadFile(const QString& path);
     void setStyle(const QString& style);
+#ifndef WITH_KF5
+    void loadHelp();
+#endif
     
 private slots:
     void showContextMenu(QPoint);

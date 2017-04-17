@@ -859,9 +859,48 @@ void Performer::prepareUi()
     if(!existed)
         menuBar()->addMenu(settingsmenu);
     
+#ifndef WITH_KF5
+    QMenu *helpmenu = nullptr;
+    existed = false;
+    for(QMenu *menu : findChildren<QMenu*>())
+    {
+        //qDebug() << menu->objectName() << menu->title();
+        if(menu->objectName() == "help")
+        {
+            helpmenu = menu;
+            existed = true;
+            break;
+        }
+    }
+    if(!helpmenu)
+        helpmenu = new QMenu(i18n("Help"), this);
+    
+    action = helpmenu->addAction(i18n("Performer Handbook"));
+    connect(action, SIGNAL(triggered()), this, SLOT(loadHelp())); 
+    
+    if(!existed)
+        menuBar()->addMenu(helpmenu);
+#endif
+    
     toolBar()->setWindowTitle(i18n("Performer Toolbar"));
     
 }
+
+#ifndef WITH_KF5
+void Performer::loadHelp()
+{
+    for(const QString& lang : QLocale::system().uiLanguages())
+    {
+        QString docbookfile = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "doc/HTML/" + lang + "/performer/index.html");
+        if(!docbookfile.isEmpty() && m_viewer)
+        {
+            qDebug() << docbookfile;   
+            m_viewer->load(QUrl::fromLocalFile(docbookfile));
+            break;
+        }
+    }
+}
+#endif
 
 void Performer::setupPageViewActions()
 {

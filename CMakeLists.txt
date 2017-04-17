@@ -206,10 +206,9 @@ IF(NOT WITH_KF5 OR NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 
                         ADD_CUSTOM_TARGET(performer_${_langCode}.qm)
                         ADD_CUSTOM_COMMAND(TARGET performer_${_langCode}.qm
-                                COMMAND lconvert -locations relative ${_poFile} -o ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts && lrelease ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts -qm ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.qm
+                                COMMAND ${LCONVERT_EXECUTABLE} -locations relative ${_poFile} -o ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts && ${LRELEASE_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts -qm ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.qm
                                 DEPENDS ${_poFile})
                                 
-                        MESSAGE("bash lconvert -locations relative ${_poFile} -o ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts && lrelease ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.ts -qm ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.qm")
                         INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/performer_${_langCode}.qm DESTINATION ${QT_INSTALL_LOCALEDIR})
                         LIST(APPEND QM_FILES performer_${_langCode}.qm)
                 ENDIF( _langCode )
@@ -258,34 +257,54 @@ ENDIF(NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 add_subdirectory(src)
 
 if(ECM_FOUND)
+find_package(KF5DocTools)
+endif()
 
-    find_package(KF5DocTools)
-    if(KF5DocTools_FOUND)
+FILE(GLOB_RECURSE DOC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/po/docs/*")
+FILE(GLOB_RECURSE IMAGE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/.images/*")
+
+SET(DOC_DIR ${KDE_INSTALL_DOCBUNDLEDIR})
+if(NOT DOC_DIR)
+    SET(DOC_DIR ${CMAKE_INSTALL_PREFIX}/share/doc/HTML)
+endif()
+
+
+SET(DOC_TARGETS)
+FOREACH(_docFile ${DOC_FILES})
+MESSAGE("found ${_docFile}")
+        STRING(REGEX REPLACE "\\/index.docbook$" "" _langCode ${_docFile} )
+        GET_FILENAME_COMPONENT(_langCode ${_langCode} NAME)
+        
+        MESSAGE("langcode ${_langCode}")
+        
+        IF( _langCode )
+                if(KF5DocTools_FOUND)
+                    kdoctools_create_handbook(${_docFile} INSTALL_DESTINATION ${DOC_DIR}/${_langCode} SUBDIR performer)
+                else()
+                    FIND_PROGRAM(MEINPROC_EXECUTABLE meinproc5)
+                    if(NOT MEINPROC_EXECUTABLE)
+                        MESSAGE("NOTE: meinproc5 not found. Documentation will *not* be installed")
+                    else()
+                        ADD_CUSTOM_TARGET(${_langCode}_docs)
+                        make_directory(${CMAKE_CURRENT_BINARY_DIR}/${_langCode}/performer)
+                        ADD_CUSTOM_COMMAND(TARGET ${_langCode}_docs
+                                COMMAND ${MEINPROC_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/po/docs/${_langCode}/index.docbook
+                                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${_langCode}/performer)
+                        LIST(APPEND DOC_TARGETS ${_langCode}_docs)
+                        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${_langCode}/performer DESTINATION ${DOC_DIR}/${_langCode})
+                        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/po/docs/${_langCode}/index.docbook DESTINATION ${DOC_DIR}/${_langCode}/performer)
+                    endif()
+                endif()
+                install(FILES ${IMAGE_FILES} DESTINATION ${DOC_DIR}/${_langCode}/performer)
+                install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/.screenshot.png DESTINATION ${DOC_DIR}/${_langCode}/performer)
+
+        ENDIF( _langCode )
+
+ENDFOREACH(_docFile ${DOC_FILES})
+ADD_CUSTOM_TARGET(documentation ALL DEPENDS ${DOC_TARGETS})
+
     
-    FILE(GLOB_RECURSE DOC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/po/docs/*")
-    FILE(GLOB_RECURSE IMAGE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/.images/*")
-    
-    FOREACH(_docFile ${DOC_FILES})
-    MESSAGE("found ${_docFile}")
-            STRING(REGEX REPLACE "\\/index.docbook$" "" _langCode ${_docFile} )
-            
-            GET_FILENAME_COMPONENT(_langCode ${_langCode} NAME)
-            
-            MESSAGE("langcode ${_langCode}")
-
-            IF( _langCode )
-                    
-                    kdoctools_create_handbook(${CMAKE_CURRENT_SOURCE_DIR}/po/docs/${_langCode}/index.docbook INSTALL_DESTINATION ${KDE_INSTALL_DOCBUNDLEDIR}/${_langCode} SUBDIR performer)
-                    install(FILES ${IMAGE_FILES} DESTINATION ${KDE_INSTALL_DOCBUNDLEDIR}/${_langCode}/performer)
-                    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/.screenshot.png DESTINATION ${KDE_INSTALL_DOCBUNDLEDIR}/${_langCode}/performer)
-
-            ENDIF( _langCode )
-
-    ENDFOREACH(_docFile ${DOC_FILES})
-    
-    endif()
-
-    
+if(ECM_FOUND)
 
     install(FILES performer.desktop DESTINATION ${XDG_APPS_INSTALL_DIR})
 
