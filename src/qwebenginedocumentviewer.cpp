@@ -21,10 +21,13 @@
 
 #include "qwebenginedocumentviewer.h"
 
+#include <QGridLayout>
 #include <QWebEngineView>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QFrame>
 #include <QComboBox>
+#include <QGroupBox>
 
 #include <QWebEngineSettings>
 #include <QMimeDatabase>
@@ -41,11 +44,22 @@ QWebEngineDocumentViewer::QWebEngineDocumentViewer(QMainWindow* parent)
 {
     Q_UNUSED(parent)
     m_webview = new QWebEngineView(this);
-    m_webviewarea = new QScrollArea(this);
-	m_webviewarea->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    m_webviewarea->setWidget(m_webview);
     QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+    
+    
+    QFrame *area = new QFrame(this);
+    m_scrollarea = new QScrollArea(this);
+    QGridLayout *layout = new QGridLayout(this);
+    
+    layout->addWidget(m_webview, 0, 0);
+    layout->addWidget(m_scrollarea->verticalScrollBar(), 0, 1);
+    layout->addWidget(m_scrollarea->horizontalScrollBar(), 1, 0);
+    area->setLayout(layout);
+    area->setFrameStyle(QFrame::Box);
+    m_webviewarea = area;
+    m_layout = layout;
+    
     m_zoombox = new QComboBox(this);
     m_zoombox->addItem(i18n("Automatic zoom"));
     m_zoombox->addItem(i18n("Original size"));
@@ -60,26 +74,23 @@ QWebEngineDocumentViewer::QWebEngineDocumentViewer(QMainWindow* parent)
     m_zoombox->addItem("300%");
     m_zoombox->addItem("400%");
     m_zoombox->setEnabled(false);
-    
-    connect(m_zoombox, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, [this](int index){
-        m_webview->page()->runJavaScript(
-            "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
-            "scaleSelect.options.selectedIndex = "+QString::number(index)+";"
-        );
-        m_webview->page()->view()->resize(m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height()));
-    });
 }
 
 QWebEngineDocumentViewer::~QWebEngineDocumentViewer()
 {
     m_webview->close();
-    delete m_webview;
-    delete m_zoombox;
     delete m_webviewarea;
+    delete m_scrollarea;
+    delete m_webview;
+    delete m_layout;
+    delete m_zoombox;
 }
 
 void QWebEngineDocumentViewer::load(QUrl url)
 {
+    //QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
+    //m_webview->page()->view()->resize(viewportsize.width()-5, viewportsize.height()-5);
+    
     m_zoombox->setEnabled(false);
     QMimeDatabase db;
     QMimeType type = db.mimeTypeForFile(url.toLocalFile());
@@ -105,9 +116,6 @@ void QWebEngineDocumentViewer::load(QUrl url)
     {
         m_webview->load(url);
     }
-    
-    //QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
-    //m_webview->page()->view()->resize(viewportsize.width()-5, viewportsize.height()-5);
 }
 
 QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
@@ -117,63 +125,67 @@ QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
 
     auto resizefunct = [this](){
 
-		//m_webviewarea->resize(size());
-
-		m_webview->page()->runJavaScript(
-			//"document.getElementById('toolbarContainer').parentElement.style.position='fixed';"
-			"try {"
-			"document.getElementById('viewerContainer').style.overflow='visible';"
-			"document.body.style.overflow='hidden';"
-			"document.body.style.height='auto';"
+        m_webview->page()->runJavaScript(
+            "if(document.getElementById('viewerContainer')) {"
             "document.getElementById('toolbarViewerMiddle').style.display='none';"
-            "new Array(document.getElementById('viewer').offsetWidth, document.getElementById('viewer').offsetHeight, document.getElementById('scaleSelect').options.selectedIndex);"
-            "} catch (err){"
-            "document.body.style.width='100%';"
-            "document.body.style.height='100%';"
-            "document.body.style.overflow='hidden';"
-            //"document.body.firstChild.style.width='100%';"
-            //"document.body.firstChild.style.height='auto';"
-            "new Array(document.body.firstChild.offsetWidth, document.body.firstChild.offsetHeight, document.body.offsetWidth, document.body.offsetHeight);"
-            "}",
+            "new Array(document.getElementById('viewerContainer').scrollWidth, document.getElementById('viewerContainer').scrollHeight,"
+            "document.getElementById('viewerContainer').offsetWidth, document.getElementById('viewerContainer').offsetHeight,"
+            "document.getElementById('viewerContainer').scrollLeft, document.getElementById('viewerContainer').scrollTop);"
+            "}else{"
+            "new Array(document.body.scrollWidth, document.body.scrollHeight, window.innerWidth, window.innerHeight, window.pageXOffset, window.pageYOffset);"
+            "}"
+            ,
             [this](QVariant result){
                 if(result.canConvert<QVariantList>())
                 {
-                    QVariantList size = result.toList();
-                    if(size.size() == 3)
-                    {
-                        if(size[0].toInt() > 0 && size[1].toInt() > 0)
-                        {
-                            QSize viewportsize = m_webviewarea->size()-QSize(m_webviewarea->verticalScrollBar()->width(),m_webviewarea->horizontalScrollBar()->height());
-                            m_webview->page()->view()->resize(
-                                qMax(size[0].toInt(), viewportsize.width()-5), 
-                                qMax(size[1].toInt(), viewportsize.height()-5)
-                            );
-                        }
-                        if(size[2].toInt() >= 0)
-                        {
-                            m_zoombox->setCurrentIndex(size[2].toInt());
-                        }
-                    }
-                    else
-                    {
-                        QSize viewportsize = m_webviewarea->size() - QSize(m_webviewarea->verticalScrollBar()->width(), m_webviewarea->horizontalScrollBar()->height());
-						m_webview->page()->view()->resize(
-							qMax(qMax(size[0].toInt(), size[2].toInt()), viewportsize.width() - 5),
-							qMax(qMax(size[1].toInt(), size[3].toInt()), viewportsize.height() - 5)
-						);
-                    }
+                    qDebug() << result;
+                    QVariantList data = result.toList();
+                    m_scrollarea->horizontalScrollBar()->setRange(0, data[0].toInt()-data[2].toInt());
+                    m_scrollarea->verticalScrollBar()->setRange(0, data[1].toInt()-data[3].toInt());
+                    m_scrollarea->horizontalScrollBar()->setValue(data[4].toInt());
+                    m_scrollarea->verticalScrollBar()->setValue(data[5].toInt());
                 }
             }
         );
     };
     
-    //connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
+    connect(m_webview, &QWebEngineView::loadProgress, this, resizefunct);
     connect(m_webview->page(), &QWebEnginePage::geometryChangeRequested, this, resizefunct);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
     connect(m_webview->page(), &QWebEnginePage::contentsSizeChanged, this, resizefunct);
 #endif
     
-    return m_webviewarea;
+    connect(m_zoombox, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated), this, [this,resizefunct](int index){
+        m_webview->page()->runJavaScript(
+            "PDFViewerApplication.pdfViewer.currentScaleValue = scaleSelect.options["+QString::number(index)+"].value;"     
+            "scaleSelect.options.selectedIndex = "+QString::number(index)+";"
+        );
+        resizefunct();
+    });
+    
+    connect(m_scrollarea->horizontalScrollBar(), &QAbstractSlider::sliderMoved, this, [this](int val){
+        m_webview->page()->runJavaScript(
+            "if(document.getElementById('viewerContainer')){"
+            "document.getElementById('viewerContainer').scrollLeft="+QString::number(val)+";"
+            "}else{"
+            "window.scrollTo("+QString::number(val)+","+QString::number(m_scrollarea->verticalScrollBar()->value())+");}"
+        );
+    });
+    connect(m_scrollarea->verticalScrollBar(), &QAbstractSlider::sliderMoved, this, [this](int val){
+        m_webview->page()->runJavaScript(
+            "if(document.getElementById('viewerContainer')){"
+            "document.getElementById('viewerContainer').scrollTop="+QString::number(val)+";"
+            "}else{"
+            "window.scrollTo("+QString::number(m_scrollarea->horizontalScrollBar()->value())+","+QString::number(val)+");}"
+        );
+    });
+    
+    connect(m_webview->page(), &QWebEnginePage::scrollPositionChanged, this, [this](const QPointF& pos){
+        m_scrollarea->horizontalScrollBar()->setValue(pos.x());
+        m_scrollarea->verticalScrollBar()->setValue(pos.y());
+    });
+    
+    return m_scrollarea;
 }
 
 QWidget * QWebEngineDocumentViewer::widget()

@@ -24,7 +24,8 @@
 #include <QObject>
 
 class QWebEngineView;
-class QScrollArea;
+class QLayout;
+class QScrollBar;
 class QComboBox;
 
 /**
@@ -47,8 +48,10 @@ public slots:
     
 private:
     QWebEngineView *m_webview;
-    QScrollArea *m_webviewarea;
+    QAbstractScrollArea *m_scrollarea;
+    QWidget *m_webviewarea;
     QComboBox *m_zoombox;
+    QLayout *m_layout;
 };
 
 #endif
