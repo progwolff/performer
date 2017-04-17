@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-29 15:27+0200\n"
+"POT-Creation-Date: 2017-04-17 17:47+0200\n"
 "PO-Revision-Date: 2016-11-13 19:33+0100\n"
 "Last-Translator: Julian Wolff <wolff@julianwolff.de>\n"
 "Language-Team: DE <wolff@julianwolff.de>\n"
@@ -16,27 +16,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: main.cpp:70
+#: main.cpp:71
 msgid "[file]"
 msgstr "[Datei]"
 
-#: main.cpp:70
+#: main.cpp:71
 msgid "Setlist to load"
 msgstr "Lade gegebene Se&tliste"
 
-#: main.cpp:80 performer.cpp:270 performer.cpp:1255
+#: main.cpp:81 performer.cpp:307 performer.cpp:1338
 msgid "Performer"
 msgstr "Performer"
 
-#: main.cpp:84
+#: main.cpp:85
 msgid "Live performance audio session manager"
 msgstr "Audio-Sessionmanager für Liveauftritte"
 
-#: main.cpp:88
+#: main.cpp:89
 msgid "(c) 2016"
 msgstr ""
 
-#: main.cpp:91 main.cpp:97
+#: main.cpp:92 main.cpp:98
 msgid " "
 msgstr ""
 
@@ -84,356 +84,356 @@ msgstr "MIDI CC für Aktion %1 gelöscht"
 msgid "(button)"
 msgstr "(Button)"
 
-#: midi.cpp:526
+#: midi.cpp:527
 msgid "MIDI CC %1 (%3) assigned to action %2 %4"
 msgstr "MIDI CC %1 (%3) auf Aktion %2 zugewiesen %4"
 
-#: midi.cpp:542
+#: midi.cpp:543
 msgid "Bank select MSB"
 msgstr "Bankauswahl MSB"
 
-#: midi.cpp:544
+#: midi.cpp:545
 msgid "Modulation MSB"
 msgstr ""
 
-#: midi.cpp:546
+#: midi.cpp:547
 msgid "Breath Controller"
 msgstr ""
 
-#: midi.cpp:548 midi.cpp:560 midi.cpp:571 midi.cpp:592 midi.cpp:702
-#: midi.cpp:743
+#: midi.cpp:549 midi.cpp:561 midi.cpp:572 midi.cpp:593 midi.cpp:703
+#: midi.cpp:744
 msgid "Undefined"
 msgstr "Undefiniert"
 
-#: midi.cpp:550
+#: midi.cpp:551
 msgid "Foot Controller MSB"
 msgstr ""
 
-#: midi.cpp:552
+#: midi.cpp:553
 msgid "Portamento Time MSB"
 msgstr ""
 
-#: midi.cpp:554
+#: midi.cpp:555
 msgid "Data Byte"
 msgstr "Datenbyte"
 
-#: midi.cpp:556
+#: midi.cpp:557
 msgid "Main volume"
 msgstr "Gesamtlautstärke"
 
-#: midi.cpp:558
+#: midi.cpp:559
 msgid "Balance"
 msgstr ""
 
-#: midi.cpp:562
+#: midi.cpp:563
 msgid "Panorama"
 msgstr ""
 
-#: midi.cpp:564
+#: midi.cpp:565
 msgid "Expression"
 msgstr ""
 
-#: midi.cpp:566
+#: midi.cpp:567
 msgid "Effect Control 1"
 msgstr "Effektregler 1"
 
-#: midi.cpp:568
+#: midi.cpp:569
 msgid "Effect Control 2"
 msgstr "Effektregler 2"
 
-#: midi.cpp:573
+#: midi.cpp:574
 msgid "General Purpose Controller 1"
 msgstr "Frei belegbarer Regler 1"
 
-#: midi.cpp:575
+#: midi.cpp:576
 msgid "General Purpose Controller 2"
 msgstr "Frei belegbarer Regler 2"
 
-#: midi.cpp:577
+#: midi.cpp:578
 msgid "General Purpose Controller 3"
 msgstr "Frei belegbarer Regler 3"
 
-#: midi.cpp:579
+#: midi.cpp:580
 msgid "General Purpose Controller 4"
 msgstr "Frei belegbarer Regler 4"
 
-#: midi.cpp:594
+#: midi.cpp:595
 msgid "Bank select LSB"
 msgstr "Bankauswahl LSB"
 
-#: midi.cpp:596
+#: midi.cpp:597
 msgid "LSB for CC 1"
 msgstr "LSB für CC 1"
 
-#: midi.cpp:598
+#: midi.cpp:599
 msgid "LSB for CC 2"
 msgstr "LSB für CC 2"
 
-#: midi.cpp:600
+#: midi.cpp:601
 msgid "LSB for CC 3"
 msgstr "LSB für CC 3"
 
-#: midi.cpp:602
+#: midi.cpp:603
 msgid "LSB for CC 4"
 msgstr "LSB für CC 4"
 
-#: midi.cpp:604
+#: midi.cpp:605
 msgid "LSB for CC 5"
 msgstr "LSB für CC 5"
 
-#: midi.cpp:606
+#: midi.cpp:607
 msgid "LSB for CC 6"
 msgstr "LSB für CC 6"
 
-#: midi.cpp:608
+#: midi.cpp:609
 msgid "LSB for CC 7"
 msgstr "LSB für CC 7"
 
-#: midi.cpp:610
+#: midi.cpp:611
 msgid "LSB for CC 8"
 msgstr "LSB für CC 8"
 
-#: midi.cpp:612
+#: midi.cpp:613
 msgid "LSB for CC 9"
 msgstr "LSB für CC 9"
 
-#: midi.cpp:614
+#: midi.cpp:615
 msgid "LSB for CC 10"
 msgstr "LSB für CC 10"
 
-#: midi.cpp:616
+#: midi.cpp:617
 msgid "LSB for CC 11"
 msgstr "LSB für CC 11"
 
-#: midi.cpp:618
+#: midi.cpp:619
 msgid "LSB for CC 12"
 msgstr "LSB für CC 12"
 
-#: midi.cpp:620
+#: midi.cpp:621
 msgid "LSB for CC 13"
 msgstr "LSB für CC 13"
 
-#: midi.cpp:622
+#: midi.cpp:623
 msgid "LSB for CC 14"
 msgstr "LSB für CC 14"
 
-#: midi.cpp:624
+#: midi.cpp:625
 msgid "LSB for CC 15"
 msgstr "LSB für CC 15"
 
-#: midi.cpp:626
+#: midi.cpp:627
 msgid "LSB for CC 16"
 msgstr "LSB für CC 16"
 
-#: midi.cpp:628
+#: midi.cpp:629
 msgid "LSB for CC 17"
 msgstr "LSB für CC 17"
 
-#: midi.cpp:630
+#: midi.cpp:631
 msgid "LSB for CC 18"
 msgstr "LSB für CC 18"
 
-#: midi.cpp:632
+#: midi.cpp:633
 msgid "LSB for CC 19"
 msgstr "LSB für CC 19"
 
-#: midi.cpp:634
+#: midi.cpp:635
 msgid "LSB for CC 20"
 msgstr "LSB für CC 20"
 
-#: midi.cpp:636
+#: midi.cpp:637
 msgid "LSB for CC 21"
 msgstr "LSB für CC 21"
 
-#: midi.cpp:638
+#: midi.cpp:639
 msgid "LSB for CC 22"
 msgstr "LSB für CC 22"
 
-#: midi.cpp:640
+#: midi.cpp:641
 msgid "LSB for CC 23"
 msgstr "LSB für CC 23"
 
-#: midi.cpp:642
+#: midi.cpp:643
 msgid "LSB for CC 24"
 msgstr "LSB für CC 24"
 
-#: midi.cpp:644
+#: midi.cpp:645
 msgid "LSB for CC 25"
 msgstr "LSB für CC 25"
 
-#: midi.cpp:646
+#: midi.cpp:647
 msgid "LSB for CC 26"
 msgstr "LSB für CC 26"
 
-#: midi.cpp:648
+#: midi.cpp:649
 msgid "LSB for CC 27"
 msgstr "LSB für CC 27"
 
-#: midi.cpp:650
+#: midi.cpp:651
 msgid "LSB for CC 28"
 msgstr "LSB für CC 28"
 
-#: midi.cpp:652
+#: midi.cpp:653
 msgid "LSB for CC 29"
 msgstr "LSB für CC 29"
 
-#: midi.cpp:654
+#: midi.cpp:655
 msgid "LSB for CC 30"
 msgstr "LSB für CC 30"
 
-#: midi.cpp:656
+#: midi.cpp:657
 msgid "LSB for CC 31"
 msgstr "LSB für CC 31"
 
-#: midi.cpp:658
+#: midi.cpp:659
 msgid "Hold 1"
 msgstr "Haltepedal"
 
-#: midi.cpp:660
+#: midi.cpp:661
 msgid "Portamento"
 msgstr ""
 
-#: midi.cpp:662
+#: midi.cpp:663
 msgid "Sostenuto"
 msgstr ""
 
-#: midi.cpp:664
+#: midi.cpp:665
 msgid "Soft Pedal"
 msgstr ""
 
-#: midi.cpp:666
+#: midi.cpp:667
 msgid "Legato Footswitch"
 msgstr "Legatopedal"
 
-#: midi.cpp:668
+#: midi.cpp:669
 msgid "Hold 2"
 msgstr "2. Haltepedal"
 
-#: midi.cpp:670
+#: midi.cpp:671
 msgid "Sound Variation"
 msgstr "Klangvariation"
 
-#: midi.cpp:672
+#: midi.cpp:673
 msgid "Harmonic Content"
 msgstr ""
 
-#: midi.cpp:674
+#: midi.cpp:675
 msgid "Release Time"
 msgstr "Release-Zeit"
 
-#: midi.cpp:676
+#: midi.cpp:677
 msgid "Attack Time"
 msgstr "Attack-Zeit"
 
-#: midi.cpp:678
+#: midi.cpp:679
 msgid "Brightness"
 msgstr ""
 
-#: midi.cpp:680
+#: midi.cpp:681
 msgid "Sound Controller 6"
 msgstr "Klangregler 6"
 
-#: midi.cpp:682
+#: midi.cpp:683
 msgid "Sound Controller 7"
 msgstr "Klangregler 7"
 
-#: midi.cpp:684
+#: midi.cpp:685
 msgid "Sound Controller 8"
 msgstr "Klangregler 8"
 
-#: midi.cpp:686
+#: midi.cpp:687
 msgid "Sound Controller 9"
 msgstr "Klangregler 9"
 
-#: midi.cpp:688
+#: midi.cpp:689
 msgid "Sound Controller 10"
 msgstr "Klangregler 10"
 
-#: midi.cpp:693
+#: midi.cpp:694
 msgid "General Purpose Controller"
 msgstr "Frei belegbarer Regler"
 
-#: midi.cpp:695
+#: midi.cpp:696
 msgid "Portamento Control"
 msgstr ""
 
-#: midi.cpp:704
+#: midi.cpp:705
 msgid "Effects 1 Depth"
 msgstr "Tiefe Effekt 1"
 
-#: midi.cpp:706
+#: midi.cpp:707
 msgid "Effects 2 Depth"
 msgstr "Tiefe Effekt 2"
 
-#: midi.cpp:708
+#: midi.cpp:709
 msgid "Effects 3 Depth"
 msgstr "Tiefe Effekt 3"
 
-#: midi.cpp:710
+#: midi.cpp:711
 msgid "Effects 4 Depth"
 msgstr "Tiefe Effekt 4"
 
-#: midi.cpp:712
+#: midi.cpp:713
 msgid "Effects 5 Depth"
 msgstr "Tiefe Effekt 5"
 
-#: midi.cpp:714
+#: midi.cpp:715
 msgid "Data Increment RPN/NRPN"
 msgstr "Dateninkrement RPN/NRPN"
 
-#: midi.cpp:716
+#: midi.cpp:717
 msgid "Data Decrement RPN/NRPN"
 msgstr "Datendekrement RPN/NRPN"
 
-#: midi.cpp:718
+#: midi.cpp:719
 msgid "NRPN LSB"
 msgstr ""
 
-#: midi.cpp:720
+#: midi.cpp:721
 msgid "NRPN MSB"
 msgstr ""
 
-#: midi.cpp:722
+#: midi.cpp:723
 msgid "RPN LSB"
 msgstr ""
 
-#: midi.cpp:724
+#: midi.cpp:725
 msgid "RPN MSB"
 msgstr ""
 
-#: midi.cpp:745
+#: midi.cpp:746
 msgid "all sounds off"
 msgstr "Alle Klänge aus"
 
-#: midi.cpp:747
+#: midi.cpp:748
 msgid "Controller Reset"
 msgstr "Steuerung zurücksetzen"
 
-#: midi.cpp:749
+#: midi.cpp:750
 msgid "Local Control on/off"
 msgstr "Lokale Steuerung ein/aus"
 
-#: midi.cpp:751
+#: midi.cpp:752
 msgid "all notes off"
 msgstr "Alle Noten aus"
 
-#: midi.cpp:753
+#: midi.cpp:754
 msgid "omni off"
 msgstr "omni aus"
 
-#: midi.cpp:755
+#: midi.cpp:756
 msgid "omni on"
 msgstr "omni ein"
 
-#: midi.cpp:757
+#: midi.cpp:758
 msgid "mono on / poly off"
 msgstr "Mono ein / Poly aus"
 
-#: midi.cpp:759
+#: midi.cpp:760
 msgid "poly on / mono off"
 msgstr "Poly ein / Mono aus"
 
-#: performer.cpp:87 performer.cpp:1180
+#: performer.cpp:92 performer.cpp:1263
 msgid "unknown.pfm"
 msgstr "unbekannt.pfm"
 
@@ -441,7 +441,7 @@ msgstr "unbekannt.pfm"
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
 #. i18n: file: setlist_without_kde.ui:109
 #. i18n: ectx: property (text), widget (QToolButton, previousButton)
-#: performer.cpp:109 rc.cpp:18 rc.cpp:63
+#: performer.cpp:114 rc.cpp:18 rc.cpp:63
 msgid "Previous"
 msgstr "Zurück"
 
@@ -449,23 +449,23 @@ msgstr "Zurück"
 #. i18n: ectx: property (text), widget (QToolButton, nextButton)
 #. i18n: file: setlist_without_kde.ui:128
 #. i18n: ectx: property (text), widget (QToolButton, nextButton)
-#: performer.cpp:113 rc.cpp:21 rc.cpp:66
+#: performer.cpp:118 rc.cpp:21 rc.cpp:66
 msgid "Next"
 msgstr "Vor"
 
-#: performer.cpp:122
+#: performer.cpp:127
 msgid "Always on top"
 msgstr "Immer im Vordergrund"
 
-#: performer.cpp:129
+#: performer.cpp:134
 msgid "Terminate and reload all Carla instances."
 msgstr "Beende alle Carla-Instanzen und lade sie neu."
 
-#: performer.cpp:130
+#: performer.cpp:135
 msgid "Panic!"
 msgstr "Panik!"
 
-#: performer.cpp:139 performer.cpp:154 performer.cpp:169
+#: performer.cpp:144 performer.cpp:159 performer.cpp:174
 msgid ""
 "Performer was built without Jack. Rebuild Performer with Jack to enable "
 "loading Carla patches."
@@ -473,7 +473,7 @@ msgstr ""
 "Performer wurde ohne Jack kompiliert. Kompilieren Sie Performer erneut unter "
 "Verwendung von Jack, um das Laden von Carla Patches zu ermöglichen."
 
-#: performer.cpp:143 performer.cpp:159
+#: performer.cpp:148 performer.cpp:164
 msgid ""
 "Performer was built without KParts, QWebEngine or QtWebView. Rebuild "
 "Performer with one of these dependencies to enable displaying notes."
@@ -482,7 +482,7 @@ msgstr ""
 "Kompilieren Sie Performer erneut unter Verwendung einer dieser Komponenten, "
 "um die Darstellung von Notizen zu ermöglichen."
 
-#: performer.cpp:172
+#: performer.cpp:177
 msgid ""
 "Directly creating new patches is not supported on Windows. Use Carla to "
 "create new patches."
@@ -490,49 +490,49 @@ msgstr ""
 "Das direkte Erzeugen neuer Patches ist unter Windows nicht möglich.Nutzen "
 "Sie Carla, um neue Patches zu erstellen."
 
-#: performer.cpp:203
+#: performer.cpp:208
 msgid "Audio: 0 kHz / "
 msgstr "Audio: 0 kHz / "
 
-#: performer.cpp:205
+#: performer.cpp:210
 msgid "Audio: %1 kHz / "
 msgstr "Audio: %1 kHz / "
 
-#: performer.cpp:206 performer.cpp:210
+#: performer.cpp:211 performer.cpp:215
 msgid "Block latency in seconds is buffer size divided by sample rate."
 msgstr ""
 "Die Blocklatenz in Sekunden berechnet sich aus der Puffergröße, dividiert "
 "durch die Abtastrate."
 
-#: performer.cpp:207
+#: performer.cpp:212
 msgid "0 Samples, "
 msgstr "0 Samples, "
 
-#: performer.cpp:209
+#: performer.cpp:214
 msgid "%1 Samples, "
 msgstr "%1 Samples, "
 
-#: performer.cpp:211
+#: performer.cpp:216
 msgid "DSP: 0%, "
 msgstr "DSP: 0%, "
 
-#: performer.cpp:213
+#: performer.cpp:218
 msgid "DSP: %1%, "
 msgstr "DSP: %1%, "
 
-#: performer.cpp:214
+#: performer.cpp:219
 msgid "Current CPU load estimated by JACK."
 msgstr "Die aktuelle von JACK geschätzte Prozessorauslastung"
 
-#: performer.cpp:215
+#: performer.cpp:220
 msgid "X: 0 "
 msgstr "X: 0 "
 
-#: performer.cpp:217
+#: performer.cpp:222
 msgid "X: %1 "
 msgstr "X: %1 "
 
-#: performer.cpp:218
+#: performer.cpp:223
 msgid ""
 "Number of dropouts (xruns) since program start.\n"
 "Try to increase the buffer size if there are too many xruns."
@@ -540,141 +540,149 @@ msgstr ""
 "Anzahl der Aussetzer (xruns) seit Programmstart.\n"
 "Versuchen Sie bei häufigen Aussetzern, den Puffer zu vergrößern."
 
-#: performer.cpp:271 performer.cpp:1256
+#: performer.cpp:308 performer.cpp:1339
 msgid "Save changes to setlist?"
 msgstr "Änderungen an der Setliste speichern?"
 
-#: performer.cpp:394
+#: performer.cpp:433
 msgid "Play now"
 msgstr "Jetzt spielen"
 
-#: performer.cpp:400
+#: performer.cpp:439
 msgid "Reload"
 msgstr "Neu laden"
 
-#: performer.cpp:408
+#: performer.cpp:447
 msgid "Edit patch"
 msgstr "Patch bearbeiten"
 
-#: performer.cpp:420
+#: performer.cpp:459
 msgid "Prefer"
 msgstr "Vorziehen"
 
-#: performer.cpp:424
+#: performer.cpp:463
 msgid "Defer"
 msgstr "Zurückstellen"
 
-#: performer.cpp:430
+#: performer.cpp:469
 msgid "Remove entry"
 msgstr "Eintrag löschen"
 
-#: performer.cpp:493
+#: performer.cpp:532
 msgid "Carla Patch (*.carxp)"
 msgstr "Carla Patch (*.carxp)"
 
-#: performer.cpp:533
+#: performer.cpp:572
 msgid "New Song"
 msgstr "Neuer Song"
 
-#: performer.cpp:585
+#: performer.cpp:624
 msgid "Set up %1"
 msgstr "%1 einrichten"
 
-#: performer.cpp:635
+#: performer.cpp:674
 msgid "Okular KPart not found"
 msgstr "Okular KPart wurde nicht gefunden"
 
-#: performer.cpp:653
+#: performer.cpp:692
 msgid "Previous page"
 msgstr "Vorherige Seite"
 
-#: performer.cpp:653
+#: performer.cpp:692
 msgid "Next page"
 msgstr "Nächste Seite"
 
-#: performer.cpp:675
+#: performer.cpp:714
 msgid "Zoom"
 msgstr ""
 
-#: performer.cpp:722
+#: performer.cpp:761
 msgid "File"
 msgstr "Datei"
 
-#: performer.cpp:725
+#: performer.cpp:764
 msgid "&New"
 msgstr "&Neu"
 
-#: performer.cpp:732
+#: performer.cpp:771
 msgid "&Open"
 msgstr "&Öffnen"
 
-#: performer.cpp:739
+#: performer.cpp:778
 msgid "&Save"
 msgstr "&Speichern"
 
-#: performer.cpp:746
+#: performer.cpp:785
 msgid "&Save as"
 msgstr "&Speichern unter"
 
-#: performer.cpp:768
+#: performer.cpp:807
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: performer.cpp:770
+#: performer.cpp:809
 msgid "Style"
 msgstr "Stil"
 
-#: performer.cpp:772
+#: performer.cpp:811
 msgid "Default"
 msgstr "Standard"
 
-#: performer.cpp:785
+#: performer.cpp:824
 msgid "&Always on top"
 msgstr "Immer im &Vordergrund"
 
-#: performer.cpp:791
+#: performer.cpp:830
 msgid "&MIDI Program Changes"
 msgstr "&MIDI Programmwechsel"
 
-#: performer.cpp:792
+#: performer.cpp:831
 msgid "If activated, the setlist will react to MIDI Program Change messages."
 msgstr "Falls aktiviert, reagiert die Setliste auf MIDI Programmwechsel."
 
-#: performer.cpp:797
+#: performer.cpp:836
 msgid "&Hide Carla"
 msgstr "&Verstecke Carla"
 
-#: performer.cpp:798
+#: performer.cpp:837
 msgid "If activated, Carla instances will not be visible."
 msgstr "Falls aktiviert, sind Instanzen von Carla nicht sichtbar."
 
-#: performer.cpp:803
+#: performer.cpp:842
 msgid "Show &MIDI controls"
 msgstr "Zeige &MIDI-Steuerung"
 
-#: performer.cpp:804
+#: performer.cpp:843
 msgid "If activated, a MIDI controls configuration view will be visible."
 msgstr ""
 "Falls aktiviert, ist die Konfigurationsansicht für die MIDI-Steuerung "
 "sichtbar."
 
-#: performer.cpp:823
+#: performer.cpp:876
+msgid "Help"
+msgstr "Hilfe"
+
+#: performer.cpp:878
+msgid "Performer Handbook"
+msgstr "Handbuch zu Performer"
+
+#: performer.cpp:885
 msgid "Performer Toolbar"
 msgstr "Performer-Werkzeugleiste"
 
-#: performer.cpp:836
+#: performer.cpp:914
 msgid "Scroll vertical"
 msgstr "Vertikal scrollen"
 
-#: performer.cpp:840
+#: performer.cpp:918
 msgid "Scroll horizontal"
 msgstr "Horizontal scrollen"
 
-#: performer.cpp:1081
+#: performer.cpp:1159
 msgid "Setlists (*.pfm)"
 msgstr "Setlisten (*.pfm)"
 
-#: performer.cpp:1156
+#: performer.cpp:1239
 msgid "Save File As..."
 msgstr "Speichern unter..."
 
