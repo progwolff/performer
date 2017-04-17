@@ -1,6 +1,6 @@
 project(performer)
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
-set(PROJECT_VERSION "0.1.0")
+set(PROJECT_VERSION "1.0.2")
 set(QT_MIN_VERSION "0.1.0")
 
 SET(CMAKE_CXX_FLAGS "-std=c++0x")
