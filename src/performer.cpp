@@ -232,9 +232,6 @@ Performer::Performer(QWidget *parent) :
     setHideBackend(m_hideBackend);
     setShowMIDI(m_showMIDI);
     setStyle(m_style);
-    
-    if(m_viewer)
-        m_viewer->load(QUrl("https://github.com/progwolff/performer#usage"));
 }
 
 
