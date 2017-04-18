@@ -54,10 +54,12 @@
 #include <QStandardPaths>
 #include <QMenu>
 
+#ifndef LINK_STATIC
 QString QCoreApplication::translate(const char */*context*/, const char *sourceText, const char */*disambiguation*/, int /*n*/)
 {
     return i18n(sourceText);
 }
+#endif
 
 Performer::Performer(QWidget *parent) :
 #ifdef WITH_KPARTS
