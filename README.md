@@ -35,7 +35,7 @@ Install performer-git from AUR
 
 ### AV Linux / Debian Testing
 
-A prebuilt package can be found at https://github.com/progwolff/performer/releases/download/v1.0.2/Performer-1.0.2=AVLinux.deb
+A prebuilt package can be found at https://github.com/progwolff/performer/releases/download/v1.0.2/Performer-1.0.2-AVLinux.deb
 
 To build Performer from git run:
 ```
