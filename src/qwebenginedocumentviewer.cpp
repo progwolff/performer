@@ -79,10 +79,10 @@ QWebEngineDocumentViewer::QWebEngineDocumentViewer(QMainWindow* parent)
 QWebEngineDocumentViewer::~QWebEngineDocumentViewer()
 {
     m_webview->close();
-    delete m_webviewarea;
-    delete m_scrollarea;
     delete m_webview;
     delete m_layout;
+    delete m_scrollarea;
+    delete m_webviewarea;
     delete m_zoombox;
 }
 

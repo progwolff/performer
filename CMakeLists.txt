@@ -167,12 +167,7 @@ endif()
 FIND_PROGRAM(GETTEXT_MSGFMT_EXECUTABLE msgfmt)
 FIND_PROGRAM(BASH_EXECUTABLE bash)
 
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
-
-IF(NOT WITH_KF5 OR NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
+IF(UNIX AND NOT WITH_KF5 OR NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 
     FIND_PROGRAM(LCONVERT_EXECUTABLE lconvert)
     FIND_PROGRAM(LRELEASE_EXECUTABLE lrelease)
@@ -218,7 +213,7 @@ IF(NOT WITH_KF5 OR NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
         ADD_CUSTOM_TARGET(translations ALL DEPENDS ${QM_FILES})
         
     ENDIF()
-ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
+ELSE(UNIX AND NOT WITH_KF5 OR NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 
         SET(catalogname performer)
 
@@ -252,7 +247,7 @@ ELSE(NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 
         ADD_CUSTOM_TARGET(translations ALL DEPENDS ${GMO_FILES})
 
-ENDIF(NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
+ENDIF(UNIX AND NOT WITH_KF5 OR NOT GETTEXT_MSGFMT_EXECUTABLE OR NOT BASH_EXECUTABLE)
 
 add_subdirectory(src)
 
@@ -277,7 +272,7 @@ MESSAGE("found ${_docFile}")
         
         MESSAGE("langcode ${_langCode}")
         
-        IF( _langCode )
+        IF(UNIX AND _langCode )
                 if(KF5DocTools_FOUND)
                     kdoctools_create_handbook(${_docFile} INSTALL_DESTINATION ${DOC_DIR}/${_langCode} SUBDIR performer)
                 else()
@@ -298,7 +293,7 @@ MESSAGE("found ${_docFile}")
                 install(FILES ${IMAGE_FILES} DESTINATION ${DOC_DIR}/${_langCode}/performer)
                 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/.screenshot.png DESTINATION ${DOC_DIR}/${_langCode}/performer)
 
-        ENDIF( _langCode )
+        ENDIF(UNIX AND _langCode )
 
 ENDFOREACH(_docFile ${DOC_FILES})
 ADD_CUSTOM_TARGET(documentation ALL DEPENDS ${DOC_TARGETS})
