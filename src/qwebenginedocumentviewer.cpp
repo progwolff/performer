@@ -180,10 +180,12 @@ QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
         );
     });
     
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 7, 0))
     connect(m_webview->page(), &QWebEnginePage::scrollPositionChanged, this, [this](const QPointF& pos){
         m_scrollarea->horizontalScrollBar()->setValue(pos.x());
         m_scrollarea->verticalScrollBar()->setValue(pos.y());
     });
+#endif
     
     return m_scrollarea;
 }
