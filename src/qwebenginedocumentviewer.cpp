@@ -56,7 +56,6 @@ QWebEngineDocumentViewer::QWebEngineDocumentViewer(QMainWindow* parent)
     layout->addWidget(m_scrollarea->verticalScrollBar(), 0, 1);
     layout->addWidget(m_scrollarea->horizontalScrollBar(), 1, 0);
     area->setLayout(layout);
-    area->setFrameStyle(QFrame::Box);
     m_webviewarea = area;
     m_layout = layout;
     
