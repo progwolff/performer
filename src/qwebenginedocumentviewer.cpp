@@ -162,7 +162,7 @@ QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
         resizefunct();
     });
     
-    connect(m_scrollarea->horizontalScrollBar(), &QAbstractSlider::sliderMoved, this, [this](int val){
+    connect(m_scrollarea->horizontalScrollBar(), &QAbstractSlider::valueChanged, this, [this](int val){
         m_webview->page()->runJavaScript(
             "if(document.getElementById('viewerContainer')){"
             "document.getElementById('viewerContainer').scrollLeft="+QString::number(val)+";"
@@ -170,7 +170,7 @@ QAbstractScrollArea * QWebEngineDocumentViewer::scrollArea()
             "window.scrollTo("+QString::number(val)+","+QString::number(m_scrollarea->verticalScrollBar()->value())+");}"
         );
     });
-    connect(m_scrollarea->verticalScrollBar(), &QAbstractSlider::sliderMoved, this, [this](int val){
+    connect(m_scrollarea->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this](int val){
         m_webview->page()->runJavaScript(
             "if(document.getElementById('viewerContainer')){"
             "document.getElementById('viewerContainer').scrollTop="+QString::number(val)+";"
