@@ -51,6 +51,7 @@ QWebEngineDocumentViewer::QWebEngineDocumentViewer(QMainWindow* parent)
     QFrame *area = new QFrame(this);
     m_scrollarea = new QScrollArea(this);
     QGridLayout *layout = new QGridLayout(this);
+    area->setFrameStyle(QFrame::NoFrame);
     
     layout->addWidget(m_webview, 0, 0);
     layout->addWidget(m_scrollarea->verticalScrollBar(), 0, 1);
