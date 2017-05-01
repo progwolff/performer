@@ -91,11 +91,11 @@ const QString CarlaPatchBackend::editor()
     QString carlaPath = QStandardPaths::findExecutable("performer-carla");
     if(carlaPath.isEmpty())
         carlaPath = QStandardPaths::findExecutable("performer-carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) +"/Carla");
-    if (carlaPath.isEmpty())
+    if(carlaPath.isEmpty())
         carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "performer/carla/Debug");
-	if (carlaPath.isEmpty())
-		carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "performer/carla");
-    if (carlaPath.isEmpty())
+    if(carlaPath.isEmpty())
+        carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "performer/carla");
+    if(carlaPath.isEmpty())
         carlaPath = QStandardPaths::findExecutable("Carla", QStringList() << QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/Carla");
     
     return carlaPath;
@@ -403,7 +403,7 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
     return 0;
 }
 
-int CarlaPatchBackend::xrunOccured(void *arg)
+int CarlaPatchBackend::xrunOccured(void * /*arg*/)
 {
     activeBackendLock.lockForRead();
     
@@ -719,7 +719,7 @@ void CarlaPatchBackend::preload()
             if(!client.isEmpty())
             {
                 char* uuid = nullptr;
-                if(try_run(500, [&uuid,client](){
+                if(try_run(5000, [&uuid,client](){
                     jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
                 },"preClients"))
                     uuid = jack_get_uuid_for_client_name(m_client, client.toLocal8Bit());
