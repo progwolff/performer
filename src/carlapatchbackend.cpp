@@ -826,7 +826,7 @@ void CarlaPatchBackend::preload()
             if(hideBackend)
                 args << "-n";
             if(!ports.isEmpty())
-                args << "--port-setup" << ports;
+                args << "--port-setup="+ports;
             exec->start(carlaPath, args);
             execLock.unlock();
             

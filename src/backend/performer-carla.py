@@ -63,6 +63,24 @@ if __name__ == '__main__':
     host.processMode       = ENGINE_PROCESS_MODE_PATCHBAY
     host.processModeForced = True
     
+    printErr = False
+
+    # Find port setup argument
+    for arg in sys.argv[1:]:
+        if arg.startswith("--port-setup="):
+            tryPortSetup = arg.replace("--port-setup=", "").split(":")
+            if len(tryPortSetup) == 4:
+                try:
+                    tryPortSetup = tuple(int(p) for p in tryPortSetup)
+                except:
+                    printErr = True
+                else:
+                    host.patchbayPortSetup = tryPortSetup
+            else:
+                printErr = True
+            break
+
+    loadHostSettings(host)
     
     handler = CallbackHandler()
     
