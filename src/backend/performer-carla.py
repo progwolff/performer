@@ -79,8 +79,6 @@ if __name__ == '__main__':
             else:
                 printErr = True
             break
-
-    loadHostSettings(host)
     
     handler = CallbackHandler()
     
