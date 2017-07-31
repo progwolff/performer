@@ -47,11 +47,14 @@ public:
     /**
      * Create a patch backend instance and assign a patch file
      * @param patchfile the patch file to assign to this backend instance
+     * @param portstring number of audio/midi ports. e.g. 8:2:1:1 for 8 audio in, 2 audio out, 1 midi in, 1 midi out
      */
-    AbstractPatchBackend(const QString& patchfile, const QString& displayname = QString())
+    AbstractPatchBackend(const QString& patchfile, const QString& displayname = QString(), const QString& portstring = QString())
         :patchfile(patchfile)
         ,displayname(displayname)
-    {};
+    {
+        Q_UNUSED(portstring)
+    };
     
 #ifdef WITH_JACK
     /**
@@ -181,6 +184,7 @@ protected:
     
     QString patchfile;
     QString displayname;
+    static QString ports;
     
 protected:
     /**

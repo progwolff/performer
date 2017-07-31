@@ -48,7 +48,7 @@ public:
         Carla = 0
     };
 
-    explicit SetlistModel(QObject *parent=0);
+    explicit SetlistModel(QObject *parent=0, const QString& ports = QString());
     virtual ~SetlistModel();
 
     int rowCount(const QModelIndex &parent) const;
@@ -149,6 +149,8 @@ private:
     QTimer *m_inputActivityTimer;
     
     int m_xruns;
+    
+    QString m_ports;
     
 };
 

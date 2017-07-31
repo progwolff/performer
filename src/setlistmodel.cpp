@@ -54,7 +54,7 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-SetlistModel::SetlistModel(QObject *parent)
+SetlistModel::SetlistModel(QObject *parent, const QString& ports)
     : QAbstractListModel(parent)
     , m_activeBackend(nullptr)
     , m_previousBackend(nullptr)
@@ -63,6 +63,7 @@ SetlistModel::SetlistModel(QObject *parent)
     , m_backend(Carla)
     , m_inputActivity(0)
     , m_xruns(0)
+    , m_ports(ports)
 {
     m_movedIndex = -1;
     m_activeIndex = -1;
@@ -130,7 +131,7 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
         switch(m_backend)
         {
             case Carla:
-                instance = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile(), m_setlist[index].name());
+                instance = new CarlaPatchBackend(m_setlist[index].patch().toLocalFile(), m_setlist[index].name(), m_ports);
                 connect(instance, &CarlaPatchBackend::activity, this, [this](){
                     m_inputActivity += 20;
                     if(m_inputActivity > 100)
@@ -320,7 +321,7 @@ void SetlistModel::reset()
     switch(m_backend)
     {
         case Carla:
-            m_activeBackend = new CarlaPatchBackend("");
+            m_activeBackend = new CarlaPatchBackend("", "", m_ports);
             break;
     }
     

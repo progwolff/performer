@@ -61,7 +61,7 @@ QString QCoreApplication::translate(const char */*context*/, const char *sourceT
 }
 #endif
 
-Performer::Performer(QWidget *parent) :
+Performer::Performer(QWidget *parent, const QString& ports) :
 #ifdef WITH_KPARTS
     KParts::MainWindow(parent),
 #elif defined(WITH_KF5)
@@ -93,7 +93,7 @@ Performer::Performer(QWidget *parent) :
 
     setWindowFilePath(i18n("unknown.pfm"));
     
-    m_model = new SetlistModel(this);
+    m_model = new SetlistModel(this, ports);
     
     prepareUi();
     

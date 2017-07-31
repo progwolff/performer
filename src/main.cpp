@@ -69,6 +69,7 @@ int main (int argc, char *argv[])
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addPositionalArgument(i18n("[file]"), i18n("Setlist to load"));
+    parser.addOption(QCommandLineOption("port-setup", "set number of audio/midi ports", "port-setup", "2:2:1:1"));
   
 #ifdef WITH_KF5
     KLocalizedString::setApplicationDomain("Performer");
@@ -112,7 +113,8 @@ int main (int argc, char *argv[])
     
 #endif //WITH_KF5
 
-    Performer *window = new Performer(nullptr);
+    QString ports = parser.value("port-setup");
+    Performer *window = new Performer(nullptr, ports);
     window->show();
     const QStringList args = parser.positionalArguments();
     if(args.size() > 0)

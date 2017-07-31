@@ -35,7 +35,7 @@ class CarlaPatchBackend : public AbstractPatchBackend
         Q_OBJECT
     
 public:
-    CarlaPatchBackend(const QString& patchfile, const QString& displayname = QString());
+    CarlaPatchBackend(const QString& patchfile, const QString& displayname = QString(), const QString& portstring = QString());
     
 #ifdef WITH_JACK
     static jack_client_t *jackClient();
@@ -110,14 +110,14 @@ private:
     
     static QMap<QString, QStringList> savedConnections;
     
-    static const char portlist[][11];
-    static const char allportlist[][15];
-    static const char inputleftnames[][14];
-    static const char inputrightnames[][14];
-    static const char outputleftnames[][15];
-    static const char outputrightnames[][15];
-    static const char midiinputnames[][10];
-    static const char midioutputnames[][11];    
+    static std::vector<QString> portlist;
+    static std::vector<QString> allportlist;
+    static std::vector<QString> inputleftnames;
+    static std::vector<QString> inputrightnames;
+    static std::vector<QString> outputleftnames;
+    static std::vector<QString> outputrightnames;
+    static std::vector<QString> midiinputnames;
+    static std::vector<QString> midioutputnames;    
     
     static QString programName;
     static QList<int> midiMessages;

@@ -42,6 +42,7 @@ jack_client_t *CarlaPatchBackend::m_client = nullptr;
 #endif
 
 bool AbstractPatchBackend::hideBackend = false;
+QString AbstractPatchBackend::ports;
 
 QSemaphore CarlaPatchBackend::instanceCounter(0);
 QMutex CarlaPatchBackend::clientInitMutex;
@@ -53,23 +54,25 @@ QMap<QString, QStringList> CarlaPatchBackend::savedConnections;
 QString CarlaPatchBackend::programName;
 QList<int> CarlaPatchBackend::midiMessages;
 
-const char CarlaPatchBackend::portlist[6][11]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out"};
-const char CarlaPatchBackend::allportlist[7][15]{"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"};
+std::vector<QString>  CarlaPatchBackend::portlist({});
+std::vector<QString>  CarlaPatchBackend::allportlist({});
 
-const char CarlaPatchBackend::inputleftnames[][14]{"input_1", "in L", "In L", "input", "Input", "Audio Input 1"};
-const char CarlaPatchBackend::inputrightnames[][14]{"input_2", "in R", "In R", "output", "Output", "Audio Input 2"};
-const char CarlaPatchBackend::outputleftnames[][15]{"output_1", "out-left", "out L", "Out L", "output", "Output", "Audio Output 1"};
-const char CarlaPatchBackend::outputrightnames[][15]{"output_2", "out-right", "out R", "Out R", "output", "Output", "Audio Output 2"};
-const char CarlaPatchBackend::midiinputnames[][10]{"events-in"};
-const char CarlaPatchBackend::midioutputnames[][11]{"events-out"};  
+std::vector<QString>  CarlaPatchBackend::inputleftnames({"input_1", "in L", "In L", "input", "Input", "Audio Input 1"});
+std::vector<QString>  CarlaPatchBackend::inputrightnames({"input_2", "in R", "In R", "output", "Output", "Audio Input 2"});
+std::vector<QString>  CarlaPatchBackend::outputleftnames({"output_1", "out-left", "out L", "Out L", "output", "Output", "Audio Output 1"});
+std::vector<QString>  CarlaPatchBackend::outputrightnames({"output_2", "out-right", "out R", "Out R", "output", "Output", "Audio Output 2"});
+std::vector<QString>  CarlaPatchBackend::midiinputnames({"events-in"});
+std::vector<QString>  CarlaPatchBackend::midioutputnames({"events-out"});  
 
-CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile, const QString& displayname)
+CarlaPatchBackend::CarlaPatchBackend(const QString& patchfile, const QString& displayname, const QString& portstring)
 : AbstractPatchBackend(patchfile, displayname)
 , clientNameLock(QReadWriteLock::Recursive)
 , execLock(QReadWriteLock::Recursive)
 , exec(nullptr)
 , clientName("")
 {    
+    ports = portstring;
+        
     emit progress(PROGRESS_CREATE);
     
     instanceCounter.release(1);
@@ -181,42 +184,42 @@ void CarlaPatchBackend::createPatch(const QString& path)
             " </Plugin>"
             ""
             " <Patchbay>";
-    for(const char* left : inputleftnames)
+    for(const QString& left : inputleftnames)
     {
         out << "  <Connection>"
             "   <Source>Audio Input:Left</Source>"
             "   <Target>" << name << ":" << left << "</Target>"
             "  </Connection>";
     }
-    for(const char* right : inputrightnames)
+    for(const QString& right : inputrightnames)
     {
         out << "  <Connection>"
             "   <Source>Audio Input:Right</Source>"
             "   <Target>" << name << ":"  << right << "</Target>"
             "  </Connection>";
     }
-    for(const char* left : outputleftnames)
+    for(const QString& left : outputleftnames)
     {
         out << "  <Connection>"
             "   <Source>" << name << ":"  << left << "</Source>"
             "   <Target>Audio Output:Left</Target>"
             "  </Connection>";
     }
-    for(const char* right : outputrightnames)
+    for(const QString& right : outputrightnames)
     {
         out << "  <Connection>"
             "   <Source>" << name << ":"  << right << "</Source>"
             "   <Target>Audio Output:Right</Target>"
             "  </Connection>";
     }
-    for(const char* midi : midiinputnames)
+    for(const QString& midi : midiinputnames)
     {
         out << "  <Connection>"
             "   <Source>Midi Input:events-out</Source>"
             "   <Target>" << name << ":"  << midi << "</Target>"
             "  </Connection>";
     }
-    for(const char* midi : midioutputnames)
+    for(const QString& midi : midioutputnames)
     {
         out << "  <Connection>"
             "   <Source>" << name << ":"  << midi << "</Source>"
@@ -260,16 +263,69 @@ jack_client_t *CarlaPatchBackend::jackClient()
         }
         else
         {
+            //"audio-in1","audio-in2","audio-out1","audio-out2","events-in","events-out","control_gui-in"
+            portlist.clear();
+            allportlist.clear();
+            
+            int audioins=2;
+            int audioouts=2;
+            int midiins=2;
+            int midiouts=2;
+            QStringList port = ports.split(':');
+            
+            qDebug() << "ports: " << ports;
+            
+            if(port.size() > 0)
+                audioins = port[0].toInt();
+            if(port.size() > 1)
+                audioouts = port[1].toInt();
+            if(port.size() > 2)
+                midiins = port[2].toInt();
+            if(port.size() > 3)
+                midiouts = port[3].toInt();
+            
+            for(int i=0; i < audioins; ++i)
+            {
+                QString portname = "audio-in"+QString::number(i+1);
+                if(try_run(500, [&portname](){
+                    jack_port_register(m_client, portname.toStdString().c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+                }))
+                    portlist.push_back(portname);
+            }
+             
+            for(int i=0; i < audioouts; ++i)
+            {
+                QString portname = "audio-out"+QString::number(i+1);
+                if(try_run(500, [&portname](){
+                    jack_port_register(m_client, portname.toStdString().c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
+                }))
+                    portlist.push_back(portname);
+            }
+            
+            for(int i=0; i < midiins; ++i)
+            {
+                QString portname = "events-in"+(i>0?QString::number(i+1):"");
+                if(try_run(500, [&portname](){
+                    jack_port_register(m_client, portname.toStdString().c_str(), JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+                }))
+                    portlist.push_back(portname);
+            }
+              
+            for(int i=0; i < midiouts; ++i)
+            {
+                QString portname = "events-out"+(i>0?QString::number(i+1):"");
+                if(try_run(500, [&portname](){
+                    jack_port_register(m_client, portname.toStdString().c_str(), JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
+                }))
+                    portlist.push_back(portname);
+            }
+                    
+            allportlist.assign(portlist.begin(), portlist.end());
+            jack_port_register(m_client, "control_gui-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
+            allportlist.push_back("control_gui-in");
+            
             if(!try_run(500,
                 [](){
-                    jack_port_register(m_client, "audio-in1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-                    jack_port_register(m_client, "audio-in2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-                    jack_port_register(m_client, "audio-out1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
-                    jack_port_register(m_client, "audio-out2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
-                    jack_port_register(m_client, "events-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-                    jack_port_register(m_client, "events-out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput | JackPortIsTerminal, 0);
-                    jack_port_register(m_client, "control_gui-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput | JackPortIsTerminal, 0);
-                    
                     jack_set_port_connect_callback(m_client, &CarlaPatchBackend::connectionChanged, NULL);
                     
                     jack_set_process_callback(m_client, &CarlaPatchBackend::processMidiEvents, NULL);
@@ -283,6 +339,7 @@ jack_client_t *CarlaPatchBackend::jackClient()
             {
                 while(!freeJackClient());
             }
+            
         }
     } 
     return m_client;
@@ -422,7 +479,7 @@ QMap<QString,QStringList> CarlaPatchBackend::connections()
     #ifdef WITH_JACK
     if(m_client)
     try_run(500,[&ret](){
-        for(const char* port : allportlist)
+        for(const QString& port : allportlist)
         {
             QStringList conlist;
             const char** conmem = jack_port_get_connections(jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":"+port).toLocal8Bit()));
@@ -452,7 +509,7 @@ void CarlaPatchBackend::connections(QMap<QString,QStringList> connections)
     savedConnections = connections;
     
     try_run(500,[](){
-        for(const char* port : allportlist)
+        for(const QString& port : allportlist)
         {
             jack_port_t* portid = jack_port_by_name(m_client, (QString::fromLocal8Bit(jack_get_client_name(m_client))+":"+port).toLocal8Bit());
             if(portid)
@@ -590,7 +647,7 @@ void CarlaPatchBackend::connectClient()
         QMap<QString, QStringList> cons = connections();
         QString name = clientName;
         try_run(500, [this,cons,name](){
-            for(const char* port : portlist)
+            for(const QString& port : portlist)
             {                
                 for(const QString& con : cons[port])
                 {
@@ -636,7 +693,7 @@ void CarlaPatchBackend::disconnectClient(const QString& clientname)
     {
         jack_client_t* client = m_client;
         try_run(500,[name,client](){
-            for(const char* port : portlist)
+            for(const QString& port : portlist)
             {
                 jack_port_t* portid = jack_port_by_name(client, (name+":"+port).toLocal8Bit());
                 if(portid)
@@ -764,10 +821,13 @@ void CarlaPatchBackend::preload()
         else
         {
             execLock.lockForWrite();
+            QStringList args;
+            args << patchfile;
             if(hideBackend)
-                exec->start(carlaPath, QStringList() << "-n" << patchfile);
-            else
-                exec->start(carlaPath, QStringList() << patchfile);
+                args << "-n";
+            if(!ports.isEmpty())
+                args << "--port-setup" << ports;
+            exec->start(carlaPath, args);
             execLock.unlock();
             
             numPlugins = 0;
