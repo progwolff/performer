@@ -38,6 +38,7 @@ Install performer-git from AUR
 A prebuilt package can be found at https://github.com/progwolff/performer/releases/download/v1.0.2/Performer-1.0.2-AVLinux.deb
 
 To build Performer from git run:
+
 ```
 $ sudo apt-get update
 $ sudo apt-get install qtwebengine5-dev 
@@ -56,6 +57,7 @@ A prebuilt package can be found at https://github.com/progwolff/performer/releas
 This build has no document viewer enabled.
 
 To build Performer with a document viewer on KXStudio or Ubuntu 14 run:
+
 ```
 $ sudo apt-get install build-essential
 $ sudo apt-get install git
@@ -70,6 +72,7 @@ Install Qt to ~/Qt5.7.0, skip login, make sure to install Qt WebEngine
 
 
 Build and install Performer:
+
 ```
 $ git clone git@github.com:progwolff/performer.git
 $ cd performer
@@ -80,12 +83,14 @@ $ sudo make install
 ```
 
 ### Other Linux Distros
+
 ```
 $ mkdir build && cd build
 $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
 $ make
 # make install
 ```
+
 ### Windows [Experimental]
 
 Install Qt5 with QWebEngine.
@@ -95,6 +100,7 @@ Install Jack2
 Install Carla and run it
 
 In cmd.exe type:
+
 ```
 mkdir build
 cd build
