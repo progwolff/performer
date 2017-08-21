@@ -773,6 +773,14 @@ void Performer::prepareUi()
     connect(action, SIGNAL(triggered(bool)), this, SLOT(loadFile()));
     filemenu->addAction(action);
     
+#ifdef WITH_KF5
+    m_recentFilesAction = KStandardAction::openRecent(this, SLOT(loadFile(QUrl)), this);
+    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    KSharedConfigPtr config = KSharedConfig::openConfig(configDir+"/performer.conf");
+    m_recentFilesAction->loadEntries(config->group("recentFiles"));
+    filemenu->addAction(m_recentFilesAction);
+#endif
+    
     action = new QAction(this);
     action->setText(i18n("&Save"));
     action->setIcon(QIcon::fromTheme("document-save", QApplication::style()->standardIcon(QStyle::SP_DriveFDIcon)));
@@ -1158,6 +1166,10 @@ void Performer::loadFile()
     loadFile(QFileDialog::getOpenFileName(this, tr("Open File"), QString(), i18n("Setlists (*.pfm)")));
 }
 
+void Performer::loadFile(const QUrl& path)
+{
+    loadFile(path.toLocalFile());
+}
 
 void Performer::loadFile(const QString& path)
 {
@@ -1178,6 +1190,12 @@ void Performer::loadFile(const QString& path)
     
     m_model->reset();
 #ifdef WITH_KF5
+    m_recentFilesAction->addUrl(QUrl::fromLocalFile(path));
+    
+    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    KSharedConfigPtr config = KSharedConfig::openConfig(configDir+"/performer.conf");
+    m_recentFilesAction->saveEntries(config->group("recentFiles"));
+    
     KSharedConfigPtr set = KSharedConfig::openConfig(path);
     
     KConfigGroup setlist = set->group("setlist");

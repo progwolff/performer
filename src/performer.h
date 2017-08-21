@@ -59,6 +59,9 @@ class SetlistModel;
 class QStyledItemDelegate;
 class QAbstractScrollArea;
 class QSessionManager;
+#ifdef WITH_KF5
+class KRecentFilesAction;
+#endif
 
 namespace Ui {
     class Setlist;
@@ -85,6 +88,7 @@ public slots:
     void saveConfig();
     void loadConfig();
     void loadFile(const QString& path);
+    void loadFile(const QUrl& path);
     void setStyle(const QString& style);
 #ifndef WITH_KF5
     void loadHelp();
@@ -160,6 +164,9 @@ private:
     QAction* m_programChangeAction;
     QAction* m_hideBackendAction;
     QAction* m_showMIDIAction;
+#ifdef WITH_KF5
+    KRecentFilesAction* m_recentFilesAction;
+#endif
     
     QPointer<QAbstractScrollArea> m_pageView;
     
