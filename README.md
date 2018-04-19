@@ -71,12 +71,13 @@ $ ./qt-opensource-linux-x64-5.7.0.run
 Install Qt to ~/Qt5.7.0, skip login, make sure to install Qt WebEngine
 
 
-Build and install Performer:
+Build and install Performer (replacing <username> by your actual user name):
 
 ```
 $ git clone https://github.com/progwolff/performer.git
 $ cd performer
 $ mkdir build && cd build
+$ export PATH="/home/<username>/Qt5.7.0/5.7/gcc_64/bin/:$PATH"
 $ cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DATADIR=/usr/share -DQt5_DIR=~/Qt5.7.0/5.7/gcc_64/lib/cmake/Qt5 -DJACK_LIBRARIES=/usr/lib/x86_64-linux-gnu/libjack.so -DJACK_INCLUDEDIR=/usr/include ..
 $ make
 $ sudo make install
