@@ -25,7 +25,7 @@ Additionally Performer uses [Okular](https://github.com/KDE/okular) or QWebEngin
 * extra-cmake-modules (make, optional: KDE integration)
 * kdebase-runtime (optional: KDE integration)
 * kparts (optional: display notes or chords with okular)
-* okular-git (optional: display notes or chords)
+* okular (optional: display notes or chords)
 * qt5-webengine (optional: display notes or chords without okular)
 * jackman (optional: automatically restart unresponsive jack server)
 
@@ -74,7 +74,7 @@ Install Qt to ~/Qt5.7.0, skip login, make sure to install Qt WebEngine
 Build and install Performer:
 
 ```
-$ git clone git@github.com:progwolff/performer.git
+$ git clone https://github.com/progwolff/performer.git
 $ cd performer
 $ mkdir build && cd build
 $ cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_DATADIR=/usr/share -DQt5_DIR=~/Qt5.7.0/5.7/gcc_64/lib/cmake/Qt5 -DJACK_LIBRARIES=/usr/lib/x86_64-linux-gnu/libjack.so -DJACK_INCLUDEDIR=/usr/include ..
