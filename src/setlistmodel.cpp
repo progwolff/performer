@@ -139,8 +139,8 @@ void SetlistModel::createBackend(AbstractPatchBackend*& instance, int index)
                     m_inputActivityTimer->start();
                     emit activity();
                 }, Qt::QueuedConnection);
-                connect(instance, &CarlaPatchBackend::xrun, this, [this](){
-                    ++m_xruns;
+                connect(instance, &CarlaPatchBackend::xrun, this, [this](int count){
+                    m_xruns += count;
                     emit xruns(m_xruns);
                 });
         }

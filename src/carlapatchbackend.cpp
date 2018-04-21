@@ -53,6 +53,8 @@ QMap<QString,CarlaPatchBackend*> CarlaPatchBackend::clients;
 QMap<QString, QStringList> CarlaPatchBackend::savedConnections;
 QString CarlaPatchBackend::programName;
 QList<int> CarlaPatchBackend::midiMessages;
+QMap< QString, QMap<QString, bool> > CarlaPatchBackend::changedConnections;
+int CarlaPatchBackend::xruns = 0;
 
 std::vector<QString>  CarlaPatchBackend::portlist({});
 std::vector<QString>  CarlaPatchBackend::allportlist({});
@@ -370,10 +372,25 @@ void CarlaPatchBackend::connectionChanged(jack_port_id_t a, jack_port_id_t b, in
     
     if(!name_a || !name_b)
         return;
-    activeBackendLock.lockForRead();
+    
+    changedConnections[name_a][name_b] = connect;
+    
+    if(!activeBackendLock.tryLockForRead()) 
+    {
+        
+        return;
+    }
+    
     if(activeBackend)
     {
-        activeBackend->emit jackconnection(name_a, name_b, connect);
+        for(const auto& name_a : changedConnections.keys())
+        {
+            for(const auto& name_b : changedConnections[name_a].keys())
+            {
+                activeBackend->emit jackconnection(name_a.toLocal8Bit(), name_b.toLocal8Bit(), changedConnections[name_a][name_b]);
+            }
+        }
+        changedConnections.clear();
     }
     activeBackendLock.unlock();
 }
@@ -424,7 +441,8 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
             qWarning() << "could not reserve midi output buffer";
     }
     
-    activeBackendLock.lockForRead();
+    if(!activeBackendLock.tryLockForRead())
+        return 0;
     
     if(activeBackend)
     for(int i = 0; i < midiMessages.size()-2; ++i)
@@ -462,11 +480,16 @@ int CarlaPatchBackend::processMidiEvents(jack_nframes_t nframes, void* arg)
 
 int CarlaPatchBackend::xrunOccured(void * /*arg*/)
 {
-    activeBackendLock.lockForRead();
-    
-    if(activeBackend)
-        activeBackend->emit xrun();
+    ++xruns;
         
+    if(!activeBackendLock.tryLockForRead())
+        return 0;
+    
+    if(activeBackend) {
+        activeBackend->emit xrun(xruns);
+        xruns = 0;
+    }
+    
     activeBackendLock.unlock();
     return 0;
 }

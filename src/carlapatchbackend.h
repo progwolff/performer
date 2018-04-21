@@ -121,6 +121,9 @@ private:
     
     static QString programName;
     static QList<int> midiMessages;
+    static QMap< QString, QMap<QString, bool> > changedConnections;
+    
+    static int xruns;
     
     int numPlugins;
     int pluginsLoaded;

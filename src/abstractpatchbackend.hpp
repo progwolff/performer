@@ -130,7 +130,7 @@ signals:
     /**
      * an xrun has occured
      */
-    void xrun();
+    void xrun(int count);
     
 public slots:
     
