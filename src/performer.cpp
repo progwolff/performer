@@ -644,10 +644,8 @@ void Performer::songSelected(const QModelIndex& index)
 
 void Performer::prepareUi()
 {
-    
     m_dock = new QDockWidget(this);
     m_setlist->setupUi(m_dock);
-    addDockWidget(Qt::LeftDockWidgetArea, m_dock);
     
     m_midiDock = new QDockWidget("MIDI", this);
     m_midiDock->setObjectName("MIDI dock");
@@ -657,13 +655,13 @@ void Performer::prepareUi()
     m_midiDock->setWidget(midiView);
     m_midi = new MIDI(midiView);
     midiView->setModel(m_midi);
-    addDockWidget(Qt::RightDockWidgetArea, m_midiDock);
     midiView->verticalHeader()->setVisible(false);
     midiView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     for (int i = 1; i < midiView->horizontalHeader()->count(); ++i)
     {
         midiView->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
     }
+    
     
 #if defined(WITH_KPARTS)
     m_viewer = new OkularDocumentViewer(this);
@@ -744,6 +742,9 @@ void Performer::prepareUi()
     }
 #endif
     
+    addDockWidget(Qt::LeftDockWidgetArea, m_dock);
+    addDockWidget(Qt::RightDockWidgetArea, m_midiDock);
+    
     if(m_viewer)
     {
         for(QWidget* widget : m_viewer->toolbarWidgets())
@@ -776,7 +777,7 @@ void Performer::prepareUi()
 #ifdef WITH_KF5
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(loadFile(QUrl)), this);
     QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    KSharedConfigPtr config = KSharedConfig::openConfig(configDir+"/performer.conf");
+    KSharedConfigPtr config = KSharedConfig::openConfig(configDir+"/performerrc", KSharedConfig::SimpleConfig);
     m_recentFilesAction->loadEntries(config->group("recentFiles"));
     filemenu->addAction(m_recentFilesAction);
 #endif
@@ -890,7 +891,6 @@ void Performer::prepareUi()
 #endif
     
     toolBar()->setWindowTitle(i18n("Performer Toolbar"));
-    
 }
 
 #ifndef WITH_KF5
@@ -986,7 +986,7 @@ void Performer::loadConfig()
 {
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
 #ifdef WITH_KF5
-    KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
+    KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performerrc", KSharedConfig::SimpleConfig);
     
     m_notesDefaultPath = config->group("paths").readEntry("notes", QString());
     m_setlist->notesrequester->setStartDir(QUrl::fromLocalFile(m_notesDefaultPath));
@@ -1026,7 +1026,7 @@ void Performer::loadConfig()
     m_hideBackend = config->group("setlist").readEntry("hidebackend",true);
     m_showMIDI = config->group("window").readEntry("showmidi",false);
 #else
-    QSettings config(dir+"/performer.conf", QSettings::NativeFormat);
+    QSettings config(dir+"/performerrc", QSettings::NativeFormat);
     
     config.beginGroup("paths");
     m_notesDefaultPath = config.value("notes", QString()).toString();
@@ -1083,10 +1083,11 @@ void Performer::saveConfig()
 {
     QVariantMap args;
     
-    
     QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
 #ifdef WITH_KF5
-    KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performer.conf");
+    KSharedConfigPtr config = KSharedConfig::openConfig(dir+"/performerrc", KSharedConfig::SimpleConfig);
+    
+    config->deleteGroup("MainWindow");
     
     config->deleteGroup("m_midi");
     for(QAction* action: m_midi->actions())
@@ -1115,7 +1116,9 @@ void Performer::saveConfig()
     config->sync();
 
 #else
-    QSettings config(dir+"/performer.conf", QSettings::IniFormat);
+    QSettings config(dir+"/performerrc", QSettings::IniFormat);
+    
+    config.remove("MainWindow");
     
     config.remove("m_midi");
     config.beginGroup("m_midi");
@@ -1193,10 +1196,10 @@ void Performer::loadFile(const QString& path)
     m_recentFilesAction->addUrl(QUrl::fromLocalFile(path));
     
     QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    KSharedConfigPtr config = KSharedConfig::openConfig(configDir+"/performer.conf");
+    KSharedConfigPtr config = KSharedConfig::openConfig(configDir+"/performerrc", KSharedConfig::SimpleConfig);
     m_recentFilesAction->saveEntries(config->group("recentFiles"));
     
-    KSharedConfigPtr set = KSharedConfig::openConfig(path);
+    KSharedConfigPtr set = KSharedConfig::openConfig(path, KSharedConfig::SimpleConfig);
     
     KConfigGroup setlist = set->group("setlist");
     
@@ -1284,7 +1287,7 @@ bool Performer::saveFile(const QString& path)
         return saveFileAs();
     }
 #ifdef WITH_KF5
-    KSharedConfigPtr set = KSharedConfig::openConfig(filename);
+    KSharedConfigPtr set = KSharedConfig::openConfig(filename, KSharedConfig::SimpleConfig);
     for(const QString& group : set->groupList())
         set->deleteGroup(group);
     

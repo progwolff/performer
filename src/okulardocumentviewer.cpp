@@ -45,10 +45,11 @@ m_part(nullptr)
         m_part = service->createInstance<KParts::ReadOnlyPart>(this, QVariantList() << "Print/Preview");
 
         if (m_part)
-        {
+        {                 
+            QString dir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
             QString file = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kxmlgui5/performer/okularui.rc");
-            
-            m_part->replaceXMLFile(file, "kxmlgui5/performer/okularui.rc", false);
+           
+            m_part->replaceXMLFile(file, dir + "/performerviewerrc", false);
         }
         else
         {
