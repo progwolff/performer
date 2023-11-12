@@ -1,7 +1,7 @@
 # Performer
 
-[!IMPORTANT]
-This project is currently unmaintained.
+> [!IMPORTANT]
+> This project is currently unmaintained.
 
 Live performance audio session manager using [Carla](https://github.com/falktx/Carla)
 
